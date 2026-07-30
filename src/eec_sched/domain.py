@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Literal, Mapping, Protocol
 
-Modality = Literal["image", "text"]
+# Audio is intentionally a first-class port only because MnMS speech recognition
+# consumes an audio file.  Structured values still cross the DAG as text, keeping
+# the original image/text-oriented composition contract small.
+Modality = Literal["audio", "image", "text"]
 
 
 @dataclass(frozen=True)

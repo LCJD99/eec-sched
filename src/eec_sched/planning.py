@@ -16,6 +16,14 @@ def _request_modality(value: object) -> str | None:
             return "image"
     except ImportError:
         pass
+    # Audio runners accept a filesystem path.  A string remains text by default
+    # so existing text plans are unambiguous; callers can opt in with Path.
+    try:
+        from pathlib import Path
+        if isinstance(value, Path):
+            return "audio"
+    except ImportError:
+        pass
     return None
 
 

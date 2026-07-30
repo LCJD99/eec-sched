@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Callable, Mapping, cast
 
 from .domain import Configuration, Port, ToolRegistry, ToolRunner, ToolSpec
+from .mnms_tools import mnms_tool_specs, register_mnms_tools
 
 
 class TransformersPipelineRunner(ToolRunner):
@@ -39,17 +40,10 @@ class TransformersPipelineRunner(ToolRunner):
 
 
 def representative_tool_specs() -> tuple[ToolSpec, ...]:
-    """Three concrete, optional adapters; models can be profiled independently."""
-    return (
-        ToolSpec("image_caption", "Describe an image.", {"image": Port("image", "image")}, {"text": Port("text", "text")}, (Configuration("default", {"model": "nlpconnect/vit-gpt2-image-captioning", "inference_kwargs": {"max_new_tokens": 32}}),), True, 0.0),
-        ToolSpec("summarize", "Summarize text.", {"text": Port("text", "text")}, {"text": Port("text", "text")}, (Configuration("default", {"model": "facebook/bart-large-cnn", "inference_kwargs": {"min_length": 1, "max_length": 32, "do_sample": False}}),), True, 0.0),
-        ToolSpec("super_resolve", "Upscale an image.", {"image": Port("image", "image")}, {"image": Port("image", "image")}, (Configuration("base", {"model": "caidas/swin2SR-classical-sr-x2-64"}),), None, None),
-    )
+    """Compatibility name for the complete, reference-aligned MnMS catalog."""
+    return mnms_tool_specs()
 
 
 def register_representative_huggingface_tools(registry: ToolRegistry, device: int = -1) -> None:
-    """Register executable image-captioning, summarization, and upscaling tools."""
-    task_by_tool = {"image_caption": ("image-to-text", "image", "text"), "summarize": ("summarization", "text", "text"), "super_resolve": ("image-to-image", "image", "image")}
-    for spec in representative_tool_specs():
-        task, input_port, output_port = task_by_tool[spec.tool_id]
-        registry.register(spec, lambda task=task, input_port=input_port, output_port=output_port: TransformersPipelineRunner(task, input_port, output_port, device=device))
+    """Compatibility registration entry point for all MnMS reference tools."""
+    register_mnms_tools(registry, "cpu" if device == -1 else f"cuda:{device}")
