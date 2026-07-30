@@ -1,0 +1,110 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "doc_stride": 64,
+        "max_context_tokens": 128,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "model_name": "deepset/roberta-base-squad2",
+      "raw_metric": 100.0,
+      "tool_id": "question_answering"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "doc_stride": 96,
+        "max_context_tokens": 256,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "model_name": "deepset/roberta-base-squad2",
+      "raw_metric": 100.0,
+      "tool_id": "question_answering"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "doc_stride": 128,
+        "max_context_tokens": 384,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "model_name": "deepset/roberta-base-squad2",
+      "raw_metric": 100.0,
+      "tool_id": "question_answering"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "doc_stride": 64,
+        "max_context_tokens": 128,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "deepset/roberta-base-squad2",
+      "p50_ms": 13.353215499591897,
+      "p95_ms": 18.67092300017248,
+      "sample_count": 50,
+      "tool_id": "question_answering"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "doc_stride": 96,
+        "max_context_tokens": 256,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "deepset/roberta-base-squad2",
+      "p50_ms": 7.951029499963624,
+      "p95_ms": 8.529393000571872,
+      "sample_count": 50,
+      "tool_id": "question_answering"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "doc_stride": 128,
+        "max_context_tokens": 384,
+        "model": "deepset/roberta-base-squad2"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "deepset/roberta-base-squad2",
+      "p50_ms": 7.813037000232725,
+      "p95_ms": 8.367337000890984,
+      "sample_count": 50,
+      "tool_id": "question_answering"
+    }
+  ],
+  "model_name": "deepset/roberta-base-squad2",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "56ddde6b9a695914005b9628",
+    "56ddde6b9a695914005b9629",
+    "56ddde6b9a695914005b962a",
+    "56ddde6b9a695914005b962b",
+    "56ddde6b9a695914005b962c"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "squad_v2",
+    "higher_is_better": true,
+    "metric_name": "F1",
+    "revision": "main",
+    "scorer_version": "evaluate/squad_v2",
+    "split": "validation",
+    "tool_id": "question_answering"
+  }
+}

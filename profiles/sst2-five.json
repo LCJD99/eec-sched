@@ -1,0 +1,7 @@
+[
+  {"id": "0", "inputs": {"text": "it 's a charming and often affecting journey . "}, "target": "POSITIVE"},
+  {"id": "1", "inputs": {"text": "unflinchingly bleak and desperate "}, "target": "NEGATIVE"},
+  {"id": "2", "inputs": {"text": "allows us to hope that nolan is poised to embark a major career as a commercial yet inventive filmmaker . "}, "target": "POSITIVE"},
+  {"id": "3", "inputs": {"text": "the acting , costumes , music , cinematography and sound are all astounding given the production 's austere locales . "}, "target": "POSITIVE"},
+  {"id": "4", "inputs": {"text": "it 's slow -- very , very slow . "}, "target": "NEGATIVE"}
+]

@@ -22,3 +22,13 @@ dev = [
     "pyright>=1.1.411",
     "pytest>=9.1.1",
 ]
+profiling = [
+    "evaluate>=0.4",
+    "jiwer>=3",
+    "librosa>=0.10",
+    "rouge-score>=0.1.2",
+    "soundfile>=0.12",
+    "torchcodec>=0.9",
+    "pycocotools>=2.0.10",
+    "pycocoevalcap>=1.2",
+]

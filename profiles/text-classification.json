@@ -1,0 +1,104 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_tokens": 32,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "raw_metric": 1.0,
+      "tool_id": "text_classification"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_tokens": 64,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "raw_metric": 1.0,
+      "tool_id": "text_classification"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_tokens": 128,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "raw_metric": 1.0,
+      "tool_id": "text_classification"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_tokens": 32,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "p50_ms": 1.7684625008769217,
+      "p95_ms": 2.4285910003527533,
+      "sample_count": 50,
+      "tool_id": "text_classification"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_tokens": 64,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "p50_ms": 1.9140220001645503,
+      "p95_ms": 2.6102279989572708,
+      "sample_count": 50,
+      "tool_id": "text_classification"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_tokens": 128,
+        "model": "distilbert-base-uncased-finetuned-sst-2-english"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "p50_ms": 1.8388575008430053,
+      "p95_ms": 2.4633129996800562,
+      "sample_count": 50,
+      "tool_id": "text_classification"
+    }
+  ],
+  "model_name": "distilbert-base-uncased-finetuned-sst-2-english",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "glue/sst2",
+    "higher_is_better": true,
+    "metric_name": "accuracy",
+    "revision": "main",
+    "scorer_version": "GLUE accuracy",
+    "split": "validation",
+    "tool_id": "text_classification"
+  }
+}

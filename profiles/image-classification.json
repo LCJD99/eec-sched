@@ -1,0 +1,104 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "input_size": 128,
+        "model": "google/vit-base-patch16-224"
+      },
+      "model_name": "google/vit-base-patch16-224",
+      "raw_metric": 0.6,
+      "tool_id": "image_classification"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "input_size": 192,
+        "model": "google/vit-base-patch16-224"
+      },
+      "model_name": "google/vit-base-patch16-224",
+      "raw_metric": 0.6,
+      "tool_id": "image_classification"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "input_size": 224,
+        "model": "google/vit-base-patch16-224"
+      },
+      "model_name": "google/vit-base-patch16-224",
+      "raw_metric": 0.6,
+      "tool_id": "image_classification"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "input_size": 128,
+        "model": "google/vit-base-patch16-224"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "google/vit-base-patch16-224",
+      "p50_ms": 6.542096499288164,
+      "p95_ms": 7.318481999391224,
+      "sample_count": 50,
+      "tool_id": "image_classification"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "input_size": 192,
+        "model": "google/vit-base-patch16-224"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "google/vit-base-patch16-224",
+      "p50_ms": 8.67610449950007,
+      "p95_ms": 9.427250999578973,
+      "sample_count": 50,
+      "tool_id": "image_classification"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "input_size": 224,
+        "model": "google/vit-base-patch16-224"
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "google/vit-base-patch16-224",
+      "p50_ms": 9.63977050014364,
+      "p95_ms": 10.307614000339527,
+      "sample_count": 50,
+      "tool_id": "image_classification"
+    }
+  ],
+  "model_name": "google/vit-base-patch16-224",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "ImageNet-1k",
+    "higher_is_better": true,
+    "metric_name": "top-1 accuracy",
+    "revision": "2012",
+    "scorer_version": "ImageNet top-1",
+    "split": "validation",
+    "tool_id": "image_classification"
+  }
+}

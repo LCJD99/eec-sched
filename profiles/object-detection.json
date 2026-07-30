@@ -1,0 +1,104 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 480
+      },
+      "model_name": "facebook/detr-resnet-101",
+      "raw_metric": 0.33064720291904964,
+      "tool_id": "object_detection"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 640
+      },
+      "model_name": "facebook/detr-resnet-101",
+      "raw_metric": 0.40420768163772897,
+      "tool_id": "object_detection"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 800
+      },
+      "model_name": "facebook/detr-resnet-101",
+      "raw_metric": 0.3597940881044626,
+      "tool_id": "object_detection"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 480
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/detr-resnet-101",
+      "p50_ms": 33.37301600004139,
+      "p95_ms": 36.79394400023739,
+      "sample_count": 50,
+      "tool_id": "object_detection"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 640
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/detr-resnet-101",
+      "p50_ms": 46.46744650108303,
+      "p95_ms": 50.1134109999839,
+      "sample_count": 50,
+      "tool_id": "object_detection"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "model": "facebook/detr-resnet-101",
+        "shortest_edge": 800
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/detr-resnet-101",
+      "p50_ms": 74.12996549919626,
+      "p95_ms": 84.42847799960873,
+      "sample_count": 50,
+      "tool_id": "object_detection"
+    }
+  ],
+  "model_name": "facebook/detr-resnet-101",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "397133",
+    "37777",
+    "252219",
+    "87038",
+    "174482"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "COCO 2017",
+    "higher_is_better": true,
+    "metric_name": "box AP",
+    "revision": "2017",
+    "scorer_version": "pycocotools COCOeval",
+    "split": "validation",
+    "tool_id": "object_detection"
+  }
+}

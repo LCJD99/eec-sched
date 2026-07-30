@@ -1,0 +1,152 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "1",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 1
+      },
+      "model_name": "openai/whisper-small",
+      "raw_metric": 1.0,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "2",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 2
+      },
+      "model_name": "openai/whisper-small",
+      "raw_metric": 1.0,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "3",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 3
+      },
+      "model_name": "openai/whisper-small",
+      "raw_metric": 1.0,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "4",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 4
+      },
+      "model_name": "openai/whisper-small",
+      "raw_metric": 1.0,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "5",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 5
+      },
+      "model_name": "openai/whisper-small",
+      "raw_metric": 1.0,
+      "tool_id": "automatic_speech_recognition"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "1",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 1
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "openai/whisper-small",
+      "p50_ms": 345.0109009991138,
+      "p95_ms": 614.9697749988263,
+      "sample_count": 50,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "2",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 2
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "openai/whisper-small",
+      "p50_ms": 448.5205435003081,
+      "p95_ms": 769.5697330000257,
+      "sample_count": 50,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "3",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 3
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "openai/whisper-small",
+      "p50_ms": 450.8478239995384,
+      "p95_ms": 808.7851899999805,
+      "sample_count": 50,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "4",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 4
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "openai/whisper-small",
+      "p50_ms": 534.942033000334,
+      "p95_ms": 975.2296779988683,
+      "sample_count": 50,
+      "tool_id": "automatic_speech_recognition"
+    },
+    {
+      "configuration_id": "5",
+      "configuration_parameters": {
+        "model": "openai/whisper-small",
+        "num_beams": 5
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "openai/whisper-small",
+      "p50_ms": 568.427151501055,
+      "p95_ms": 1030.3055710010085,
+      "sample_count": 50,
+      "tool_id": "automatic_speech_recognition"
+    }
+  ],
+  "model_name": "openai/whisper-small",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "6930-75918-0000",
+    "6930-75918-0001",
+    "6930-75918-0002",
+    "6930-75918-0003",
+    "6930-75918-0004"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "librispeech_asr/clean",
+    "higher_is_better": false,
+    "metric_name": "WER",
+    "revision": "main",
+    "scorer_version": "evaluate/wer",
+    "split": "test",
+    "tool_id": "automatic_speech_recognition"
+  }
+}

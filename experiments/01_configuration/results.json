@@ -1,0 +1,255 @@
+{
+  "experiment": "image-captioning-configuration-profile",
+  "created_at_utc": "2026-07-27T13:18:27.467112+00:00",
+  "model_id": "nlpconnect/vit-gpt2-image-captioning",
+  "input_image": "img1.jpg",
+  "input_image_size": {
+    "width": 640,
+    "height": 427
+  },
+  "device": "cuda",
+  "torch_version": "2.13.0+cu130",
+  "transformers_version": "4.57.6",
+  "python_version": "3.12.13 | packaged by Anaconda, Inc. | (main, Jul  9 2026, 14:38:16) [GCC 14.3.0]",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "samples_per_configuration": 5,
+  "warmup_runs_per_configuration": 1,
+  "baseline_parameters": {
+    "image_size": 224,
+    "num_beams": 1,
+    "max_new_tokens": 32
+  },
+  "method_notes": [
+    "Each configuration changes at most one parameter from the baseline.",
+    "Latency includes the experiment's RGB conversion and resize, pipeline preprocessing, generation, and postprocessing; model loading is excluded.",
+    "image_size is an external pre-resize. This ViT-GPT2 model's image processor may resize it again to its model-required resolution, so it is not evidence that encoder resolution changed.",
+    "Generated captions are qualitative artifacts for manual accuracy comparison, not a measured accuracy metric."
+  ],
+  "measurements": [
+    {
+      "configuration_id": "image_size_224",
+      "varied_parameter": "baseline",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 1,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        65.2397590019973,
+        67.10556100006215,
+        64.96013899959507,
+        64.56749900098657,
+        62.874726001609815
+      ],
+      "p50_ms": 64.96013899959507,
+      "p95_ms": 67.10556100006215
+    },
+    {
+      "configuration_id": "image_size_384",
+      "varied_parameter": "image_size",
+      "parameters": {
+        "image_size": 384,
+        "num_beams": 1,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        66.00634899950819,
+        66.76510000033886,
+        68.51171399830491,
+        64.41085700134863,
+        65.8189300011145
+      ],
+      "p50_ms": 66.00634899950819,
+      "p95_ms": 68.51171399830491
+    },
+    {
+      "configuration_id": "image_size_512",
+      "varied_parameter": "image_size",
+      "parameters": {
+        "image_size": 512,
+        "num_beams": 1,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle ",
+        "a man walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        66.17906899919035,
+        65.76528799996595,
+        65.98991300052148,
+        65.52502799968352,
+        64.8838999986765
+      ],
+      "p50_ms": 65.76528799996595,
+      "p95_ms": 66.17906899919035
+    },
+    {
+      "configuration_id": "num_beams_1",
+      "varied_parameter": "baseline",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 1,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        64.7519080011989,
+        64.66755400106194,
+        65.26336099705077,
+        63.2603720005136,
+        62.93256500066491
+      ],
+      "p50_ms": 64.66755400106194,
+      "p95_ms": 65.26336099705077
+    },
+    {
+      "configuration_id": "num_beams_2",
+      "varied_parameter": "num_beams",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 2,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        88.11803699791199,
+        79.09800099878339,
+        74.8569889983628,
+        78.62655800272478,
+        77.85881499876268
+      ],
+      "p50_ms": 78.62655800272478,
+      "p95_ms": 88.11803699791199
+    },
+    {
+      "configuration_id": "num_beams_4",
+      "varied_parameter": "num_beams",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 4,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        88.29202999913832,
+        81.83836000171141,
+        81.17600499826949,
+        81.37278600042919,
+        80.8286940009566
+      ],
+      "p50_ms": 81.37278600042919,
+      "p95_ms": 88.29202999913832
+    },
+    {
+      "configuration_id": "max_new_tokens_16",
+      "varied_parameter": "max_new_tokens",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 1,
+        "max_new_tokens": 16
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        62.94344100024318,
+        65.7990260006045,
+        63.423862997296965,
+        62.57626799924765,
+        65.5910089990357
+      ],
+      "p50_ms": 63.423862997296965,
+      "p95_ms": 65.7990260006045
+    },
+    {
+      "configuration_id": "max_new_tokens_32",
+      "varied_parameter": "baseline",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 1,
+        "max_new_tokens": 32
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        68.51091300268308,
+        65.11960400166572,
+        64.88786199770402,
+        66.01549900005921,
+        63.28965099964989
+      ],
+      "p50_ms": 65.11960400166572,
+      "p95_ms": 68.51091300268308
+    },
+    {
+      "configuration_id": "max_new_tokens_64",
+      "varied_parameter": "max_new_tokens",
+      "parameters": {
+        "image_size": 224,
+        "num_beams": 1,
+        "max_new_tokens": 64
+      },
+      "generated_captions": [
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle ",
+        "a person walking down a street with a bicycle "
+      ],
+      "latency_ms": [
+        65.14985499961767,
+        67.15143700057524,
+        65.31378399813548,
+        64.13705100203515,
+        67.7515460010909
+      ],
+      "p50_ms": 65.31378399813548,
+      "p95_ms": 67.7515460010909
+    }
+  ]
+}

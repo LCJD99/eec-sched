@@ -1,0 +1,116 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_length": 64,
+        "min_length": 16,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 1
+      },
+      "model_name": "facebook/bart-large-cnn",
+      "raw_metric": 0.3732282287891807,
+      "tool_id": "text_summarization"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_length": 96,
+        "min_length": 24,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 2
+      },
+      "model_name": "facebook/bart-large-cnn",
+      "raw_metric": 0.3732876765023973,
+      "tool_id": "text_summarization"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_length": 130,
+        "min_length": 30,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 4
+      },
+      "model_name": "facebook/bart-large-cnn",
+      "raw_metric": 0.3521419425644778,
+      "tool_id": "text_summarization"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_length": 64,
+        "min_length": 16,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 1
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/bart-large-cnn",
+      "p50_ms": 245.7969970000704,
+      "p95_ms": 324.67812499999127,
+      "sample_count": 50,
+      "tool_id": "text_summarization"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_length": 96,
+        "min_length": 24,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 2
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/bart-large-cnn",
+      "p50_ms": 444.4321389992183,
+      "p95_ms": 912.7130730012141,
+      "sample_count": 50,
+      "tool_id": "text_summarization"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_length": 130,
+        "min_length": 30,
+        "model": "facebook/bart-large-cnn",
+        "num_beams": 4
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/bart-large-cnn",
+      "p50_ms": 673.222018499473,
+      "p95_ms": 1130.309803000273,
+      "sample_count": 50,
+      "tool_id": "text_summarization"
+    }
+  ],
+  "model_name": "facebook/bart-large-cnn",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "f001ec5c4704938247d27a44948eebb37ae98d01",
+    "230c522854991d053fe98a718b1defa077a8efef",
+    "4495ba8f3a340d97a9df1476f8a35502bcce1f69",
+    "a38e72fed88684ec8d60dd5856282e999dc8c0ca",
+    "c27cf1b136cc270023de959e7ab24638021bc43f"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "abisee/cnn_dailymail",
+    "higher_is_better": true,
+    "metric_name": "rougeL",
+    "revision": "3.0.0",
+    "scorer_version": "evaluate/rouge",
+    "split": "test",
+    "tool_id": "text_summarization"
+  }
+}

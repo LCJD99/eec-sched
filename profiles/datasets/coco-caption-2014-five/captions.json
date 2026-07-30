@@ -1,0 +1,231 @@
+{
+  "annotations": [
+    {
+      "caption": "A bicycle replica with a clock as the front wheel.",
+      "id": 37,
+      "image_id": 203564
+    },
+    {
+      "caption": "A black Honda motorcycle parked in front of a garage.",
+      "id": 38,
+      "image_id": 179765
+    },
+    {
+      "caption": "A room with blue walls and a white sink and door.",
+      "id": 49,
+      "image_id": 322141
+    },
+    {
+      "caption": "A car that seems to be parked illegally behind a legally parked car",
+      "id": 89,
+      "image_id": 16977
+    },
+    {
+      "caption": "A large passenger airplane flying through the air.",
+      "id": 98,
+      "image_id": 106140
+    },
+    {
+      "caption": "There is a GOL plane taking off in a partly cloudy sky.",
+      "id": 101,
+      "image_id": 106140
+    },
+    {
+      "caption": "Blue and white color scheme in a small bathroom.",
+      "id": 109,
+      "image_id": 322141
+    },
+    {
+      "caption": "This is a blue and white bathroom with a wall sink and a lifesaver on the wall.",
+      "id": 121,
+      "image_id": 322141
+    },
+    {
+      "caption": "A blue boat themed bathroom with a life preserver on the wall",
+      "id": 163,
+      "image_id": 322141
+    },
+    {
+      "caption": "The bike has a clock as a tire.",
+      "id": 181,
+      "image_id": 203564
+    },
+    {
+      "caption": "A Honda motorcycle parked in a grass driveway",
+      "id": 182,
+      "image_id": 179765
+    },
+    {
+      "caption": "two cars parked on the sidewalk on the street",
+      "id": 185,
+      "image_id": 16977
+    },
+    {
+      "caption": "An airplane that is, either, landing or just taking off.",
+      "id": 221,
+      "image_id": 106140
+    },
+    {
+      "caption": "A bathroom with walls that are painted baby blue.",
+      "id": 250,
+      "image_id": 322141
+    },
+    {
+      "caption": "A black metal bicycle with a clock inside the front wheel.",
+      "id": 478,
+      "image_id": 203564
+    },
+    {
+      "caption": "A black Honda motorcycle with a dark burgundy seat.",
+      "id": 479,
+      "image_id": 179765
+    },
+    {
+      "caption": "City street with parked cars and a bench.",
+      "id": 626,
+      "image_id": 16977
+    },
+    {
+      "caption": "Cars try to maneuver into parking spaces along a densely packed city street. ",
+      "id": 1229,
+      "image_id": 16977
+    },
+    {
+      "caption": "An red and white airplane is in the cloudy sky.",
+      "id": 2219,
+      "image_id": 106140
+    },
+    {
+      "caption": "A couple of cars parked in a busy street sidewalk.",
+      "id": 3506,
+      "image_id": 16977
+    },
+    {
+      "caption": "A passenger plane taking off into the sky. ",
+      "id": 3560,
+      "image_id": 106140
+    },
+    {
+      "caption": "A bicycle figurine in which the front wheel is replaced with a clock\n",
+      "id": 6637,
+      "image_id": 203564
+    },
+    {
+      "caption": "Ma motorcycle parked on the gravel in front of a garage",
+      "id": 6638,
+      "image_id": 179765
+    },
+    {
+      "caption": "A clock with the appearance of the wheel of a bicycle ",
+      "id": 6802,
+      "image_id": 203564
+    },
+    {
+      "caption": "A motorcycle with its brake extended standing outside",
+      "id": 6803,
+      "image_id": 179765
+    }
+  ],
+  "images": [
+    {
+      "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000016977.jpg",
+      "date_captured": "2013-11-15 06:34:24",
+      "file_name": "COCO_val2014_000000016977.jpg",
+      "flickr_url": "http://farm8.staticflickr.com/7003/6528937031_10e1ce0960_z.jpg",
+      "height": 480,
+      "id": 16977,
+      "license": 4,
+      "width": 640
+    },
+    {
+      "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000106140.jpg",
+      "date_captured": "2013-11-16 04:33:34",
+      "file_name": "COCO_val2014_000000106140.jpg",
+      "flickr_url": "http://farm6.staticflickr.com/5207/5304302785_7b5f763190_z.jpg",
+      "height": 480,
+      "id": 106140,
+      "license": 4,
+      "width": 640
+    },
+    {
+      "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000179765.jpg",
+      "date_captured": "2013-11-15 14:02:51",
+      "file_name": "COCO_val2014_000000179765.jpg",
+      "flickr_url": "http://farm3.staticflickr.com/2824/10213933686_6936eb402b_z.jpg",
+      "height": 480,
+      "id": 179765,
+      "license": 3,
+      "width": 640
+    },
+    {
+      "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000322141.jpg",
+      "date_captured": "2013-11-15 03:52:33",
+      "file_name": "COCO_val2014_000000322141.jpg",
+      "flickr_url": "http://farm8.staticflickr.com/7026/6388965173_92664a0d78_z.jpg",
+      "height": 480,
+      "id": 322141,
+      "license": 1,
+      "width": 640
+    },
+    {
+      "coco_url": "http://images.cocodataset.org/val2014/COCO_val2014_000000203564.jpg",
+      "date_captured": "2013-11-15 03:12:47",
+      "file_name": "COCO_val2014_000000203564.jpg",
+      "flickr_url": "http://farm8.staticflickr.com/7366/9643253026_86d6e38def_z.jpg",
+      "height": 400,
+      "id": 203564,
+      "license": 4,
+      "width": 400
+    }
+  ],
+  "info": {
+    "contributor": "COCO Consortium",
+    "date_created": "2017/09/01",
+    "description": "COCO 2014 Dataset",
+    "url": "http://cocodataset.org",
+    "version": "1.0",
+    "year": 2014
+  },
+  "licenses": [
+    {
+      "id": 1,
+      "name": "Attribution-NonCommercial-ShareAlike License",
+      "url": "http://creativecommons.org/licenses/by-nc-sa/2.0/"
+    },
+    {
+      "id": 2,
+      "name": "Attribution-NonCommercial License",
+      "url": "http://creativecommons.org/licenses/by-nc/2.0/"
+    },
+    {
+      "id": 3,
+      "name": "Attribution-NonCommercial-NoDerivs License",
+      "url": "http://creativecommons.org/licenses/by-nc-nd/2.0/"
+    },
+    {
+      "id": 4,
+      "name": "Attribution License",
+      "url": "http://creativecommons.org/licenses/by/2.0/"
+    },
+    {
+      "id": 5,
+      "name": "Attribution-ShareAlike License",
+      "url": "http://creativecommons.org/licenses/by-sa/2.0/"
+    },
+    {
+      "id": 6,
+      "name": "Attribution-NoDerivs License",
+      "url": "http://creativecommons.org/licenses/by-nd/2.0/"
+    },
+    {
+      "id": 7,
+      "name": "No known copyright restrictions",
+      "url": "http://flickr.com/commons/usage/"
+    },
+    {
+      "id": 8,
+      "name": "United States Government Work",
+      "url": "http://www.usa.gov/copyright.shtml"
+    }
+  ]
+}

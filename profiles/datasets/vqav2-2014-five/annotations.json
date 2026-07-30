@@ -1,0 +1,313 @@
+{
+  "annotations": [
+    {
+      "answer_type": "other",
+      "answers": [
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 1
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 2
+        },
+        {
+          "answer": "at table",
+          "answer_confidence": "yes",
+          "answer_id": 3
+        },
+        {
+          "answer": "skateboard",
+          "answer_confidence": "yes",
+          "answer_id": 4
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 5
+        },
+        {
+          "answer": "table",
+          "answer_confidence": "yes",
+          "answer_id": 6
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 7
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 8
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 9
+        },
+        {
+          "answer": "down",
+          "answer_confidence": "yes",
+          "answer_id": 10
+        }
+      ],
+      "image_id": 262148,
+      "multiple_choice_answer": "down",
+      "question_id": 262148000,
+      "question_type": "none of the above"
+    },
+    {
+      "answer_type": "other",
+      "answers": [
+        {
+          "answer": "spectating",
+          "answer_confidence": "yes",
+          "answer_id": 1
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 2
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 3
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 4
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 5
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "maybe",
+          "answer_id": 6
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 7
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 8
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 9
+        },
+        {
+          "answer": "watching",
+          "answer_confidence": "yes",
+          "answer_id": 10
+        }
+      ],
+      "image_id": 262148,
+      "multiple_choice_answer": "watching",
+      "question_id": 262148001,
+      "question_type": "what are the"
+    },
+    {
+      "answer_type": "other",
+      "answers": [
+        {
+          "answer": "table",
+          "answer_confidence": "yes",
+          "answer_id": 1
+        },
+        {
+          "answer": "table",
+          "answer_confidence": "yes",
+          "answer_id": 2
+        },
+        {
+          "answer": "table",
+          "answer_confidence": "yes",
+          "answer_id": 3
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 4
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 5
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 6
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 7
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 8
+        },
+        {
+          "answer": "skateboard",
+          "answer_confidence": "yes",
+          "answer_id": 9
+        },
+        {
+          "answer": "picnic table",
+          "answer_confidence": "yes",
+          "answer_id": 10
+        }
+      ],
+      "image_id": 262148,
+      "multiple_choice_answer": "picnic table",
+      "question_id": 262148002,
+      "question_type": "what is"
+    },
+    {
+      "answer_type": "other",
+      "answers": [
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 1
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 2
+        },
+        {
+          "answer": "foodiebaker",
+          "answer_confidence": "yes",
+          "answer_id": 3
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 4
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 5
+        },
+        {
+          "answer": "http://foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 6
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 7
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 8
+        },
+        {
+          "answer": "foodiebakercom",
+          "answer_confidence": "yes",
+          "answer_id": 9
+        },
+        {
+          "answer": "foodiebaker",
+          "answer_confidence": "yes",
+          "answer_id": 10
+        }
+      ],
+      "image_id": 393225,
+      "multiple_choice_answer": "foodiebakercom",
+      "question_id": 393225000,
+      "question_type": "what"
+    },
+    {
+      "answer_type": "yes/no",
+      "answers": [
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 1
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 2
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 3
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 4
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 5
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 6
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 7
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 8
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 9
+        },
+        {
+          "answer": "no",
+          "answer_confidence": "yes",
+          "answer_id": 10
+        }
+      ],
+      "image_id": 393225,
+      "multiple_choice_answer": "no",
+      "question_id": 393225001,
+      "question_type": "is this a"
+    }
+  ],
+  "data_subtype": "val2014",
+  "data_type": "mscoco",
+  "info": {
+    "contributor": "VQA Team",
+    "date_created": "2017-04-26 17:00:44",
+    "description": "This is v2.0 of the VQA dataset.",
+    "url": "http://visualqa.org",
+    "version": "2.0",
+    "year": 2017
+  },
+  "license": {
+    "name": "Creative Commons Attribution 4.0 International License",
+    "url": "http://creativecommons.org/licenses/by/4.0/"
+  }
+}

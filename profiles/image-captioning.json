@@ -1,0 +1,110 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_new_tokens": 16,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 1
+      },
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "raw_metric": 0.8655646613223263,
+      "tool_id": "image_captioning"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_new_tokens": 32,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 3
+      },
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "raw_metric": 0.6732279789996906,
+      "tool_id": "image_captioning"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_new_tokens": 64,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 5
+      },
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "raw_metric": 0.5899751976354013,
+      "tool_id": "image_captioning"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "max_new_tokens": 16,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 1
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "p50_ms": 134.24681100059388,
+      "p95_ms": 143.14357100010966,
+      "sample_count": 50,
+      "tool_id": "image_captioning"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "max_new_tokens": 32,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 3
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "p50_ms": 180.8155489998171,
+      "p95_ms": 193.6033359997964,
+      "sample_count": 50,
+      "tool_id": "image_captioning"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "max_new_tokens": 64,
+        "model": "Salesforce/blip-image-captioning-large",
+        "num_beams": 5
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "Salesforce/blip-image-captioning-large",
+      "p50_ms": 200.1647139995839,
+      "p95_ms": 224.30947799875867,
+      "sample_count": 50,
+      "tool_id": "image_captioning"
+    }
+  ],
+  "model_name": "Salesforce/blip-image-captioning-large",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "16977",
+    "106140",
+    "179765",
+    "322141",
+    "203564"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "COCO 2014",
+    "higher_is_better": true,
+    "metric_name": "CIDEr",
+    "revision": "2014",
+    "scorer_version": "coco-caption",
+    "split": "validation",
+    "tool_id": "image_captioning"
+  }
+}

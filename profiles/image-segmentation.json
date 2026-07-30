@@ -1,0 +1,104 @@
+{
+  "accuracy": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 384
+      },
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "raw_metric": 0.0,
+      "tool_id": "image_segmentation"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 512
+      },
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "raw_metric": 0.0,
+      "tool_id": "image_segmentation"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 800
+      },
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "raw_metric": 0.0,
+      "tool_id": "image_segmentation"
+    }
+  ],
+  "latency": [
+    {
+      "configuration_id": "fast",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 384
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "p50_ms": 68.19646900021326,
+      "p95_ms": 86.00510399992345,
+      "sample_count": 50,
+      "tool_id": "image_segmentation"
+    },
+    {
+      "configuration_id": "balanced",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 512
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "p50_ms": 92.28000000075554,
+      "p95_ms": 114.48293200010085,
+      "sample_count": 50,
+      "tool_id": "image_segmentation"
+    },
+    {
+      "configuration_id": "quality",
+      "configuration_parameters": {
+        "model": "facebook/maskformer-swin-base-coco",
+        "shortest_edge": 800
+      },
+      "device": "cuda",
+      "input_bucket": "evaluation-five-samples",
+      "model_name": "facebook/maskformer-swin-base-coco",
+      "p50_ms": 190.46921099925385,
+      "p95_ms": 217.26478200071142,
+      "sample_count": 50,
+      "tool_id": "image_segmentation"
+    }
+  ],
+  "model_name": "facebook/maskformer-swin-base-coco",
+  "runtime": {
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "gpu_memory_bytes": "17102864384",
+    "gpu_model": "NVIDIA GeForce RTX 5060 Ti",
+    "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+    "torch_version": "2.13.0+cu130"
+  },
+  "sample_ids": [
+    "397133",
+    "37777",
+    "252219",
+    "87038",
+    "174482"
+  ],
+  "schema_version": 1,
+  "suite": {
+    "dataset": "COCO 2017",
+    "higher_is_better": true,
+    "metric_name": "mask AP",
+    "revision": "2017",
+    "scorer_version": "pycocotools COCOeval",
+    "split": "validation",
+    "tool_id": "image_segmentation"
+  }
+}
