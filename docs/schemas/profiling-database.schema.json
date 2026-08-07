@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LCJD99/eec-sched/blob/main/docs/schemas/profiling-database.schema.json",
+  "title": "EEC Scheduler Profiling Database Snapshot",
+  "description": "A complete, immutable evaluator input. Structural rules live here; cross-record completeness is enforced by eec_sched.profiling_database.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "snapshot_id", "snapshot_digest", "data_kind", "created_at", "measurement_scope", "devices", "provenances", "tools", "transfer_profiles"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "snapshot_id": {"$ref": "#/$defs/identifier"},
+    "snapshot_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "data_kind": {"enum": ["measured", "synthetic"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "measurement_scope": {"$ref": "#/$defs/measurementScope"},
+    "devices": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/device"}},
+    "provenances": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/provenance"}},
+    "tools": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/tool"}},
+    "transfer_profiles": {"type": "array", "minItems": 6, "maxItems": 6, "items": {"$ref": "#/$defs/transferProfile"}}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$", "minLength": 1, "maxLength": 128},
+    "nonNegativeNumber": {"type": "number", "minimum": 0},
+    "positiveNumber": {"type": "number", "exclusiveMinimum": 0},
+    "deviceId": {"enum": ["device", "edge", "cloud"]},
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": {"$ref": "#/$defs/identifier"},
+        "detail": {"type": "string", "minLength": 1}
+      }
+    },
+    "measurementScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_bucket", "batch_size", "warm_execution", "execution_boundary"],
+      "properties": {
+        "input_bucket": {"$ref": "#/$defs/identifier"},
+        "batch_size": {"const": 1},
+        "warm_execution": {"const": true},
+        "execution_boundary": {"type": "string", "minLength": 1}
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device_id", "hardware_class", "description"],
+      "properties": {
+        "device_id": {"$ref": "#/$defs/deviceId"},
+        "hardware_class": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provenance_id", "subject_kind", "measurement_kind", "measured_at", "operator", "source_revision", "command", "environment", "protocol", "notes"],
+      "properties": {
+        "provenance_id": {"$ref": "#/$defs/identifier"},
+        "subject_kind": {"enum": ["quality", "execution", "transfer"]},
+        "measurement_kind": {"enum": ["measured", "synthetic"]},
+        "measured_at": {"type": "string", "format": "date-time"},
+        "operator": {"type": "string", "minLength": 1},
+        "source_revision": {"type": "string", "minLength": 1},
+        "command": {"type": "string", "minLength": 1},
+        "environment": {"type": "object", "additionalProperties": {"type": ["string", "number", "boolean"]}},
+        "protocol": {"type": "object"},
+        "notes": {"type": "string"}
+      },
+      "allOf": [
+        {"if": {"properties": {"subject_kind": {"const": "quality"}}}, "then": {"properties": {"protocol": {"$ref": "#/$defs/qualityProtocol"}}}},
+        {"if": {"properties": {"subject_kind": {"const": "execution"}}}, "then": {"properties": {"protocol": {"$ref": "#/$defs/executionProtocol"}}}},
+        {"if": {"properties": {"subject_kind": {"const": "transfer"}}}, "then": {"properties": {"protocol": {"$ref": "#/$defs/transferProtocol"}}}}
+      ]
+    },
+    "qualityProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset", "dataset_revision", "split", "sample_ids", "preprocessing", "scorer", "scorer_version", "confidence_method", "model_revision", "random_seed"],
+      "properties": {
+        "dataset": {"type": "string", "minLength": 1},
+        "dataset_revision": {"type": "string", "minLength": 1},
+        "split": {"type": "string", "minLength": 1},
+        "sample_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "preprocessing": {"type": "string", "minLength": 1},
+        "scorer": {"type": "string", "minLength": 1},
+        "scorer_version": {"type": "string", "minLength": 1},
+        "confidence_method": {"type": "string", "minLength": 1},
+        "model_revision": {"type": "string", "minLength": 1},
+        "random_seed": {"type": ["integer", "null"]}
+      }
+    },
+    "executionProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_sample_ids", "warmup_count", "observation_count", "timing_method", "energy_measurement_method", "model_revision", "runtime_versions"],
+      "properties": {
+        "input_sample_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "warmup_count": {"type": "integer", "minimum": 0},
+        "observation_count": {"type": "integer", "minimum": 1},
+        "timing_method": {"type": "string", "minLength": 1},
+        "energy_measurement_method": {"type": "string", "minLength": 1},
+        "model_revision": {"type": "string", "minLength": 1},
+        "runtime_versions": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}}
+      }
+    },
+    "transferProtocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["payload_sizes_bytes", "repetition_count", "timing_method", "energy_measurement_method"],
+      "properties": {
+        "payload_sizes_bytes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+        "repetition_count": {"type": "integer", "minimum": 1},
+        "timing_method": {"type": "string", "minLength": 1},
+        "energy_measurement_method": {"type": "string", "minLength": 1}
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason"],
+      "properties": {
+        "status": {"enum": ["eligible", "excluded", "unprofileable"]},
+        "reason": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/reason"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "eligible"}}}, "then": {"properties": {"reason": {"type": "null"}}}, "else": {"properties": {"reason": {"$ref": "#/$defs/reason"}}}}
+      ]
+    },
+    "dimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applicable", "values"],
+      "properties": {
+        "applicable": {"type": "boolean"},
+        "values": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
+      },
+      "allOf": [
+        {"if": {"properties": {"applicable": {"const": false}}}, "then": {"properties": {"values": {"minItems": 1, "maxItems": 1}}}}
+      ]
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_capacity", "input_fidelity", "inference_effort"],
+      "properties": {
+        "model_capacity": {"$ref": "#/$defs/dimension"},
+        "input_fidelity": {"$ref": "#/$defs/dimension"},
+        "inference_effort": {"$ref": "#/$defs/dimension"}
+      }
+    },
+    "runtimeChoice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "numeric_format"],
+      "properties": {
+        "backend": {"$ref": "#/$defs/identifier"},
+        "numeric_format": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "deviceCompatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device_id", "status", "reason"],
+      "properties": {
+        "device_id": {"$ref": "#/$defs/deviceId"},
+        "status": {"enum": ["compatible", "incompatible"]},
+        "reason": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/reason"}]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "compatible"}}}, "then": {"properties": {"reason": {"type": "null"}}}, "else": {"properties": {"reason": {"$ref": "#/$defs/reason"}}}}
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuration_id", "parameters", "taxonomy", "runtime", "device_compatibility"],
+      "properties": {
+        "configuration_id": {"$ref": "#/$defs/identifier"},
+        "parameters": {"type": "object"},
+        "taxonomy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model_capacity", "input_fidelity", "inference_effort"],
+          "properties": {
+            "model_capacity": {"$ref": "#/$defs/identifier"},
+            "input_fidelity": {"$ref": "#/$defs/identifier"},
+            "inference_effort": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        "runtime": {"$ref": "#/$defs/runtimeChoice"},
+        "device_compatibility": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/deviceCompatibility"}}
+      }
+    },
+    "qualityContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_name", "metric_unit", "direction", "semantic_floor", "reference"],
+      "properties": {
+        "metric_name": {"type": "string", "minLength": 1},
+        "metric_unit": {"type": "string", "minLength": 1},
+        "direction": {"enum": ["higher_is_better", "lower_is_better"]},
+        "semantic_floor": {"type": "number"},
+        "reference": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["configuration_id", "raw_metric"],
+          "properties": {
+            "configuration_id": {"$ref": "#/$defs/identifier"},
+            "raw_metric": {"type": "number"}
+          }
+        }
+      }
+    },
+    "rawMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["point_estimate", "confidence_interval", "sample_count"],
+      "properties": {
+        "point_estimate": {"type": "number"},
+        "confidence_interval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["level", "lower", "upper", "method"],
+          "properties": {
+            "level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+            "lower": {"type": "number"},
+            "upper": {"type": "number"},
+            "method": {"type": "string", "minLength": 1}
+          }
+        },
+        "sample_count": {"type": "integer", "minimum": 1}
+      }
+    },
+    "qualityProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuration_id", "raw_metric", "normalized_quality_lcb", "representative_output_bytes", "provenance_id"],
+      "properties": {
+        "configuration_id": {"$ref": "#/$defs/identifier"},
+        "raw_metric": {"$ref": "#/$defs/rawMetric"},
+        "normalized_quality_lcb": {"type": "number", "minimum": 0, "maximum": 1},
+        "representative_output_bytes": {"type": "integer", "minimum": 0},
+        "provenance_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "executionProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["configuration_id", "device_id", "warm_latency_p95_ms", "mean_incremental_execution_energy_j", "sample_count", "provenance_id"],
+      "properties": {
+        "configuration_id": {"$ref": "#/$defs/identifier"},
+        "device_id": {"$ref": "#/$defs/deviceId"},
+        "warm_latency_p95_ms": {"$ref": "#/$defs/positiveNumber"},
+        "mean_incremental_execution_energy_j": {"$ref": "#/$defs/nonNegativeNumber"},
+        "sample_count": {"type": "integer", "minimum": 1},
+        "provenance_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool_id", "eligibility", "dimensions", "quality_contract", "configurations", "quality_profiles", "execution_profiles"],
+      "properties": {
+        "tool_id": {"$ref": "#/$defs/identifier"},
+        "eligibility": {"$ref": "#/$defs/eligibility"},
+        "dimensions": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/dimensions"}]},
+        "quality_contract": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/qualityContract"}]},
+        "configurations": {"type": "array", "items": {"$ref": "#/$defs/configuration"}},
+        "quality_profiles": {"type": "array", "items": {"$ref": "#/$defs/qualityProfile"}},
+        "execution_profiles": {"type": "array", "items": {"$ref": "#/$defs/executionProfile"}}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"eligibility": {"properties": {"status": {"const": "eligible"}}}}},
+          "then": {
+            "properties": {
+              "dimensions": {"$ref": "#/$defs/dimensions"},
+              "quality_contract": {"$ref": "#/$defs/qualityContract"},
+              "configurations": {"minItems": 1},
+              "quality_profiles": {"minItems": 1},
+              "execution_profiles": {"minItems": 1}
+            }
+          },
+          "else": {
+            "properties": {
+              "dimensions": {"type": "null"},
+              "quality_contract": {"type": "null"},
+              "configurations": {"maxItems": 0},
+              "quality_profiles": {"maxItems": 0},
+              "execution_profiles": {"maxItems": 0}
+            }
+          }
+        }
+      ]
+    },
+    "transferProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_device_id", "destination_device_id", "propagation_delay_ms", "bandwidth_bytes_per_second", "setup_energy_j", "energy_per_byte_j", "sample_count", "provenance_id"],
+      "properties": {
+        "source_device_id": {"$ref": "#/$defs/deviceId"},
+        "destination_device_id": {"$ref": "#/$defs/deviceId"},
+        "propagation_delay_ms": {"$ref": "#/$defs/nonNegativeNumber"},
+        "bandwidth_bytes_per_second": {"$ref": "#/$defs/positiveNumber"},
+        "setup_energy_j": {"$ref": "#/$defs/nonNegativeNumber"},
+        "energy_per_byte_j": {"$ref": "#/$defs/nonNegativeNumber"},
+        "sample_count": {"type": "integer", "minimum": 1},
+        "provenance_id": {"$ref": "#/$defs/identifier"}
+      }
+    }
+  }
+}

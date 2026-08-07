@@ -1,0 +1,5181 @@
+{
+  "schema_version": "1.0.0",
+  "snapshot_id": "synthetic-mnms-catalog-v1",
+  "snapshot_digest": "sha256:655fbd64a0c690ee44c77fb4d76708a4f784d3eb35e5d4cfac1e1af90018cef5",
+  "data_kind": "synthetic",
+  "created_at": "2026-08-07T00:00:00Z",
+  "measurement_scope": {
+    "input_bucket": "synthetic-default-v1",
+    "batch_size": 1,
+    "warm_execution": true,
+    "execution_boundary": "Synthetic formula only; no preprocessing, inference, postprocessing, model loading, or download occurred."
+  },
+  "devices": [
+    {
+      "device_id": "device",
+      "hardware_class": "synthetic-device",
+      "description": "Synthetic local device; not real hardware."
+    },
+    {
+      "device_id": "edge",
+      "hardware_class": "synthetic-edge",
+      "description": "Synthetic edge node; not real hardware."
+    },
+    {
+      "device_id": "cloud",
+      "hardware_class": "synthetic-cloud",
+      "description": "Synthetic cloud node; not real hardware."
+    }
+  ],
+  "provenances": [
+    {
+      "measurement_kind": "synthetic",
+      "measured_at": "2026-08-07T00:00:00Z",
+      "operator": "deterministic-fixture-generator",
+      "source_revision": "synthetic-not-measured",
+      "environment": {
+        "synthetic": true,
+        "external_services_used": false
+      },
+      "notes": "Invented deterministic values for development only; not a real measurement.",
+      "provenance_id": "synthetic-quality-v1",
+      "subject_kind": "quality",
+      "command": "uv run python scripts/generate_fake_profiling_database.py",
+      "protocol": {
+        "dataset": "synthetic/mnms-catalog-fixture",
+        "dataset_revision": "synthetic-v1",
+        "split": "synthetic",
+        "sample_ids": [
+          "synthetic-001",
+          "synthetic-002",
+          "synthetic-003",
+          "synthetic-004",
+          "synthetic-005",
+          "synthetic-006",
+          "synthetic-007",
+          "synthetic-008",
+          "synthetic-009",
+          "synthetic-010",
+          "synthetic-011",
+          "synthetic-012",
+          "synthetic-013",
+          "synthetic-014",
+          "synthetic-015",
+          "synthetic-016",
+          "synthetic-017",
+          "synthetic-018",
+          "synthetic-019",
+          "synthetic-020",
+          "synthetic-021",
+          "synthetic-022",
+          "synthetic-023",
+          "synthetic-024",
+          "synthetic-025",
+          "synthetic-026",
+          "synthetic-027",
+          "synthetic-028",
+          "synthetic-029",
+          "synthetic-030",
+          "synthetic-031",
+          "synthetic-032",
+          "synthetic-033",
+          "synthetic-034",
+          "synthetic-035",
+          "synthetic-036",
+          "synthetic-037",
+          "synthetic-038",
+          "synthetic-039",
+          "synthetic-040",
+          "synthetic-041",
+          "synthetic-042",
+          "synthetic-043",
+          "synthetic-044",
+          "synthetic-045",
+          "synthetic-046",
+          "synthetic-047",
+          "synthetic-048",
+          "synthetic-049",
+          "synthetic-050",
+          "synthetic-051",
+          "synthetic-052",
+          "synthetic-053",
+          "synthetic-054",
+          "synthetic-055",
+          "synthetic-056",
+          "synthetic-057",
+          "synthetic-058",
+          "synthetic-059",
+          "synthetic-060",
+          "synthetic-061",
+          "synthetic-062",
+          "synthetic-063",
+          "synthetic-064",
+          "synthetic-065",
+          "synthetic-066",
+          "synthetic-067",
+          "synthetic-068",
+          "synthetic-069",
+          "synthetic-070",
+          "synthetic-071",
+          "synthetic-072",
+          "synthetic-073",
+          "synthetic-074",
+          "synthetic-075",
+          "synthetic-076",
+          "synthetic-077",
+          "synthetic-078",
+          "synthetic-079",
+          "synthetic-080",
+          "synthetic-081",
+          "synthetic-082",
+          "synthetic-083",
+          "synthetic-084",
+          "synthetic-085",
+          "synthetic-086",
+          "synthetic-087",
+          "synthetic-088",
+          "synthetic-089",
+          "synthetic-090",
+          "synthetic-091",
+          "synthetic-092",
+          "synthetic-093",
+          "synthetic-094",
+          "synthetic-095",
+          "synthetic-096",
+          "synthetic-097",
+          "synthetic-098",
+          "synthetic-099",
+          "synthetic-100"
+        ],
+        "preprocessing": "No samples processed; deterministic formula only.",
+        "scorer": "synthetic-unit-score",
+        "scorer_version": "synthetic-v1",
+        "confidence_method": "synthetic-fixed-width-interval",
+        "model_revision": "catalog-declared-or-synthetic-reference",
+        "random_seed": 0
+      }
+    },
+    {
+      "measurement_kind": "synthetic",
+      "measured_at": "2026-08-07T00:00:00Z",
+      "operator": "deterministic-fixture-generator",
+      "source_revision": "synthetic-not-measured",
+      "environment": {
+        "synthetic": true,
+        "external_services_used": false
+      },
+      "notes": "Invented deterministic values for development only; not a real measurement.",
+      "provenance_id": "synthetic-execution-v1",
+      "subject_kind": "execution",
+      "command": "uv run python scripts/generate_fake_profiling_database.py",
+      "protocol": {
+        "input_sample_ids": [
+          "synthetic-001",
+          "synthetic-002",
+          "synthetic-003",
+          "synthetic-004",
+          "synthetic-005",
+          "synthetic-006",
+          "synthetic-007",
+          "synthetic-008",
+          "synthetic-009",
+          "synthetic-010",
+          "synthetic-011",
+          "synthetic-012",
+          "synthetic-013",
+          "synthetic-014",
+          "synthetic-015",
+          "synthetic-016",
+          "synthetic-017",
+          "synthetic-018",
+          "synthetic-019",
+          "synthetic-020",
+          "synthetic-021",
+          "synthetic-022",
+          "synthetic-023",
+          "synthetic-024",
+          "synthetic-025",
+          "synthetic-026",
+          "synthetic-027",
+          "synthetic-028",
+          "synthetic-029",
+          "synthetic-030",
+          "synthetic-031",
+          "synthetic-032",
+          "synthetic-033",
+          "synthetic-034",
+          "synthetic-035",
+          "synthetic-036",
+          "synthetic-037",
+          "synthetic-038",
+          "synthetic-039",
+          "synthetic-040",
+          "synthetic-041",
+          "synthetic-042",
+          "synthetic-043",
+          "synthetic-044",
+          "synthetic-045",
+          "synthetic-046",
+          "synthetic-047",
+          "synthetic-048",
+          "synthetic-049",
+          "synthetic-050"
+        ],
+        "warmup_count": 5,
+        "observation_count": 50,
+        "timing_method": "No timing performed; deterministic formula only.",
+        "energy_measurement_method": "No energy measurement performed; deterministic formula only.",
+        "model_revision": "catalog-declared-or-synthetic-reference",
+        "runtime_versions": {
+          "generator": "synthetic-v1",
+          "runtime": "not-invoked"
+        }
+      }
+    },
+    {
+      "measurement_kind": "synthetic",
+      "measured_at": "2026-08-07T00:00:00Z",
+      "operator": "deterministic-fixture-generator",
+      "source_revision": "synthetic-not-measured",
+      "environment": {
+        "synthetic": true,
+        "external_services_used": false
+      },
+      "notes": "Invented deterministic values for development only; not a real measurement.",
+      "provenance_id": "synthetic-transfer-v1",
+      "subject_kind": "transfer",
+      "command": "uv run python scripts/generate_fake_profiling_database.py",
+      "protocol": {
+        "payload_sizes_bytes": [
+          0,
+          1024,
+          1048576
+        ],
+        "repetition_count": 50,
+        "timing_method": "No transfer performed; deterministic formula only.",
+        "energy_measurement_method": "No energy measurement performed; deterministic formula only."
+      }
+    }
+  ],
+  "tools": [
+    {
+      "tool_id": "text_generation",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "synthetic-reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "synthetic-reference",
+          "parameters": {
+            "synthetic_fixture_only": true,
+            "execution_supported": false,
+            "note": "Not declared by the MnMS catalog; never use for real execution."
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "synthetic-reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 25.0,
+          "mean_incremental_execution_energy_j": 0.07,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 13.0,
+          "mean_incremental_execution_energy_j": 0.1,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 10.0,
+          "mean_incremental_execution_energy_j": 0.14,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "text_summarization",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "facebook/bart-large-cnn",
+            "max_length": 64,
+            "min_length": 16,
+            "num_beams": 1
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "facebook/bart-large-cnn",
+            "max_length": 96,
+            "min_length": 24,
+            "num_beams": 2
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "facebook/bart-large-cnn",
+            "max_length": 130,
+            "min_length": 30,
+            "num_beams": 4
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 32.5,
+          "mean_incremental_execution_energy_j": 0.098,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 16.9,
+          "mean_incremental_execution_energy_j": 0.14,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 13.0,
+          "mean_incremental_execution_energy_j": 0.196,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 45.0,
+          "mean_incremental_execution_energy_j": 0.119,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 23.4,
+          "mean_incremental_execution_energy_j": 0.17,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 18.0,
+          "mean_incremental_execution_energy_j": 0.238,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 57.5,
+          "mean_incremental_execution_energy_j": 0.14,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 29.9,
+          "mean_incremental_execution_energy_j": 0.2,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 23.0,
+          "mean_incremental_execution_energy_j": 0.28,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "text_classification",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "distilbert-base-uncased-finetuned-sst-2-english",
+            "max_tokens": 32
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "distilbert-base-uncased-finetuned-sst-2-english",
+            "max_tokens": 64
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "distilbert-base-uncased-finetuned-sst-2-english",
+            "max_tokens": 128
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 40.0,
+          "mean_incremental_execution_energy_j": 0.126,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 20.8,
+          "mean_incremental_execution_energy_j": 0.18,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 16.0,
+          "mean_incremental_execution_energy_j": 0.252,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 52.5,
+          "mean_incremental_execution_energy_j": 0.147,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 27.3,
+          "mean_incremental_execution_energy_j": 0.21,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 21.0,
+          "mean_incremental_execution_energy_j": 0.294,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 65.0,
+          "mean_incremental_execution_energy_j": 0.168,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 33.8,
+          "mean_incremental_execution_energy_j": 0.24,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 26.0,
+          "mean_incremental_execution_energy_j": 0.336,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "question_answering",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "deepset/roberta-base-squad2",
+            "max_context_tokens": 128,
+            "doc_stride": 64
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "deepset/roberta-base-squad2",
+            "max_context_tokens": 256,
+            "doc_stride": 96
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "deepset/roberta-base-squad2",
+            "max_context_tokens": 384,
+            "doc_stride": 128
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 47.5,
+          "mean_incremental_execution_energy_j": 0.154,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 24.7,
+          "mean_incremental_execution_energy_j": 0.22,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 19.0,
+          "mean_incremental_execution_energy_j": 0.308,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 60.0,
+          "mean_incremental_execution_energy_j": 0.175,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 31.2,
+          "mean_incremental_execution_energy_j": 0.25,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 24.0,
+          "mean_incremental_execution_energy_j": 0.35,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 72.5,
+          "mean_incremental_execution_energy_j": 0.196,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 37.7,
+          "mean_incremental_execution_energy_j": 0.28,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 29.0,
+          "mean_incremental_execution_energy_j": 0.392,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "automatic_speech_recognition",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "5",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "1",
+          "parameters": {
+            "model": "openai/whisper-small",
+            "num_beams": 1
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "1"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "2",
+          "parameters": {
+            "model": "openai/whisper-small",
+            "num_beams": 2
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "2"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "3",
+          "parameters": {
+            "model": "openai/whisper-small",
+            "num_beams": 3
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "3"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "4",
+          "parameters": {
+            "model": "openai/whisper-small",
+            "num_beams": 4
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "4"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "5",
+          "parameters": {
+            "model": "openai/whisper-small",
+            "num_beams": 5
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "5"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "1",
+          "raw_metric": {
+            "point_estimate": 0.66,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.64,
+              "upper": 0.68,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7111111111111111,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "2",
+          "raw_metric": {
+            "point_estimate": 0.72,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.7,
+              "upper": 0.74,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "3",
+          "raw_metric": {
+            "point_estimate": 0.78,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.76,
+              "upper": 0.8,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8444444444444444,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "4",
+          "raw_metric": {
+            "point_estimate": 0.84,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.82,
+              "upper": 0.86,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.911111111111111,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "5",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "1",
+          "device_id": "device",
+          "warm_latency_p95_ms": 55.0,
+          "mean_incremental_execution_energy_j": 0.182,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "1",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 28.6,
+          "mean_incremental_execution_energy_j": 0.26,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "1",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 22.0,
+          "mean_incremental_execution_energy_j": 0.364,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "2",
+          "device_id": "device",
+          "warm_latency_p95_ms": 67.5,
+          "mean_incremental_execution_energy_j": 0.203,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "2",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 35.1,
+          "mean_incremental_execution_energy_j": 0.29,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "2",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 27.0,
+          "mean_incremental_execution_energy_j": 0.406,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "3",
+          "device_id": "device",
+          "warm_latency_p95_ms": 80.0,
+          "mean_incremental_execution_energy_j": 0.224,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "3",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 41.6,
+          "mean_incremental_execution_energy_j": 0.32,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "3",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 32.0,
+          "mean_incremental_execution_energy_j": 0.448,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "4",
+          "device_id": "device",
+          "warm_latency_p95_ms": 92.5,
+          "mean_incremental_execution_energy_j": 0.245,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "4",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 48.1,
+          "mean_incremental_execution_energy_j": 0.35,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "4",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 37.0,
+          "mean_incremental_execution_energy_j": 0.49,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "5",
+          "device_id": "device",
+          "warm_latency_p95_ms": 105.0,
+          "mean_incremental_execution_energy_j": 0.266,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "5",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 54.6,
+          "mean_incremental_execution_energy_j": 0.38,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "5",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 42.0,
+          "mean_incremental_execution_energy_j": 0.532,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_generation",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "synthetic-reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "synthetic-reference",
+          "parameters": {
+            "synthetic_fixture_only": true,
+            "execution_supported": false,
+            "note": "Not declared by the MnMS catalog; never use for real execution."
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "synthetic-reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 62.5,
+          "mean_incremental_execution_energy_j": 0.21,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 32.5,
+          "mean_incremental_execution_energy_j": 0.3,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 25.0,
+          "mean_incremental_execution_energy_j": 0.42,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_captioning",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "Salesforce/blip-image-captioning-large",
+            "max_new_tokens": 16,
+            "num_beams": 1
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "Salesforce/blip-image-captioning-large",
+            "max_new_tokens": 32,
+            "num_beams": 3
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "Salesforce/blip-image-captioning-large",
+            "max_new_tokens": 64,
+            "num_beams": 5
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 70.0,
+          "mean_incremental_execution_energy_j": 0.238,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 36.4,
+          "mean_incremental_execution_energy_j": 0.34,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 28.0,
+          "mean_incremental_execution_energy_j": 0.476,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 82.5,
+          "mean_incremental_execution_energy_j": 0.259,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 42.9,
+          "mean_incremental_execution_energy_j": 0.37,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 33.0,
+          "mean_incremental_execution_energy_j": 0.518,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 95.0,
+          "mean_incremental_execution_energy_j": 0.28,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 49.4,
+          "mean_incremental_execution_energy_j": 0.4,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 38.0,
+          "mean_incremental_execution_energy_j": 0.56,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_editing",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "synthetic-reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "synthetic-reference",
+          "parameters": {
+            "synthetic_fixture_only": true,
+            "execution_supported": false,
+            "note": "Not declared by the MnMS catalog; never use for real execution."
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "synthetic-reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 77.5,
+          "mean_incremental_execution_energy_j": 0.266,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 40.3,
+          "mean_incremental_execution_energy_j": 0.38,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "synthetic-reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 31.0,
+          "mean_incremental_execution_energy_j": 0.532,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_classification",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "google/vit-base-patch16-224",
+            "input_size": 128
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "google/vit-base-patch16-224",
+            "input_size": 192
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "google/vit-base-patch16-224",
+            "input_size": 224
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 85.0,
+          "mean_incremental_execution_energy_j": 0.294,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 44.2,
+          "mean_incremental_execution_energy_j": 0.42,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 34.0,
+          "mean_incremental_execution_energy_j": 0.588,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 97.5,
+          "mean_incremental_execution_energy_j": 0.315,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 50.7,
+          "mean_incremental_execution_energy_j": 0.45,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 39.0,
+          "mean_incremental_execution_energy_j": 0.63,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 110.0,
+          "mean_incremental_execution_energy_j": 0.336,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 57.2,
+          "mean_incremental_execution_energy_j": 0.48,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 44.0,
+          "mean_incremental_execution_energy_j": 0.672,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "visual_question_answering",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "Salesforce/blip-vqa-base",
+            "max_new_tokens": 5,
+            "num_beams": 1
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "Salesforce/blip-vqa-base",
+            "max_new_tokens": 10,
+            "num_beams": 3
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "Salesforce/blip-vqa-base",
+            "max_new_tokens": 20,
+            "num_beams": 5
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 92.5,
+          "mean_incremental_execution_energy_j": 0.322,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 48.1,
+          "mean_incremental_execution_energy_j": 0.46,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 37.0,
+          "mean_incremental_execution_energy_j": 0.644,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 105.0,
+          "mean_incremental_execution_energy_j": 0.343,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 54.6,
+          "mean_incremental_execution_energy_j": 0.49,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 42.0,
+          "mean_incremental_execution_energy_j": 0.686,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 117.5,
+          "mean_incremental_execution_energy_j": 0.364,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 61.1,
+          "mean_incremental_execution_energy_j": 0.52,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 47.0,
+          "mean_incremental_execution_energy_j": 0.728,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "object_detection",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "facebook/detr-resnet-101",
+            "shortest_edge": 480
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "facebook/detr-resnet-101",
+            "shortest_edge": 640
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "facebook/detr-resnet-101",
+            "shortest_edge": 800
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 100.0,
+          "mean_incremental_execution_energy_j": 0.35,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 52.0,
+          "mean_incremental_execution_energy_j": 0.5,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 40.0,
+          "mean_incremental_execution_energy_j": 0.7,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 112.5,
+          "mean_incremental_execution_energy_j": 0.371,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 58.5,
+          "mean_incremental_execution_energy_j": 0.53,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 45.0,
+          "mean_incremental_execution_energy_j": 0.742,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 125.0,
+          "mean_incremental_execution_energy_j": 0.392,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 65.0,
+          "mean_incremental_execution_energy_j": 0.56,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 50.0,
+          "mean_incremental_execution_energy_j": 0.784,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_segmentation",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "facebook/maskformer-swin-base-coco",
+            "shortest_edge": 384
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "facebook/maskformer-swin-base-coco",
+            "shortest_edge": 512
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "facebook/maskformer-swin-base-coco",
+            "shortest_edge": 800
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262400,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 107.5,
+          "mean_incremental_execution_energy_j": 0.378,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 55.9,
+          "mean_incremental_execution_energy_j": 0.54,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 43.0,
+          "mean_incremental_execution_energy_j": 0.756,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 120.0,
+          "mean_incremental_execution_energy_j": 0.399,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 62.4,
+          "mean_incremental_execution_energy_j": 0.57,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 48.0,
+          "mean_incremental_execution_energy_j": 0.798,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 132.5,
+          "mean_incremental_execution_energy_j": 0.42,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 68.9,
+          "mean_incremental_execution_energy_j": 0.6,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 53.0,
+          "mean_incremental_execution_energy_j": 0.84,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "optical_character_recognition",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": true,
+          "values": [
+            "fast",
+            "balanced",
+            "quality"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "quality",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "fast",
+          "parameters": {
+            "model": "easyOCR",
+            "canvas_size": 1280,
+            "mag_ratio": 1.0,
+            "decoder": "greedy"
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "fast"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "balanced",
+          "parameters": {
+            "model": "easyOCR",
+            "canvas_size": 1920,
+            "mag_ratio": 1.5,
+            "decoder": "beamsearch",
+            "beam_width": 3
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "balanced"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "configuration_id": "quality",
+          "parameters": {
+            "model": "easyOCR",
+            "canvas_size": 2560,
+            "mag_ratio": 2.0,
+            "decoder": "beamsearch",
+            "beam_width": 5
+          },
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "quality"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "fast",
+          "raw_metric": {
+            "point_estimate": 0.7,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.68,
+              "upper": 0.72,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.7555555555555555,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "raw_metric": {
+            "point_estimate": 0.8,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.78,
+              "upper": 0.82,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.8666666666666667,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "fast",
+          "device_id": "device",
+          "warm_latency_p95_ms": 115.0,
+          "mean_incremental_execution_energy_j": 0.406,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 59.8,
+          "mean_incremental_execution_energy_j": 0.58,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "fast",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 46.0,
+          "mean_incremental_execution_energy_j": 0.812,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "device",
+          "warm_latency_p95_ms": 127.5,
+          "mean_incremental_execution_energy_j": 0.427,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 66.3,
+          "mean_incremental_execution_energy_j": 0.61,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "balanced",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 51.0,
+          "mean_incremental_execution_energy_j": 0.854,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "device",
+          "warm_latency_p95_ms": 140.0,
+          "mean_incremental_execution_energy_j": 0.448,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 72.8,
+          "mean_incremental_execution_energy_j": 0.64,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "quality",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 56.0,
+          "mean_incremental_execution_energy_j": 0.896,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_crop",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 122.5,
+          "mean_incremental_execution_energy_j": 0.434,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 63.7,
+          "mean_incremental_execution_energy_j": 0.62,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 49.0,
+          "mean_incremental_execution_energy_j": 0.868,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_crop_left",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 130.0,
+          "mean_incremental_execution_energy_j": 0.462,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 67.6,
+          "mean_incremental_execution_energy_j": 0.66,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 52.0,
+          "mean_incremental_execution_energy_j": 0.924,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_crop_right",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 137.5,
+          "mean_incremental_execution_energy_j": 0.49,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 71.5,
+          "mean_incremental_execution_energy_j": 0.7,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 55.0,
+          "mean_incremental_execution_energy_j": 0.98,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_crop_top",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 145.0,
+          "mean_incremental_execution_energy_j": 0.518,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 75.4,
+          "mean_incremental_execution_energy_j": 0.74,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 58.0,
+          "mean_incremental_execution_energy_j": 1.036,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "image_crop_bottom",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 152.5,
+          "mean_incremental_execution_energy_j": 0.546,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 79.3,
+          "mean_incremental_execution_energy_j": 0.78,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 61.0,
+          "mean_incremental_execution_energy_j": 1.092,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "background_blur",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 160.0,
+          "mean_incremental_execution_energy_j": 0.574,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 83.2,
+          "mean_incremental_execution_energy_j": 0.82,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 64.0,
+          "mean_incremental_execution_energy_j": 1.148,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "color_pop",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 167.5,
+          "mean_incremental_execution_energy_j": 0.602,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 87.1,
+          "mean_incremental_execution_energy_j": 0.86,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 67.0,
+          "mean_incremental_execution_energy_j": 1.204,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "count",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 175.0,
+          "mean_incremental_execution_energy_j": 0.63,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 91.0,
+          "mean_incremental_execution_energy_j": 0.9,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 70.0,
+          "mean_incremental_execution_energy_j": 1.26,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "tag",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 182.5,
+          "mean_incremental_execution_energy_j": 0.658,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 94.9,
+          "mean_incremental_execution_energy_j": 0.94,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 73.0,
+          "mean_incremental_execution_energy_j": 1.316,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "emoji",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 262144,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 190.0,
+          "mean_incremental_execution_energy_j": 0.686,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 98.8,
+          "mean_incremental_execution_energy_j": 0.98,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 76.0,
+          "mean_incremental_execution_energy_j": 1.372,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "select_object",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 197.5,
+          "mean_incremental_execution_energy_j": 0.714,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 102.7,
+          "mean_incremental_execution_energy_j": 1.02,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 79.0,
+          "mean_incremental_execution_energy_j": 1.428,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "get_date_fact",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 205.0,
+          "mean_incremental_execution_energy_j": 0.742,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 106.6,
+          "mean_incremental_execution_energy_j": 1.06,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 82.0,
+          "mean_incremental_execution_energy_j": 1.484,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "get_year_fact",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 212.5,
+          "mean_incremental_execution_energy_j": 0.77,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 110.5,
+          "mean_incremental_execution_energy_j": 1.1,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 85.0,
+          "mean_incremental_execution_energy_j": 1.54,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "get_math_fact",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 220.0,
+          "mean_incremental_execution_energy_j": 0.798,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 114.4,
+          "mean_incremental_execution_energy_j": 1.14,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 88.0,
+          "mean_incremental_execution_energy_j": 1.596,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    },
+    {
+      "tool_id": "get_trivia_fact",
+      "eligibility": {
+        "status": "eligible",
+        "reason": null
+      },
+      "dimensions": {
+        "model_capacity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "input_fidelity": {
+          "applicable": false,
+          "values": [
+            "catalog-fixed"
+          ]
+        },
+        "inference_effort": {
+          "applicable": false,
+          "values": [
+            "reference"
+          ]
+        }
+      },
+      "quality_contract": {
+        "metric_name": "synthetic-unit-score",
+        "metric_unit": "synthetic-score",
+        "direction": "higher_is_better",
+        "semantic_floor": 0.0,
+        "reference": {
+          "configuration_id": "reference",
+          "raw_metric": 0.9
+        }
+      },
+      "configurations": [
+        {
+          "configuration_id": "reference",
+          "parameters": {},
+          "taxonomy": {
+            "model_capacity": "catalog-fixed",
+            "input_fidelity": "catalog-fixed",
+            "inference_effort": "reference"
+          },
+          "runtime": {
+            "backend": "synthetic-no-runtime",
+            "numeric_format": "synthetic"
+          },
+          "device_compatibility": [
+            {
+              "device_id": "device",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "edge",
+              "status": "compatible",
+              "reason": null
+            },
+            {
+              "device_id": "cloud",
+              "status": "compatible",
+              "reason": null
+            }
+          ]
+        }
+      ],
+      "quality_profiles": [
+        {
+          "configuration_id": "reference",
+          "raw_metric": {
+            "point_estimate": 0.9,
+            "confidence_interval": {
+              "level": 0.95,
+              "lower": 0.88,
+              "upper": 0.92,
+              "method": "synthetic-fixed-width-interval"
+            },
+            "sample_count": 100
+          },
+          "normalized_quality_lcb": 0.9777777777777777,
+          "representative_output_bytes": 256,
+          "provenance_id": "synthetic-quality-v1"
+        }
+      ],
+      "execution_profiles": [
+        {
+          "configuration_id": "reference",
+          "device_id": "device",
+          "warm_latency_p95_ms": 227.5,
+          "mean_incremental_execution_energy_j": 0.826,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "edge",
+          "warm_latency_p95_ms": 118.3,
+          "mean_incremental_execution_energy_j": 1.18,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        },
+        {
+          "configuration_id": "reference",
+          "device_id": "cloud",
+          "warm_latency_p95_ms": 91.0,
+          "mean_incremental_execution_energy_j": 1.652,
+          "sample_count": 50,
+          "provenance_id": "synthetic-execution-v1"
+        }
+      ]
+    }
+  ],
+  "transfer_profiles": [
+    {
+      "source_device_id": "device",
+      "destination_device_id": "edge",
+      "propagation_delay_ms": 4.0,
+      "bandwidth_bytes_per_second": 50000000,
+      "setup_energy_j": 0.02,
+      "energy_per_byte_j": 1e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    },
+    {
+      "source_device_id": "device",
+      "destination_device_id": "cloud",
+      "propagation_delay_ms": 28.0,
+      "bandwidth_bytes_per_second": 12000000,
+      "setup_energy_j": 0.08,
+      "energy_per_byte_j": 3e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    },
+    {
+      "source_device_id": "edge",
+      "destination_device_id": "device",
+      "propagation_delay_ms": 4.5,
+      "bandwidth_bytes_per_second": 45000000,
+      "setup_energy_j": 0.025,
+      "energy_per_byte_j": 1.2e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    },
+    {
+      "source_device_id": "edge",
+      "destination_device_id": "cloud",
+      "propagation_delay_ms": 18.0,
+      "bandwidth_bytes_per_second": 80000000,
+      "setup_energy_j": 0.04,
+      "energy_per_byte_j": 1.5e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    },
+    {
+      "source_device_id": "cloud",
+      "destination_device_id": "device",
+      "propagation_delay_ms": 30.0,
+      "bandwidth_bytes_per_second": 15000000,
+      "setup_energy_j": 0.09,
+      "energy_per_byte_j": 3.5e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    },
+    {
+      "source_device_id": "cloud",
+      "destination_device_id": "edge",
+      "propagation_delay_ms": 19.0,
+      "bandwidth_bytes_per_second": 75000000,
+      "setup_energy_j": 0.045,
+      "energy_per_byte_j": 1.6e-08,
+      "sample_count": 50,
+      "provenance_id": "synthetic-transfer-v1"
+    }
+  ]
+}
