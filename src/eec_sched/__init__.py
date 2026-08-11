@@ -30,5 +30,20 @@ from .trusted_evaluation import (
     TrustedEvaluationError,
     evaluate_scheduler_instance,
 )
+from .evolution import (
+    SCHEMA_VERSION,
+    CandidateEvaluation,
+    EvaluationTrace,
+    EvolutionModule,
+    EvolutionResult,
+    FinalEvaluation,
+    FinalTraceComparison,
+    ModelContext,
+    SchedulerCandidate,
+    SchedulerView,
+    TraceEvaluation,
+    TraceSelectionStrategy,
+    evaluate_scheduler_candidate,
+)
 
-__all__ = ["AccuracyProfile", "Configuration", "EvaluationSample", "EvaluationSuite", "FakePlannerClient", "FinalOutput", "HUGGINGFACE_MODEL_IDS", "InMemoryProfileRepository", "InputSource", "LatencyProfile", "MNMS_MODELS", "MnmsToolRunner", "NaiveScheduler", "OpenAICompatiblePlannerClient", "PlanningRequest", "Port", "ProfileArtifact", "ProfilingConfiguration", "ProfilingDatabaseSnapshot", "ProfilingDatabaseValidationError", "QualityProfile", "Device", "ExecutionProfile", "MeasurementScope", "SnapshotMetadata", "ProfiledTool", "TransferProfile", "RequestResult", "SchedulingPlan", "ToolCallPlan", "ToolNode", "ToolRegistry", "ToolSpec", "EvaluationReport", "NodeAssignment", "SimulatedNode", "SimulatedTransfer", "Scheduler", "TrustedEvaluationError", "UTILITY_EPSILON", "evaluate_scheduler_instance", "evaluate_configuration", "execute_request", "load_huggingface_samples", "load_profile_artifact", "load_profiling_database", "mnms_tool_specs", "profile_suite", "register_mnms_tools", "save_profile_artifact", "select_fixed_samples", "snapshot_digest", "validate_profiling_database"]
+__all__ = ["AccuracyProfile", "CandidateEvaluation", "Configuration", "EvaluationSample", "EvaluationSuite", "EvaluationTrace", "EvolutionModule", "EvolutionResult", "FakePlannerClient", "FinalEvaluation", "FinalOutput", "FinalTraceComparison", "HUGGINGFACE_MODEL_IDS", "InMemoryProfileRepository", "InputSource", "LatencyProfile", "MNMS_MODELS", "ModelContext", "MnmsToolRunner", "NaiveScheduler", "NodeAssignment", "OpenAICompatiblePlannerClient", "PlanningRequest", "Port", "ProfileArtifact", "ProfilingConfiguration", "ProfilingDatabaseSnapshot", "ProfilingDatabaseValidationError", "QualityProfile", "Device", "ExecutionProfile", "MeasurementScope", "SCHEMA_VERSION", "Scheduler", "SchedulerCandidate", "SchedulerView", "SnapshotMetadata", "ProfiledTool", "TransferProfile", "RequestResult", "SchedulingPlan", "SimulatedNode", "SimulatedTransfer", "ToolCallPlan", "ToolNode", "ToolRegistry", "ToolSpec", "TraceEvaluation", "TraceSelectionStrategy", "TrustedEvaluationError", "UTILITY_EPSILON", "EvaluationReport", "evaluate_scheduler_candidate", "evaluate_scheduler_instance", "evaluate_configuration", "execute_request", "load_huggingface_samples", "load_profile_artifact", "load_profiling_database", "mnms_tool_specs", "profile_suite", "register_mnms_tools", "save_profile_artifact", "select_fixed_samples", "snapshot_digest", "validate_profiling_database"]
