@@ -205,6 +205,27 @@ def test_scheduler_view_cannot_mutate_the_planner_dag() -> None:
     assert result.traces[0].trace.dag.nodes[0].inputs["prompt"] == InputSource.request("prompt")
 
 
+def test_model_context_cannot_mutate_the_fixed_trace_set() -> None:
+    trace, final_trace = _trace("evolution"), _trace("final")
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+
+    def evaluator(snapshot, evaluated_trace, candidate):
+        return TraceEvaluation(evaluated_trace, {}, "scored", 0.5, report)
+
+    def proposer(context, candidate):
+        context.traces[0].trace.dag.nodes[0].inputs["prompt"] = InputSource.request("changed")
+        return _reference_candidate(2)
+
+    loop = EvolutionLoop(
+        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1, proposer,
+        lambda records: records, evaluator, lambda snapshot, records, candidate: (0.5,),
+    )
+
+    with pytest.raises(TypeError):
+        loop.run()
+    assert trace.dag.nodes[0].inputs["prompt"] == InputSource.request("prompt")
+
+
 def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comparison() -> None:
     traces = (_trace("trace"),)
     candidate = _reference_candidate()

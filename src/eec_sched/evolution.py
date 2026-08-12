@@ -79,6 +79,7 @@ class EvaluationTrace:
         if not self.trace_id:
             raise ValueError("Trace identifier must not be empty")
         object.__setattr__(self, "task_input", MappingProxyType(dict(self.task_input)))
+        object.__setattr__(self, "dag", _readonly_dag(self.dag))
 
 
 @dataclass(frozen=True)
