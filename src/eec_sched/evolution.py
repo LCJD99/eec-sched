@@ -267,64 +267,6 @@ class ModelContext:
 CandidateProposer = Callable[[ModelContext, SchedulerCandidate], SchedulerCandidate]
 
 
-@dataclass(frozen=True)
-class EvolutionResult:
-    observed_evaluations: tuple[CandidateEvaluation, ...]
-    selected_candidate: SchedulerCandidate
-    selected_evaluation: CandidateEvaluation
-
-
-@dataclass
-class EvolutionModule:
-    """Fixed-round orchestration; it delegates all score calculation above."""
-
-    snapshot: ProfilingDatabaseSnapshot
-    evolution_traces: Sequence[EvaluationTrace]
-    trace_selection_strategy: TraceSelectionStrategy
-    candidate_proposer: CandidateProposer
-
-    def run(self, initial_candidate: SchedulerCandidate, *, rounds: int) -> EvolutionResult:
-        if rounds < 0:
-            raise ValueError("rounds must not be negative")
-        observed = [_evaluate_candidate(self.snapshot, self.evolution_traces, initial_candidate)]
-        candidates = {initial_candidate.version: initial_candidate}
-        current = initial_candidate
-        for _ in range(rounds):
-            context = ModelContext(tuple(self.trace_selection_strategy(observed[-1].traces)))
-            proposed = self.candidate_proposer(context, current)
-            if proposed.version in candidates:
-                raise ValueError(f"duplicate Scheduler Candidate version: {proposed.version}")
-            candidates[proposed.version] = proposed
-            current = proposed
-            observed.append(_evaluate_candidate(self.snapshot, self.evolution_traces, current))
-        scorable = [evaluation for evaluation in observed if evaluation.candidate_score is not None]
-        if not scorable:
-            raise ValueError("no observed Scheduler Candidate received a Candidate Score")
-        selected = max(scorable, key=lambda evaluation: evaluation.candidate_score)
-        return EvolutionResult(tuple(observed), candidates[selected.candidate_version], selected)
-
-    def final_evaluate(
-        self,
-        evolution: EvolutionResult,
-        final_evaluation_traces: Sequence[EvaluationTrace],
-        oracle_reference: SchedulerCandidate,
-    ) -> FinalEvaluation:
-        """Evaluate the selected Candidate only on an independent Trace set."""
-        evolution_ids = {trace.trace_id for trace in self.evolution_traces}
-        final_ids = {trace.trace_id for trace in final_evaluation_traces}
-        if evolution_ids & final_ids:
-            raise ValueError("Final Evaluation Trace Set must be independent from the Evolution Trace Set")
-        result = evaluate_scheduler_candidate(
-            self.snapshot,
-            final_evaluation_traces,
-            evolution.selected_candidate,
-            mode="final",
-            oracle_reference=oracle_reference,
-        )
-        assert isinstance(result, FinalEvaluation)
-        return result
-
-
 TrustedTraceEvaluator = Callable[
     [ProfilingDatabaseSnapshot, EvaluationTrace, SchedulerCandidate], TraceEvaluation
 ]

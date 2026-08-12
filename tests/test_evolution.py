@@ -8,7 +8,6 @@ from eec_sched import (
     EvolutionLoop,
     EvaluationTrace,
     EvaluationReport,
-    EvolutionModule,
     FinalOutput,
     InputSource,
     SchedulerCandidate,
@@ -18,8 +17,6 @@ from eec_sched import (
     evaluate_scheduler_candidate,
     load_profiling_database,
 )
-
-
 ROOT = Path(__file__).parents[1]
 SNAPSHOT = load_profiling_database(
     ROOT / "docs/examples/profiling-database.fake.json",
@@ -259,41 +256,3 @@ def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comp
     assert concise_final["traces"][0]["oracle_reference_score"] == pytest.approx(evolution.candidate_score)
     assert concise_final["traces"][0]["difference"] == pytest.approx(0)
     assert concise_final["average_difference"] == pytest.approx(0)
-
-
-def test_evolution_module_runs_fixed_rounds_and_selects_highest_observed_candidate() -> None:
-    selected_contexts: list[tuple[str, ...]] = []
-
-    def select(records):
-        selected_contexts.append(tuple(record.trace.trace_id for record in records))
-        return records
-
-    module = EvolutionModule(
-        snapshot=SNAPSHOT,
-        evolution_traces=(_trace("a"), _trace("b")),
-        trace_selection_strategy=select,
-        candidate_proposer=lambda context, current: _reference_candidate(current.version + 1),
-    )
-
-    result = module.run(_reference_candidate(), rounds=2)
-
-    assert len(result.observed_evaluations) == 3
-    assert selected_contexts == [("a", "b"), ("a", "b")]
-    assert result.selected_candidate.version == 1
-    assert result.selected_evaluation.candidate_score == pytest.approx(result.observed_evaluations[0].candidate_score)
-
-
-def test_evolution_module_requires_a_separate_final_evaluation_trace_set() -> None:
-    module = EvolutionModule(
-        snapshot=SNAPSHOT,
-        evolution_traces=(_trace("evolution"),),
-        trace_selection_strategy=lambda records: records,
-        candidate_proposer=lambda context, current: _reference_candidate(current.version + 1),
-    )
-    evolution = module.run(_reference_candidate(), rounds=0)
-
-    with pytest.raises(ValueError, match="independent"):
-        module.final_evaluate(evolution, (_trace("evolution"),), _reference_candidate(99))
-
-    final = module.final_evaluate(evolution, (_trace("final"),), _reference_candidate(99))
-    assert final.average_difference == pytest.approx(0)
