@@ -134,23 +134,31 @@ def test_illegal_scheduler_return_is_rejected_before_metric_evaluation() -> None
     assert any("missing node assignments" in error for error in report.validation_errors)
 
 
-def test_deterministic_replay_includes_makespan_transfer_and_energy() -> None:
+def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch) -> None:
     """Replay the same snapshot, DAG, and Scheduler output twice and compare reports."""
+    import eec_sched.trusted_evaluation as trusted_evaluation
+
+    ticks = iter((1.0, 1.001, 2.0, 2.001))
+    monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
     plan = ToolCallPlan(
         nodes=(ToolNode("generate", "text_generation", {"prompt": InputSource.request("prompt")}),),
         final_outputs=(FinalOutput("generate", "text"),),
     )
     scheduler = lambda dag: {"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}}
     snapshot = load_profiling_database(FAKE_DATABASE_PATH, SCHEMA_PATH)
-    first = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5, scheduler_solving_time_ms=1)
-    second = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5, scheduler_solving_time_ms=1)
+    first = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
+    second = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
     assert first == second
     assert first.simulated_makespan_ms == pytest.approx(10)
     assert first.incremental_execution_energy_j == pytest.approx(0.14)
 
 
-def test_evaluator_report_separates_scheduler_time_from_plan_utility() -> None:
+def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch) -> None:
     """Scheduler solving time must be reported and included in the latency proxy."""
+    import eec_sched.trusted_evaluation as trusted_evaluation
+
+    ticks = iter((1.0, 1.002))
+    monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
     plan = ToolCallPlan(
         nodes=(ToolNode("generate", "text_generation", {"prompt": InputSource.request("prompt")}),),
         final_outputs=(FinalOutput("generate", "text"),),
@@ -162,7 +170,6 @@ def test_evaluator_report_separates_scheduler_time_from_plan_utility() -> None:
         minimum_accuracy=0,
         maximum_latency_ms=100,
         gamma=0.5,
-        scheduler_solving_time_ms=2,
     )
     assert report.scheduler_solving_time_ms == pytest.approx(2)
     assert report.latency_proxy_ms == pytest.approx(12)

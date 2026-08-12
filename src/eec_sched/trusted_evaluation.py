@@ -88,7 +88,6 @@ def evaluate_scheduler_instance(
     minimum_accuracy: float,
     maximum_latency_ms: float,
     gamma: float,
-    scheduler_solving_time_ms: float | None = None,
 ) -> EvaluationReport:
     """Run and independently evaluate one scheduler output against one snapshot."""
     errors: list[str] = []
@@ -98,8 +97,6 @@ def evaluate_scheduler_instance(
         errors.append("maximum_latency_ms must be positive")
     if not 0 < gamma < 1:
         errors.append("gamma must be in (0, 1)")
-    if scheduler_solving_time_ms is not None and scheduler_solving_time_ms < 0:
-        errors.append("scheduler_solving_time_ms must be non-negative")
     if errors:
         return _invalid(snapshot, *errors)
     node_ids = tuple(node.node_id for node in dag.nodes)
@@ -109,14 +106,21 @@ def evaluate_scheduler_instance(
     try:
         result = scheduler.schedule(dag) if hasattr(scheduler, "schedule") else scheduler(dag)
     except Exception as exc:  # scheduler is intentionally untrusted
-        return _invalid(snapshot, f"scheduler_exception: {type(exc).__name__}: {exc}")
+        measured_scheduler_time_ms = (perf_counter() - started) * 1000.0
+        return _invalid(
+            snapshot,
+            f"scheduler_exception: {type(exc).__name__}: {exc}",
+            scheduler_solving_time_ms=measured_scheduler_time_ms,
+        )
     measured_scheduler_time_ms = (perf_counter() - started) * 1000.0
-    effective_scheduler_time_ms = measured_scheduler_time_ms if scheduler_solving_time_ms is None else scheduler_solving_time_ms
-    if effective_scheduler_time_ms < 0:
-        return _invalid(snapshot, "scheduler_solving_time_ms must be non-negative")
     assignments = _parse_assignments(result, node_ids, errors)
     if errors:
-        return _invalid(snapshot, *errors, assignments=assignments)
+        return _invalid(
+            snapshot,
+            *errors,
+            assignments=assignments,
+            scheduler_solving_time_ms=measured_scheduler_time_ms,
+        )
     for node in dag.nodes:
         choice = assignments[node.node_id]
         try:
@@ -127,19 +131,24 @@ def evaluate_scheduler_instance(
         except KeyError as exc:
             errors.append(f"node {node.node_id}: unknown profile or choice ({exc.args[0]})")
     if errors:
-        return _invalid(snapshot, *errors, assignments=assignments)
+        return _invalid(
+            snapshot,
+            *errors,
+            assignments=assignments,
+            scheduler_solving_time_ms=measured_scheduler_time_ms,
+        )
 
     try:
         nodes, transfers = _simulate(snapshot, dag, assignments)
         accuracy = _accuracy(snapshot, dag, assignments)
     except (KeyError, TrustedEvaluationError) as exc:
-        return _invalid(snapshot, f"simulation_error: {exc}", assignments=assignments)
+        raise TrustedEvaluationError(f"trusted simulation failed: {exc}") from exc
     makespan = max((n.finish_ms for n in nodes), default=0.0)
     compute_energy = sum(_execution_energy(snapshot, node, assignments[node.node_id]) for node in dag.nodes)
     communication_energy = sum(t.energy_j for t in transfers)
     total_energy = compute_energy + communication_energy
     accuracy_ok = accuracy >= minimum_accuracy
-    latency_proxy = effective_scheduler_time_ms + makespan
+    latency_proxy = measured_scheduler_time_ms + makespan
     latency_ok = latency_proxy <= maximum_latency_ms
     feasible = accuracy_ok and latency_ok
     performance = None
@@ -152,13 +161,24 @@ def evaluate_scheduler_instance(
     status = "scheduled" if feasible else "infeasible"
     return EvaluationReport(
         snapshot.snapshot_digest, status, (), assignments, nodes, transfers, accuracy,
-        makespan, effective_scheduler_time_ms, latency_proxy, compute_energy, communication_energy,
+        makespan, measured_scheduler_time_ms, latency_proxy, compute_energy, communication_energy,
         total_energy, accuracy_ok, latency_ok, feasible, performance, utility,
     )
 
 
-def _invalid(snapshot: ProfilingDatabaseSnapshot, *errors: str, assignments: Mapping[str, NodeAssignment] = ()) -> EvaluationReport:
-    return EvaluationReport(snapshot.snapshot_digest, "rejected", tuple(errors), assignments)
+def _invalid(
+    snapshot: ProfilingDatabaseSnapshot,
+    *errors: str,
+    assignments: Mapping[str, NodeAssignment] = (),
+    scheduler_solving_time_ms: float | None = None,
+) -> EvaluationReport:
+    return EvaluationReport(
+        snapshot.snapshot_digest,
+        "rejected",
+        tuple(errors),
+        assignments,
+        scheduler_solving_time_ms=scheduler_solving_time_ms,
+    )
 
 
 def _parse_assignments(result: Any, node_ids: tuple[str, ...], errors: list[str]) -> dict[str, NodeAssignment]:

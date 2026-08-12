@@ -29,17 +29,19 @@ def one_node_plan() -> ToolCallPlan:
     )
 
 
-def test_evaluator_returns_immutable_replayable_report_and_includes_scheduler_time() -> None:
+def test_evaluator_returns_immutable_replayable_report_and_includes_trusted_scheduler_time(monkeypatch) -> None:
+    import eec_sched.trusted_evaluation as trusted_evaluation
+
+    ticks = iter((1.0, 1.001, 2.0, 2.001))
+    monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
     plan = one_node_plan()
     scheduler = lambda dag: {"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}}
 
     first = evaluate_scheduler_instance(
         SNAPSHOT, plan, scheduler, minimum_accuracy=0.9, maximum_latency_ms=11, gamma=0.5,
-        scheduler_solving_time_ms=1,
     )
     second = evaluate_scheduler_instance(
         SNAPSHOT, plan, scheduler, minimum_accuracy=0.9, maximum_latency_ms=11, gamma=0.5,
-        scheduler_solving_time_ms=1,
     )
 
     assert first == second
@@ -50,6 +52,19 @@ def test_evaluator_returns_immutable_replayable_report_and_includes_scheduler_ti
     assert first.utility is not None
     with pytest.raises(TypeError):
         first.assignments["other"] = first.assignments["generate"]  # type: ignore[index]
+
+
+def test_evaluator_does_not_accept_caller_supplied_scheduler_time() -> None:
+    with pytest.raises(TypeError, match="scheduler_solving_time_ms"):
+        evaluate_scheduler_instance(
+            SNAPSHOT,
+            one_node_plan(),
+            lambda dag: {},
+            minimum_accuracy=0,
+            maximum_latency_ms=100,
+            gamma=0.5,
+            scheduler_solving_time_ms=0,  # type: ignore[call-arg]
+        )
 
 
 def test_evaluator_accounts_for_directional_transfer_latency_and_energy() -> None:

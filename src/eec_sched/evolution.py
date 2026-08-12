@@ -7,7 +7,9 @@ to untrusted Scheduler Candidates.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
+import signal
 from types import MappingProxyType
 from typing import Any, Callable, Literal, Mapping, Protocol, Sequence
 
@@ -19,6 +21,23 @@ SCHEMA_VERSION = "v1"
 _LEGACY_MINIMUM_ACCURACY = 0.0
 _LEGACY_MAXIMUM_LATENCY_MS = 100.0
 _LEGACY_GAMMA = 0.5
+_CANDIDATE_TIMEOUT_SECONDS = 5.0
+
+
+@dataclass(frozen=True)
+class ScoringContext:
+    """Trusted scoring inputs visible to a Scheduler Candidate."""
+
+    minimum_accuracy: float
+    maximum_latency_ms: float
+    gamma: float
+
+
+_SCORING_CONTEXT = ScoringContext(
+    minimum_accuracy=_LEGACY_MINIMUM_ACCURACY,
+    maximum_latency_ms=_LEGACY_MAXIMUM_LATENCY_MS,
+    gamma=_LEGACY_GAMMA,
+)
 
 
 def _readonly(value: Any) -> Any:
@@ -44,6 +63,7 @@ class SchedulerView:
     """Read-only scheduling evidence supplied to one Scheduler Candidate."""
 
     dag: ToolCallPlan
+    scoring_context: ScoringContext
     snapshot_digest: str
     snapshot_evidence: Mapping[str, Any]
 
@@ -55,12 +75,35 @@ SchedulerProposal = Mapping[str, Any] | Sequence[Any]
 class SchedulerCandidate:
     """A strictly versioned, untrusted producer of Scheduler Proposals."""
 
-    version: int
+    scheduler_version: int
     propose: Callable[[SchedulerView], SchedulerProposal]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.version, int) or isinstance(self.version, bool) or self.version <= 0:
+        if (
+            not isinstance(self.scheduler_version, int)
+            or isinstance(self.scheduler_version, bool)
+            or self.scheduler_version <= 0
+        ):
             raise ValueError("Scheduler Candidate version must be a positive integer")
+
+
+@dataclass(frozen=True)
+class SchedulerCandidateRegistry:
+    """Trusted mapping from Scheduler Versions to untrusted Candidate code."""
+
+    candidates: Mapping[int, SchedulerCandidate]
+
+    def __post_init__(self) -> None:
+        candidates = dict(self.candidates)
+        if any(version != candidate.scheduler_version for version, candidate in candidates.items()):
+            raise ValueError("Scheduler Candidate registry keys must match Scheduler Versions")
+        object.__setattr__(self, "candidates", MappingProxyType(candidates))
+
+    def resolve(self, scheduler_version: int) -> SchedulerCandidate:
+        try:
+            return self.candidates[scheduler_version]
+        except KeyError as exc:
+            raise ValueError(f"unknown Scheduler Version: {scheduler_version}") from exc
 
 
 @dataclass(frozen=True)
@@ -88,22 +131,35 @@ class TraceEvaluation:
     score: float | None
     report: EvaluationReport
     reason: str | None = None
+    scheduler_view: SchedulerView | None = None
+    scheduler_computation_time_ms: float | None = None
+    scheduler_version: int | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "assignments", MappingProxyType(dict(self.assignments)))
+
+    @property
+    def scheduler_proposal(self) -> Mapping[str, NodeAssignment]:
+        """The trusted, normalized proposal returned for this Trace."""
+        return self.assignments
+
+    @property
+    def score_contribution(self) -> float:
+        """The numerical Candidate Score contribution for this Trace."""
+        return self.score if self.score is not None else 0.0
 
 
 @dataclass(frozen=True)
 class CandidateEvaluation:
     schema_version: str
-    candidate_version: int
+    scheduler_version: int
     traces: tuple[TraceEvaluation, ...]
     candidate_score: float | None
 
     def concise_projection(self) -> dict[str, object]:
         return {
             "schema_version": self.schema_version,
-            "scheduler_version": self.candidate_version,
+            "scheduler_version": self.scheduler_version,
             "traces": [_concise_trace(record) for record in self.traces],
             "candidate_score": self.candidate_score,
         }
@@ -127,7 +183,7 @@ class FinalEvaluation:
     def concise_projection(self) -> dict[str, object]:
         return {
             "schema_version": self.candidate_evaluation.schema_version,
-            "scheduler_version": self.candidate_evaluation.candidate_version,
+            "scheduler_version": self.candidate_evaluation.scheduler_version,
             "traces": [
                 {
                     **_concise_trace(comparison.trace_evaluation),
@@ -144,10 +200,12 @@ class FinalEvaluation:
 
 
 def _concise_trace(record: TraceEvaluation) -> dict[str, object]:
-    result: dict[str, object] = {"trace_id": record.trace.trace_id, "status": record.status}
-    if record.score is not None:
-        result["score"] = record.score
-    elif record.reason is not None:
+    result: dict[str, object] = {
+        "trace_id": record.trace.trace_id,
+        "status": record.status,
+        "score": record.score_contribution,
+    }
+    if record.reason is not None:
         result["reason"] = record.reason
     return result
 
@@ -155,7 +213,8 @@ def _concise_trace(record: TraceEvaluation) -> dict[str, object]:
 def evaluate_scheduler_candidate(
     snapshot: ProfilingDatabaseSnapshot,
     traces: Sequence[EvaluationTrace],
-    candidate: SchedulerCandidate,
+    scheduler_version: int,
+    candidate_registry: SchedulerCandidateRegistry,
     *,
     mode: Literal["candidate", "final"] = "candidate",
     oracle_reference: SchedulerCandidate | None = None,
@@ -172,6 +231,7 @@ def evaluate_scheduler_candidate(
     if mode not in {"candidate", "final"}:
         raise ValueError(f"unknown evaluation mode: {mode}")
 
+    candidate = candidate_registry.resolve(scheduler_version)
     candidate_result = _evaluate_candidate(snapshot, traces, candidate)
     if mode == "candidate":
         return candidate_result
@@ -185,13 +245,12 @@ def evaluate_scheduler_candidate(
         )
         for candidate_record, oracle_record in zip(candidate_result.traces, oracle_result.traces, strict=True)
     )
-    candidate_scores = [item.trace_evaluation.score for item in comparisons if item.trace_evaluation.score is not None]
     oracle_scores = [item.oracle_reference_score for item in comparisons if item.oracle_reference_score is not None]
     differences = [item.difference for item in comparisons if item.difference is not None]
     return FinalEvaluation(
         candidate_result,
         comparisons,
-        _mean(candidate_scores),
+        candidate_result.candidate_score,
         _mean(oracle_scores),
         _mean(differences),
     )
@@ -209,38 +268,91 @@ def _evaluate_candidate(
     candidate: SchedulerCandidate,
 ) -> CandidateEvaluation:
     records = tuple(_evaluate_trace(snapshot, trace, candidate) for trace in traces)
-    scores = [record.score if record.score is not None else 0.0 for record in records]
-    return CandidateEvaluation(SCHEMA_VERSION, candidate.version, records, _mean(scores) if records else 0.0)
+    scores = [record.score_contribution for record in records]
+    return CandidateEvaluation(SCHEMA_VERSION, candidate.scheduler_version, records, _mean(scores) if records else 0.0)
 
 
 def _evaluate_trace(snapshot: ProfilingDatabaseSnapshot, trace: EvaluationTrace, candidate: SchedulerCandidate) -> TraceEvaluation:
     view = SchedulerView(
         _readonly_dag(trace.dag),
+        _SCORING_CONTEXT,
         snapshot.snapshot_digest,
-        _readonly(snapshot.data),
+        _scheduler_evidence(snapshot, trace.dag),
     )
 
     class CandidateAdapter:
         def schedule(self, dag: ToolCallPlan) -> SchedulerProposal:
             if dag is not trace.dag:
                 raise RuntimeError("trusted evaluator passed an unexpected DAG")
-            return candidate.propose(view)
+            with _candidate_timeout():
+                return candidate.propose(view)
 
     report = evaluate_scheduler_instance(
         snapshot,
         trace.dag,
         CandidateAdapter(),
-        minimum_accuracy=_LEGACY_MINIMUM_ACCURACY,
-        maximum_latency_ms=_LEGACY_MAXIMUM_LATENCY_MS,
-        gamma=_LEGACY_GAMMA,
-        scheduler_solving_time_ms=0.0,
+        minimum_accuracy=view.scoring_context.minimum_accuracy,
+        maximum_latency_ms=view.scoring_context.maximum_latency_ms,
+        gamma=view.scoring_context.gamma,
     )
     reason = "; ".join(report.validation_errors) or None
+    computation_time = report.scheduler_solving_time_ms
+    if computation_time is not None and computation_time >= _CANDIDATE_TIMEOUT_SECONDS * 1000.0:
+        return TraceEvaluation(
+            trace,
+            report.assignments,
+            "failed",
+            None,
+            report,
+            "Scheduler Candidate exceeded the trusted computation time limit",
+            view,
+            computation_time,
+            candidate.scheduler_version,
+        )
     if report.scheduler_status == "rejected" and reason and reason.startswith("scheduler_exception:"):
-        return TraceEvaluation(trace, report.assignments, "failed", None, report, reason)
+        return TraceEvaluation(trace, report.assignments, "failed", None, report, reason, view, computation_time, candidate.scheduler_version)
     if report.scheduler_status == "rejected":
-        return TraceEvaluation(trace, report.assignments, "rejected", None, report, reason)
-    return TraceEvaluation(trace, report.assignments, "scored", report.utility if report.utility is not None else 0.0, report)
+        return TraceEvaluation(trace, report.assignments, "rejected", None, report, reason, view, computation_time, candidate.scheduler_version)
+    return TraceEvaluation(
+        trace,
+        report.assignments,
+        "scored",
+        report.utility if report.utility is not None else 0.0,
+        report,
+        scheduler_view=view,
+        scheduler_computation_time_ms=computation_time,
+        scheduler_version=candidate.scheduler_version,
+    )
+
+
+def _scheduler_evidence(snapshot: ProfilingDatabaseSnapshot, dag: ToolCallPlan) -> Mapping[str, Any]:
+    """Expose only evidence relevant to this Trace, never the snapshot handle."""
+    tool_ids = {node.tool_id for node in dag.nodes}
+    tools = tuple(tool for tool in snapshot.data["tools"] if tool["tool_id"] in tool_ids)
+    return _readonly(
+        {
+            "devices": snapshot.data["devices"],
+            "tools": tools,
+            "transfer_profiles": snapshot.data["transfer_profiles"],
+        }
+    )
+
+
+@contextmanager
+def _candidate_timeout() -> Any:
+    """Interrupt an untrusted Candidate that does not return a proposal."""
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    previous_timer = signal.setitimer(signal.ITIMER_REAL, _CANDIDATE_TIMEOUT_SECONDS)
+
+    def raise_timeout(signum: int, frame: Any) -> None:
+        raise TimeoutError("Scheduler Candidate did not return before the trusted time limit")
+
+    signal.signal(signal.SIGALRM, raise_timeout)
+    try:
+        yield
+    finally:
+        signal.signal(signal.SIGALRM, previous_handler)
+        signal.setitimer(signal.ITIMER_REAL, *previous_timer)
 
 
 def _mean(values: Sequence[float | None]) -> float | None:
@@ -310,7 +422,7 @@ class EvolutionLoop:
         object.__setattr__(self, "final_evaluation_traces", final_traces)
 
     def run(self) -> EvolutionLoopResult:
-        candidates = {self.initial_candidate.version: self.initial_candidate}
+        candidates = {self.initial_candidate.scheduler_version: self.initial_candidate}
         current = self.initial_candidate
         observed = [self._candidate_evaluation(current, self.evolution_traces)]
 
@@ -318,14 +430,14 @@ class EvolutionLoop:
             selected = tuple(self.trace_selection_strategy(observed[-1].traces))
             _validate_selected_contexts(selected, observed[-1].traces)
             proposed = self.candidate_proposer(ModelContext(selected), current)
-            if proposed.version in candidates:
-                raise ValueError(f"duplicate Scheduler Candidate version: {proposed.version}")
-            candidates[proposed.version] = proposed
+            if proposed.scheduler_version in candidates:
+                raise ValueError(f"duplicate Scheduler Candidate version: {proposed.scheduler_version}")
+            candidates[proposed.scheduler_version] = proposed
             current = proposed
             observed.append(self._candidate_evaluation(current, self.evolution_traces))
 
         selected_evaluation = _highest_scoring(observed)
-        selected_candidate = candidates[selected_evaluation.candidate_version]
+        selected_candidate = candidates[selected_evaluation.scheduler_version]
         final_candidate_evaluation = self._candidate_evaluation(selected_candidate, self.final_evaluation_traces)
         oracle_scores = tuple(self.oracle(self.snapshot, final_candidate_evaluation.traces, selected_candidate))
         if len(oracle_scores) != len(final_candidate_evaluation.traces):
@@ -362,8 +474,8 @@ class EvolutionLoop:
                 raise ValueError("a rejected or failed Trace cannot include a score")
         # Failed and rejected Traces remain visible but contribute zero, per the
         # Candidate Score glossary definition.
-        score = sum(record.score if record.score is not None else 0.0 for record in records) / len(records) if records else 0.0
-        return CandidateEvaluation(SCHEMA_VERSION, candidate.version, records, score)
+        score = sum(record.score_contribution for record in records) / len(records) if records else 0.0
+        return CandidateEvaluation(SCHEMA_VERSION, candidate.scheduler_version, records, score)
 
 
 def _validate_selected_contexts(
