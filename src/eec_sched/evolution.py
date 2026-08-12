@@ -16,6 +16,9 @@ from .profiling_database import ProfilingDatabaseSnapshot
 from .trusted_evaluation import EvaluationReport, NodeAssignment, evaluate_scheduler_instance
 
 SCHEMA_VERSION = "v1"
+_LEGACY_MINIMUM_ACCURACY = 0.0
+_LEGACY_MAXIMUM_LATENCY_MS = 100.0
+_LEGACY_GAMMA = 0.5
 
 
 def _readonly(value: Any) -> Any:
@@ -41,9 +44,6 @@ class SchedulerView:
     """Read-only scheduling evidence supplied to one Scheduler Candidate."""
 
     dag: ToolCallPlan
-    minimum_accuracy: float
-    maximum_latency_ms: float
-    gamma: float
     snapshot_digest: str
     snapshot_evidence: Mapping[str, Any]
 
@@ -70,10 +70,6 @@ class EvaluationTrace:
     trace_id: str
     task_input: Mapping[str, object]
     dag: ToolCallPlan
-    minimum_accuracy: float
-    maximum_latency_ms: float
-    gamma: float
-    scheduler_solving_time_ms: float = 0.0
 
     def __post_init__(self) -> None:
         if not self.trace_id:
@@ -220,9 +216,6 @@ def _evaluate_candidate(
 def _evaluate_trace(snapshot: ProfilingDatabaseSnapshot, trace: EvaluationTrace, candidate: SchedulerCandidate) -> TraceEvaluation:
     view = SchedulerView(
         _readonly_dag(trace.dag),
-        trace.minimum_accuracy,
-        trace.maximum_latency_ms,
-        trace.gamma,
         snapshot.snapshot_digest,
         _readonly(snapshot.data),
     )
@@ -237,10 +230,10 @@ def _evaluate_trace(snapshot: ProfilingDatabaseSnapshot, trace: EvaluationTrace,
         snapshot,
         trace.dag,
         CandidateAdapter(),
-        minimum_accuracy=trace.minimum_accuracy,
-        maximum_latency_ms=trace.maximum_latency_ms,
-        gamma=trace.gamma,
-        scheduler_solving_time_ms=trace.scheduler_solving_time_ms,
+        minimum_accuracy=_LEGACY_MINIMUM_ACCURACY,
+        maximum_latency_ms=_LEGACY_MAXIMUM_LATENCY_MS,
+        gamma=_LEGACY_GAMMA,
+        scheduler_solving_time_ms=0.0,
     )
     reason = "; ".join(report.validation_errors) or None
     if report.scheduler_status == "rejected" and reason and reason.startswith("scheduler_exception:"):

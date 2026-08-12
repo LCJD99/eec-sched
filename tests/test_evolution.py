@@ -148,9 +148,6 @@ def _trace(trace_id: str) -> EvaluationTrace:
         trace_id=trace_id,
         task_input={"prompt": f"prompt for {trace_id}"},
         dag=dag,
-        minimum_accuracy=0.0,
-        maximum_latency_ms=100.0,
-        gamma=0.5,
     )
 
 
