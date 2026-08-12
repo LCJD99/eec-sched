@@ -101,6 +101,7 @@ def test_canonical_loop_keeps_rejections_and_failures_visible_but_scores_them_as
         {"trace_id": "a", "status": "scored", "score": 0.6},
         {"trace_id": "b", "status": "rejected", "reason": "short reason"},
     ]
+    assert result.selected_evaluation.concise_projection()["scheduler_version"] == 1
 
 
 def test_canonical_loop_rejects_duplicate_versions_and_invalid_selected_contexts() -> None:
@@ -126,6 +127,19 @@ def test_canonical_loop_rejects_duplicate_versions_and_invalid_selected_contexts
     )
     with pytest.raises(ValueError, match="select"):
         foreign.run()
+
+
+def test_canonical_loop_enforces_the_evaluation_status_vocabulary() -> None:
+    trace, final_trace = _trace("evolution"), _trace("final")
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+    loop = EvolutionLoop(
+        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 0,
+        lambda context, candidate: candidate, lambda records: records,
+        lambda snapshot, trace, candidate: TraceEvaluation(trace, {}, "other", None, report),  # type: ignore[arg-type]
+        lambda snapshot, records, candidate: (0.4,),
+    )
+    with pytest.raises(ValueError, match="unknown Evaluation Status"):
+        loop.run()
 
 
 def _trace(trace_id: str) -> EvaluationTrace:
@@ -237,7 +251,7 @@ def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comp
     concise_final = final.concise_projection()
     assert concise_evolution == {
         "schema_version": "v1",
-        "scheduler_candidate_version": 1,
+        "scheduler_version": 1,
         "traces": [{"trace_id": "trace", "status": "scored", "score": pytest.approx(evolution.candidate_score)}],
         "candidate_score": pytest.approx(evolution.candidate_score),
     }

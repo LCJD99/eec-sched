@@ -107,7 +107,7 @@ class CandidateEvaluation:
     def concise_projection(self) -> dict[str, object]:
         return {
             "schema_version": self.schema_version,
-            "scheduler_candidate_version": self.candidate_version,
+            "scheduler_version": self.candidate_version,
             "traces": [_concise_trace(record) for record in self.traces],
             "candidate_score": self.candidate_score,
         }
@@ -131,7 +131,7 @@ class FinalEvaluation:
     def concise_projection(self) -> dict[str, object]:
         return {
             "schema_version": self.candidate_evaluation.schema_version,
-            "scheduler_candidate_version": self.candidate_evaluation.candidate_version,
+            "scheduler_version": self.candidate_evaluation.candidate_version,
             "traces": [
                 {
                     **_concise_trace(comparison.trace_evaluation),
@@ -419,6 +419,8 @@ class EvolutionLoop:
         for record, trace in zip(records, traces, strict=True):
             if record.trace != trace:
                 raise ValueError("trusted evaluator returned a result for a different Trace")
+            if record.status not in {"scored", "rejected", "failed"}:
+                raise ValueError("trusted evaluator returned an unknown Evaluation Status")
             if record.status == "scored" and record.score is None:
                 raise ValueError("a scored Trace must include a score")
             if record.status != "scored" and record.score is not None:
