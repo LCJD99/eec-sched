@@ -212,8 +212,8 @@ def _evaluate_candidate(
     candidate: SchedulerCandidate,
 ) -> CandidateEvaluation:
     records = tuple(_evaluate_trace(snapshot, trace, candidate) for trace in traces)
-    scores = [record.score for record in records]
-    return CandidateEvaluation(SCHEMA_VERSION, candidate.version, records, _mean(scores) if all(score is not None for score in scores) else None)
+    scores = [record.score if record.score is not None else 0.0 for record in records]
+    return CandidateEvaluation(SCHEMA_VERSION, candidate.version, records, _mean(scores) if records else 0.0)
 
 
 def _evaluate_trace(snapshot: ProfilingDatabaseSnapshot, trace: EvaluationTrace, candidate: SchedulerCandidate) -> TraceEvaluation:
@@ -322,3 +322,128 @@ class EvolutionModule:
         )
         assert isinstance(result, FinalEvaluation)
         return result
+
+
+TrustedTraceEvaluator = Callable[
+    [ProfilingDatabaseSnapshot, EvaluationTrace, SchedulerCandidate], TraceEvaluation
+]
+OracleDependency = Callable[
+    [ProfilingDatabaseSnapshot, tuple[TraceEvaluation, ...], SchedulerCandidate], Sequence[float | None]
+]
+
+
+@dataclass(frozen=True)
+class EvolutionLoopResult:
+    """The complete, bounded application-level result for one evolution run."""
+
+    observed_evaluations: tuple[CandidateEvaluation, ...]
+    selected_candidate: SchedulerCandidate
+    selected_evaluation: CandidateEvaluation
+    final_evaluation: FinalEvaluation
+
+
+@dataclass(frozen=True)
+class EvolutionLoop:
+    """Canonical application boundary for candidate evolution and final scoring.
+
+    The injected evaluator is the sole authority for a Trace status, assignment,
+    report, and score.  The loop only aggregates those trusted facts and never
+    exposes its mutable control state to Candidate or model code.
+    """
+
+    snapshot: ProfilingDatabaseSnapshot
+    evolution_traces: Sequence[EvaluationTrace]
+    final_evaluation_traces: Sequence[EvaluationTrace]
+    initial_candidate: SchedulerCandidate
+    rounds: int
+    candidate_proposer: CandidateProposer
+    trace_selection_strategy: TraceSelectionStrategy
+    trusted_evaluator: TrustedTraceEvaluator
+    oracle: OracleDependency
+
+    def __post_init__(self) -> None:
+        if self.rounds < 0:
+            raise ValueError("rounds must not be negative")
+        evolution_traces = tuple(self.evolution_traces)
+        final_traces = tuple(self.final_evaluation_traces)
+        _validate_trace_set(evolution_traces)
+        _validate_trace_set(final_traces)
+        if {trace.trace_id for trace in evolution_traces} & {trace.trace_id for trace in final_traces}:
+            raise ValueError("Final Evaluation Trace Set must be independent from the Evolution Trace Set")
+        object.__setattr__(self, "evolution_traces", evolution_traces)
+        object.__setattr__(self, "final_evaluation_traces", final_traces)
+
+    def run(self) -> EvolutionLoopResult:
+        candidates = {self.initial_candidate.version: self.initial_candidate}
+        current = self.initial_candidate
+        observed = [self._candidate_evaluation(current, self.evolution_traces)]
+
+        for _ in range(self.rounds):
+            selected = tuple(self.trace_selection_strategy(observed[-1].traces))
+            _validate_selected_contexts(selected, observed[-1].traces)
+            proposed = self.candidate_proposer(ModelContext(selected), current)
+            if proposed.version in candidates:
+                raise ValueError(f"duplicate Scheduler Candidate version: {proposed.version}")
+            candidates[proposed.version] = proposed
+            current = proposed
+            observed.append(self._candidate_evaluation(current, self.evolution_traces))
+
+        selected_evaluation = _highest_scoring(observed)
+        selected_candidate = candidates[selected_evaluation.candidate_version]
+        final_candidate_evaluation = self._candidate_evaluation(selected_candidate, self.final_evaluation_traces)
+        oracle_scores = tuple(self.oracle(self.snapshot, final_candidate_evaluation.traces, selected_candidate))
+        if len(oracle_scores) != len(final_candidate_evaluation.traces):
+            raise ValueError("Oracle dependency must return one score per Final Evaluation Trace")
+        comparisons = tuple(
+            FinalTraceComparison(
+                record,
+                oracle_score,
+                None if record.score is None or oracle_score is None else record.score - oracle_score,
+            )
+            for record, oracle_score in zip(final_candidate_evaluation.traces, oracle_scores, strict=True)
+        )
+        final = FinalEvaluation(
+            final_candidate_evaluation,
+            comparisons,
+            final_candidate_evaluation.candidate_score,
+            _mean(oracle_scores),
+            _mean([comparison.difference for comparison in comparisons]),
+        )
+        return EvolutionLoopResult(tuple(observed), selected_candidate, selected_evaluation, final)
+
+    def _candidate_evaluation(
+        self, candidate: SchedulerCandidate, traces: Sequence[EvaluationTrace]
+    ) -> CandidateEvaluation:
+        records = tuple(self.trusted_evaluator(self.snapshot, trace, candidate) for trace in traces)
+        for record, trace in zip(records, traces, strict=True):
+            if record.trace != trace:
+                raise ValueError("trusted evaluator returned a result for a different Trace")
+            if record.status == "scored" and record.score is None:
+                raise ValueError("a scored Trace must include a score")
+            if record.status != "scored" and record.score is not None:
+                raise ValueError("a rejected or failed Trace cannot include a score")
+        # Failed and rejected Traces remain visible but contribute zero, per the
+        # Candidate Score glossary definition.
+        score = sum(record.score if record.score is not None else 0.0 for record in records) / len(records) if records else 0.0
+        return CandidateEvaluation(SCHEMA_VERSION, candidate.version, records, score)
+
+
+def _validate_selected_contexts(
+    selected: Sequence[TraceEvaluation], available: Sequence[TraceEvaluation]
+) -> None:
+    available_ids = {id(record) for record in available}
+    if any(id(record) not in available_ids for record in selected):
+        raise ValueError("Trace Selection Strategy must select from the supplied Trace results")
+
+
+def _highest_scoring(observed: Sequence[CandidateEvaluation]) -> CandidateEvaluation:
+    if not observed:
+        raise ValueError("Evolution Loop requires an initial Candidate Evaluation")
+    # Strict comparison deliberately keeps the earliest observed candidate on a tie.
+    best = observed[0]
+    for evaluation in observed[1:]:
+        if evaluation.candidate_score is not None and (
+            best.candidate_score is None or evaluation.candidate_score > best.candidate_score
+        ):
+            best = evaluation
+    return best

@@ -5,11 +5,14 @@ from pathlib import Path
 import pytest
 
 from eec_sched import (
+    EvolutionLoop,
     EvaluationTrace,
+    EvaluationReport,
     EvolutionModule,
     FinalOutput,
     InputSource,
     SchedulerCandidate,
+    TraceEvaluation,
     ToolCallPlan,
     ToolNode,
     evaluate_scheduler_candidate,
@@ -22,6 +25,107 @@ SNAPSHOT = load_profiling_database(
     ROOT / "docs/examples/profiling-database.fake.json",
     ROOT / "docs/schemas/profiling-database.schema.json",
 )
+
+
+def test_canonical_loop_injects_evaluator_and_oracle_at_the_application_seam() -> None:
+    """The loop evaluates every candidate once, then pays the Oracle cost once."""
+    calls: list[tuple[str, int]] = []
+    selected: list[tuple[str, ...]] = []
+    oracle_calls: list[tuple[int, tuple[str, ...]]] = []
+
+    def evaluator(snapshot, trace, candidate):
+        calls.append((trace.trace_id, candidate.version))
+        score = 0.8 if candidate.version == 1 else 0.2
+        report = EvaluationReport(snapshot.snapshot_digest, "scheduled", (), {})
+        return TraceEvaluation(trace, {}, "scored", score, report)
+
+    def select(records):
+        selected.append(tuple(record.trace.trace_id for record in records))
+        return records[:1]
+
+    def oracle(snapshot, records, candidate):
+        oracle_calls.append((candidate.version, tuple(record.trace.trace_id for record in records)))
+        return (1.0,)
+
+    loop = EvolutionLoop(
+        snapshot=SNAPSHOT,
+        evolution_traces=(_trace("evolution-a"), _trace("evolution-b")),
+        final_evaluation_traces=(_trace("final"),),
+        initial_candidate=_reference_candidate(),
+        rounds=1,
+        candidate_proposer=lambda context, current: _reference_candidate(2),
+        trace_selection_strategy=select,
+        trusted_evaluator=evaluator,
+        oracle=oracle,
+    )
+
+    result = loop.run()
+
+    assert calls == [("evolution-a", 1), ("evolution-b", 1), ("evolution-a", 2), ("evolution-b", 2), ("final", 1)]
+    assert selected == [("evolution-a", "evolution-b")]
+    assert result.selected_candidate.version == 1
+    assert result.selected_evaluation.candidate_score == pytest.approx(0.8)
+    assert oracle_calls == [(1, ("final",))]
+    assert result.final_evaluation.average_candidate_score == pytest.approx(0.8)
+    assert result.final_evaluation.average_oracle_reference_score == pytest.approx(1.0)
+    assert result.final_evaluation.average_difference == pytest.approx(-0.2)
+
+
+def test_canonical_loop_keeps_rejections_and_failures_visible_but_scores_them_as_zero() -> None:
+    trace_a, trace_b, final_trace = _trace("a"), _trace("b"), _trace("final")
+
+    def evaluator(snapshot, trace, candidate):
+        report = EvaluationReport(snapshot.snapshot_digest, "rejected", ("short reason",), {})
+        if trace.trace_id == "a":
+            return TraceEvaluation(trace, {}, "scored", 0.6, report)
+        return TraceEvaluation(trace, {}, "rejected", None, report, "short reason")
+
+    result = EvolutionLoop(
+        SNAPSHOT,
+        (trace_a, trace_b),
+        (final_trace,),
+        _reference_candidate(),
+        0,
+        lambda context, candidate: candidate,
+        lambda records: records,
+        evaluator,
+        lambda snapshot, records, candidate: (0.7,),
+    ).run()
+
+    assert result.selected_evaluation.candidate_score == pytest.approx(0.3)
+    assert [(record.status, record.score, record.reason) for record in result.selected_evaluation.traces] == [
+        ("scored", 0.6, None),
+        ("rejected", None, "short reason"),
+    ]
+    assert result.selected_evaluation.concise_projection()["traces"] == [
+        {"trace_id": "a", "status": "scored", "score": 0.6},
+        {"trace_id": "b", "status": "rejected", "reason": "short reason"},
+    ]
+
+
+def test_canonical_loop_rejects_duplicate_versions_and_invalid_selected_contexts() -> None:
+    trace, final_trace = _trace("evolution"), _trace("final")
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+    record = TraceEvaluation(trace, {}, "scored", 0.4, report)
+
+    duplicate = EvolutionLoop(
+        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1,
+        lambda context, candidate: _reference_candidate(), lambda records: records,
+        lambda snapshot, trace, candidate: record,
+        lambda snapshot, records, candidate: (0.4,),
+    )
+    with pytest.raises(ValueError, match="duplicate"):
+        duplicate.run()
+
+    foreign = EvolutionLoop(
+        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1,
+        lambda context, candidate: _reference_candidate(2),
+        lambda records: (TraceEvaluation(trace, {}, "scored", 0.4, report),),
+        lambda snapshot, trace, candidate: record,
+        lambda snapshot, records, candidate: (0.4,),
+    )
+    with pytest.raises(ValueError, match="select"):
+        foreign.run()
 
 
 def _trace(trace_id: str) -> EvaluationTrace:
