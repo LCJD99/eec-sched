@@ -594,6 +594,7 @@ source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
     { name = "pillow" },
+    { name = "pyyaml" },
     { name = "torch" },
     { name = "transformers" },
 ]
@@ -618,6 +619,7 @@ profiling = [
 requires-dist = [
     { name = "jsonschema", specifier = ">=4.23" },
     { name = "pillow", specifier = ">=10" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "torch", specifier = ">=2.2" },
     { name = "transformers", specifier = ">=4.40,<5" },
 ]
