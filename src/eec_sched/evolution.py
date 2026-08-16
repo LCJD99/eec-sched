@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from dataclasses import dataclass
+from math import sqrt
+from random import choice as random_choice, random
 import signal
 from types import MappingProxyType
-from typing import Any, Callable, Literal, Mapping, Protocol, Sequence
+from typing import Any, Callable, Literal, Mapping, Sequence
 
 from .domain import FinalOutput, ToolCallPlan, ToolNode
 from .profiling_database import ProfilingDatabaseSnapshot
@@ -77,6 +79,9 @@ class SchedulerCandidate:
 
     scheduler_version: int
     propose: Callable[[SchedulerView], SchedulerProposal]
+    source_code: str = "def propose(view):\n    raise NotImplementedError\n"
+    parent_scheduler_versions: tuple[int, ...] = ()
+    strategy_description: str = "legacy scheduler strategy"
 
     def __post_init__(self) -> None:
         if (
@@ -85,6 +90,18 @@ class SchedulerCandidate:
             or self.scheduler_version <= 0
         ):
             raise ValueError("Scheduler Candidate version must be a positive integer")
+        if not self.source_code.strip():
+            raise ValueError("Scheduler Candidate source code must not be empty")
+        try:
+            compile(self.source_code, f"scheduler-candidate-{self.scheduler_version}", "exec")
+        except SyntaxError as exc:
+            raise ValueError("Scheduler Candidate source code must be executable Python") from exc
+        if not self.strategy_description.strip():
+            raise ValueError("Scheduler Strategy Description must not be empty")
+        if len(set(self.parent_scheduler_versions)) != len(self.parent_scheduler_versions):
+            raise ValueError("Parent Scheduler Versions must be unique")
+        if any(version <= 0 for version in self.parent_scheduler_versions):
+            raise ValueError("Parent Scheduler Versions must be positive integers")
 
 
 @dataclass(frozen=True)
@@ -360,18 +377,6 @@ def _mean(values: Sequence[float | None]) -> float | None:
     return None if not numeric else sum(numeric) / len(numeric)
 
 
-class TraceSelectionStrategy(Protocol):
-    def __call__(self, traces: tuple[TraceEvaluation, ...]) -> Sequence[TraceEvaluation]: ...
-
-
-@dataclass(frozen=True)
-class ModelContext:
-    traces: tuple[TraceEvaluation, ...]
-
-
-CandidateProposer = Callable[[ModelContext, SchedulerCandidate], SchedulerCandidate]
-
-
 TrustedTraceEvaluator = Callable[
     [ProfilingDatabaseSnapshot, EvaluationTrace, SchedulerCandidate], TraceEvaluation
 ]
@@ -381,10 +386,56 @@ OracleDependency = Callable[
 
 
 @dataclass(frozen=True)
+class EvolutionGraph:
+    """All Candidates and their trusted evidence for one Evolution Loop run."""
+
+    candidates: Mapping[int, SchedulerCandidate]
+    evaluations: Mapping[int, CandidateEvaluation]
+
+    def __post_init__(self) -> None:
+        candidates = dict(self.candidates)
+        evaluations = dict(self.evaluations)
+        if set(candidates) != set(evaluations):
+            raise ValueError("Evolution Graph Candidates and Evaluations must have matching versions")
+        if any(candidate.scheduler_version != version for version, candidate in candidates.items()):
+            raise ValueError("Evolution Graph keys must match Scheduler Versions")
+        if any(evaluation.scheduler_version != version for version, evaluation in evaluations.items()):
+            raise ValueError("Evolution Graph evidence must match Scheduler Versions")
+        object.__setattr__(self, "candidates", MappingProxyType(candidates))
+        object.__setattr__(self, "evaluations", MappingProxyType(evaluations))
+
+
+@dataclass(frozen=True)
+class ReflectionInput:
+    """Source-free evidence the Reflection Agent may inspect."""
+
+    operator: Literal["mutation", "crossover"]
+    strategy_descriptions: Mapping[int, str]
+    trace_evidence: tuple[TraceEvaluation, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "strategy_descriptions", MappingProxyType(dict(self.strategy_descriptions)))
+
+
+@dataclass(frozen=True)
+class CandidateGenerationRequest:
+    """Advice and parent source code supplied to the Coding Agent."""
+
+    operator: Literal["mutation", "crossover"]
+    parent_scheduler_versions: tuple[int, ...]
+    parent_source_codes: tuple[str, ...]
+    reflection_advice: str
+
+
+ReflectionAgent = Callable[[ReflectionInput], str]
+CodingAgent = Callable[[CandidateGenerationRequest], SchedulerCandidate]
+
+
+@dataclass(frozen=True)
 class EvolutionLoopResult:
     """The complete, bounded application-level result for one evolution run."""
 
-    observed_evaluations: tuple[CandidateEvaluation, ...]
+    evolution_graph: EvolutionGraph
     selected_candidate: SchedulerCandidate
     selected_evaluation: CandidateEvaluation
     final_evaluation: FinalEvaluation
@@ -402,16 +453,28 @@ class EvolutionLoop:
     snapshot: ProfilingDatabaseSnapshot
     evolution_traces: Sequence[EvaluationTrace]
     final_evaluation_traces: Sequence[EvaluationTrace]
-    initial_candidate: SchedulerCandidate
+    initial_candidates: Sequence[SchedulerCandidate]
     rounds: int
-    candidate_proposer: CandidateProposer
-    trace_selection_strategy: TraceSelectionStrategy
+    mutation_probability: float
+    reflection_agent: ReflectionAgent
+    coding_agent: CodingAgent
     trusted_evaluator: TrustedTraceEvaluator
     oracle: OracleDependency
+    random_float: Callable[[], float] = random
+    random_choice: Callable[[Sequence[SchedulerCandidate]], SchedulerCandidate] = random_choice
 
     def __post_init__(self) -> None:
         if self.rounds < 0:
             raise ValueError("rounds must not be negative")
+        if not 0.0 <= self.mutation_probability <= 1.0:
+            raise ValueError("mutation_probability must be between zero and one")
+        roots = tuple(self.initial_candidates)
+        if len(roots) != 3:
+            raise ValueError("Evolution Graph requires exactly three root Scheduler Candidates")
+        if len({candidate.scheduler_version for candidate in roots}) != 3:
+            raise ValueError("root Scheduler Candidate versions must be distinct")
+        if any(candidate.parent_scheduler_versions for candidate in roots):
+            raise ValueError("root Scheduler Candidates must not have Parent Scheduler Versions")
         evolution_traces = tuple(self.evolution_traces)
         final_traces = tuple(self.final_evaluation_traces)
         _validate_trace_set(evolution_traces)
@@ -420,23 +483,38 @@ class EvolutionLoop:
             raise ValueError("Final Evaluation Trace Set must be independent from the Evolution Trace Set")
         object.__setattr__(self, "evolution_traces", evolution_traces)
         object.__setattr__(self, "final_evaluation_traces", final_traces)
+        object.__setattr__(self, "initial_candidates", roots)
 
     def run(self) -> EvolutionLoopResult:
-        candidates = {self.initial_candidate.scheduler_version: self.initial_candidate}
-        current = self.initial_candidate
-        observed = [self._candidate_evaluation(current, self.evolution_traces)]
+        candidates = {candidate.scheduler_version: candidate for candidate in self.initial_candidates}
+        evaluations = {
+            candidate.scheduler_version: self._candidate_evaluation(candidate, self.evolution_traces)
+            for candidate in self.initial_candidates
+        }
 
         for _ in range(self.rounds):
-            selected = tuple(self.trace_selection_strategy(observed[-1].traces))
-            _validate_selected_contexts(selected, observed[-1].traces)
-            proposed = self.candidate_proposer(ModelContext(selected), current)
+            operator: Literal["mutation", "crossover"] = (
+                "mutation" if self.random_float() < self.mutation_probability else "crossover"
+            )
+            parents = self._select_mutation_parent(candidates, evaluations) if operator == "mutation" else self._select_crossover_parents(candidates, evaluations)
+            reflection = self._reflection_input(operator, parents, candidates, evaluations)
+            advice = self.reflection_agent(reflection)
+            request = CandidateGenerationRequest(
+                operator,
+                tuple(parent.scheduler_version for parent in parents),
+                tuple(parent.source_code for parent in parents),
+                advice,
+            )
+            proposed = self.coding_agent(request)
             if proposed.scheduler_version in candidates:
                 raise ValueError(f"duplicate Scheduler Candidate version: {proposed.scheduler_version}")
+            if proposed.parent_scheduler_versions != request.parent_scheduler_versions:
+                raise ValueError("Coding Agent must retain the selected Parent Scheduler Versions")
             candidates[proposed.scheduler_version] = proposed
-            current = proposed
-            observed.append(self._candidate_evaluation(current, self.evolution_traces))
+            evaluations[proposed.scheduler_version] = self._candidate_evaluation(proposed, self.evolution_traces)
 
-        selected_evaluation = _highest_scoring(observed)
+        graph = EvolutionGraph(candidates, evaluations)
+        selected_evaluation = _highest_scoring(tuple(graph.evaluations.values()))
         selected_candidate = candidates[selected_evaluation.scheduler_version]
         final_candidate_evaluation = self._candidate_evaluation(selected_candidate, self.final_evaluation_traces)
         oracle_scores = tuple(self.oracle(self.snapshot, final_candidate_evaluation.traces, selected_candidate))
@@ -457,7 +535,42 @@ class EvolutionLoop:
             _mean(oracle_scores),
             _mean([comparison.difference for comparison in comparisons]),
         )
-        return EvolutionLoopResult(tuple(observed), selected_candidate, selected_evaluation, final)
+        return EvolutionLoopResult(graph, selected_candidate, selected_evaluation, final)
+
+    def _select_mutation_parent(
+        self, candidates: Mapping[int, SchedulerCandidate], evaluations: Mapping[int, CandidateEvaluation]
+    ) -> tuple[SchedulerCandidate, ...]:
+        frontier = _pareto_frontier(tuple(evaluations.values()))
+        return (self.random_choice(tuple(candidates[item.scheduler_version] for item in frontier)),)
+
+    def _select_crossover_parents(
+        self, candidates: Mapping[int, SchedulerCandidate], evaluations: Mapping[int, CandidateEvaluation]
+    ) -> tuple[SchedulerCandidate, ...]:
+        ranked = sorted(evaluations.values(), key=lambda item: (-item.candidate_score, item.scheduler_version))[:5]
+        pairs = ((left, right) for index, left in enumerate(ranked) for right in ranked[index + 1 :])
+        left, right = min(pairs, key=lambda pair: (_cosine_similarity(pair[0], pair[1]), pair[0].scheduler_version, pair[1].scheduler_version))
+        return candidates[left.scheduler_version], candidates[right.scheduler_version]
+
+    def _reflection_input(
+        self,
+        operator: Literal["mutation", "crossover"],
+        parents: tuple[SchedulerCandidate, ...],
+        candidates: Mapping[int, SchedulerCandidate],
+        evaluations: Mapping[int, CandidateEvaluation],
+    ) -> ReflectionInput:
+        if operator == "crossover":
+            evidence = _crossover_evidence(evaluations[parents[0].scheduler_version], evaluations[parents[1].scheduler_version])
+        else:
+            parent = parents[0]
+            evaluation = evaluations[parent.scheduler_version]
+            evidence = _root_evidence(evaluation) if not parent.parent_scheduler_versions else _lineage_evidence(
+                evaluation, tuple(evaluations[version] for version in parent.parent_scheduler_versions)
+            )
+        involved = parents if operator == "crossover" else (
+            parents[0], *(candidates[version] for version in parents[0].parent_scheduler_versions)
+        )
+        descriptions = {candidate.scheduler_version: candidate.strategy_description for candidate in involved}
+        return ReflectionInput(operator, descriptions, evidence)
 
     def _candidate_evaluation(
         self, candidate: SchedulerCandidate, traces: Sequence[EvaluationTrace]
@@ -478,12 +591,64 @@ class EvolutionLoop:
         return CandidateEvaluation(SCHEMA_VERSION, candidate.scheduler_version, records, score)
 
 
-def _validate_selected_contexts(
-    selected: Sequence[TraceEvaluation], available: Sequence[TraceEvaluation]
-) -> None:
-    available_ids = {id(record) for record in available}
-    if any(id(record) not in available_ids for record in selected):
-        raise ValueError("Trace Selection Strategy must select from the supplied Trace results")
+def _score_vector(evaluation: CandidateEvaluation) -> tuple[float, ...]:
+    return tuple(record.score_contribution for record in evaluation.traces)
+
+
+def _pareto_frontier(evaluations: Sequence[CandidateEvaluation]) -> tuple[CandidateEvaluation, ...]:
+    def dominated(candidate: CandidateEvaluation) -> bool:
+        vector = _score_vector(candidate)
+        return any(
+            all(other >= current for other, current in zip(_score_vector(comparator), vector, strict=True))
+            and any(other > current for other, current in zip(_score_vector(comparator), vector, strict=True))
+            for comparator in evaluations
+            if comparator is not candidate
+        )
+
+    return tuple(item for item in evaluations if not dominated(item))
+
+
+def _cosine_similarity(left: CandidateEvaluation, right: CandidateEvaluation) -> float:
+    left_vector, right_vector = _score_vector(left), _score_vector(right)
+    left_norm = sqrt(sum(value * value for value in left_vector))
+    right_norm = sqrt(sum(value * value for value in right_vector))
+    if not left_norm and not right_norm:
+        return 1.0
+    if not left_norm or not right_norm:
+        return 0.0
+    return sum(a * b for a, b in zip(left_vector, right_vector, strict=True)) / (left_norm * right_norm)
+
+
+def _root_evidence(evaluation: CandidateEvaluation) -> tuple[TraceEvaluation, ...]:
+    records = evaluation.traces
+    if not records:
+        return ()
+    return (max(records, key=lambda item: item.score_contribution), min(records, key=lambda item: item.score_contribution))
+
+
+def _lineage_evidence(
+    candidate: CandidateEvaluation, direct_parents: Sequence[CandidateEvaluation]
+) -> tuple[TraceEvaluation, ...]:
+    evidence: list[TraceEvaluation] = []
+    for parent in direct_parents:
+        comparisons = tuple(zip(candidate.traces, parent.traces, strict=True))
+        if comparisons:
+            improvement = max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)
+            regression = min(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)
+            evidence.extend((*improvement, *regression))
+    return tuple(evidence)
+
+
+def _crossover_evidence(left: CandidateEvaluation, right: CandidateEvaluation) -> tuple[TraceEvaluation, ...]:
+    comparisons = tuple(zip(left.traces, right.traces, strict=True))
+    if not comparisons:
+        return ()
+    return (
+        max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)[0],
+        max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)[1],
+        max(comparisons, key=lambda pair: pair[1].score_contribution - pair[0].score_contribution)[1],
+        max(comparisons, key=lambda pair: pair[1].score_contribution - pair[0].score_contribution)[0],
+    )
 
 
 def _highest_scoring(observed: Sequence[CandidateEvaluation]) -> CandidateEvaluation:

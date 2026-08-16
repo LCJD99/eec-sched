@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 
 from eec_sched import (
+    CandidateGenerationRequest,
+    EvolutionGraph,
     EvolutionLoop,
     EvaluationTrace,
     EvaluationReport,
@@ -25,121 +27,6 @@ SNAPSHOT = load_profiling_database(
 )
 
 
-def test_canonical_loop_injects_evaluator_and_oracle_at_the_application_seam() -> None:
-    """The loop evaluates every candidate once, then pays the Oracle cost once."""
-    calls: list[tuple[str, int]] = []
-    selected: list[tuple[str, ...]] = []
-    oracle_calls: list[tuple[int, tuple[str, ...]]] = []
-
-    def evaluator(snapshot, trace, candidate):
-        calls.append((trace.trace_id, candidate.scheduler_version))
-        score = 0.8 if candidate.scheduler_version == 1 else 0.2
-        report = EvaluationReport(snapshot.snapshot_digest, "scheduled", (), {})
-        return TraceEvaluation(trace, {}, "scored", score, report)
-
-    def select(records):
-        selected.append(tuple(record.trace.trace_id for record in records))
-        return records[:1]
-
-    def oracle(snapshot, records, candidate):
-        oracle_calls.append((candidate.scheduler_version, tuple(record.trace.trace_id for record in records)))
-        return (1.0,)
-
-    loop = EvolutionLoop(
-        snapshot=SNAPSHOT,
-        evolution_traces=(_trace("evolution-a"), _trace("evolution-b")),
-        final_evaluation_traces=(_trace("final"),),
-        initial_candidate=_reference_candidate(),
-        rounds=1,
-        candidate_proposer=lambda context, current: _reference_candidate(2),
-        trace_selection_strategy=select,
-        trusted_evaluator=evaluator,
-        oracle=oracle,
-    )
-
-    result = loop.run()
-
-    assert calls == [("evolution-a", 1), ("evolution-b", 1), ("evolution-a", 2), ("evolution-b", 2), ("final", 1)]
-    assert selected == [("evolution-a", "evolution-b")]
-    assert result.selected_candidate.scheduler_version == 1
-    assert result.selected_evaluation.candidate_score == pytest.approx(0.8)
-    assert oracle_calls == [(1, ("final",))]
-    assert result.final_evaluation.average_candidate_score == pytest.approx(0.8)
-    assert result.final_evaluation.average_oracle_reference_score == pytest.approx(1.0)
-    assert result.final_evaluation.average_difference == pytest.approx(-0.2)
-
-
-def test_canonical_loop_keeps_rejections_and_failures_visible_but_scores_them_as_zero() -> None:
-    trace_a, trace_b, final_trace = _trace("a"), _trace("b"), _trace("final")
-
-    def evaluator(snapshot, trace, candidate):
-        report = EvaluationReport(snapshot.snapshot_digest, "rejected", ("short reason",), {})
-        if trace.trace_id == "a":
-            return TraceEvaluation(trace, {}, "scored", 0.6, report)
-        return TraceEvaluation(trace, {}, "rejected", None, report, "short reason")
-
-    result = EvolutionLoop(
-        SNAPSHOT,
-        (trace_a, trace_b),
-        (final_trace,),
-        _reference_candidate(),
-        0,
-        lambda context, candidate: candidate,
-        lambda records: records,
-        evaluator,
-        lambda snapshot, records, candidate: (0.7,),
-    ).run()
-
-    assert result.selected_evaluation.candidate_score == pytest.approx(0.3)
-    assert [(record.status, record.score, record.reason) for record in result.selected_evaluation.traces] == [
-        ("scored", 0.6, None),
-        ("rejected", None, "short reason"),
-    ]
-    assert result.selected_evaluation.concise_projection()["traces"] == [
-        {"trace_id": "a", "status": "scored", "score": 0.6},
-        {"trace_id": "b", "status": "rejected", "score": 0.0, "reason": "short reason"},
-    ]
-    assert result.selected_evaluation.concise_projection()["scheduler_version"] == 1
-
-
-def test_canonical_loop_rejects_duplicate_versions_and_invalid_selected_contexts() -> None:
-    trace, final_trace = _trace("evolution"), _trace("final")
-    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
-    record = TraceEvaluation(trace, {}, "scored", 0.4, report)
-
-    duplicate = EvolutionLoop(
-        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1,
-        lambda context, candidate: _reference_candidate(), lambda records: records,
-        lambda snapshot, trace, candidate: record,
-        lambda snapshot, records, candidate: (0.4,),
-    )
-    with pytest.raises(ValueError, match="duplicate"):
-        duplicate.run()
-
-    foreign = EvolutionLoop(
-        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1,
-        lambda context, candidate: _reference_candidate(2),
-        lambda records: (TraceEvaluation(trace, {}, "scored", 0.4, report),),
-        lambda snapshot, trace, candidate: record,
-        lambda snapshot, records, candidate: (0.4,),
-    )
-    with pytest.raises(ValueError, match="select"):
-        foreign.run()
-
-
-def test_canonical_loop_enforces_the_evaluation_status_vocabulary() -> None:
-    trace, final_trace = _trace("evolution"), _trace("final")
-    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
-    loop = EvolutionLoop(
-        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 0,
-        lambda context, candidate: candidate, lambda records: records,
-        lambda snapshot, trace, candidate: TraceEvaluation(trace, {}, "other", None, report),  # type: ignore[arg-type]
-        lambda snapshot, records, candidate: (0.4,),
-    )
-    with pytest.raises(ValueError, match="unknown Evaluation Status"):
-        loop.run()
-
-
 def _trace(trace_id: str) -> EvaluationTrace:
     dag = ToolCallPlan(
         nodes=(ToolNode("generate", "text_generation", {"prompt": InputSource.request("prompt")}),),
@@ -152,13 +39,176 @@ def _trace(trace_id: str) -> EvaluationTrace:
     )
 
 
-def _reference_candidate(scheduler_version: int = 1) -> SchedulerCandidate:
+def _reference_candidate(
+    scheduler_version: int = 1, *, parent_scheduler_versions: tuple[int, ...] = ()
+) -> SchedulerCandidate:
     return SchedulerCandidate(
         scheduler_version=scheduler_version,
         propose=lambda view: {
             "generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}
         },
+        source_code=f"def schedule_{scheduler_version}(view):\n    return {{}}\n",
+        parent_scheduler_versions=parent_scheduler_versions,
+        strategy_description=f"strategy for scheduler {scheduler_version}",
     )
+
+
+def test_evolution_graph_starts_with_three_roots_and_retains_mutation_lineage() -> None:
+    """The application seam retains each graph node and its direct parents."""
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+    roots = tuple(_reference_candidate(version) for version in (1, 2, 3))
+    generated_requests: list[CandidateGenerationRequest] = []
+
+    def evaluator(snapshot, trace, candidate):
+        score = {1: 0.1, 2: 0.4, 3: 0.3, 4: 0.9}[candidate.scheduler_version]
+        return TraceEvaluation(trace, {}, "scored", score, report)
+
+    def coding_agent(request):
+        generated_requests.append(request)
+        return _reference_candidate(4, parent_scheduler_versions=request.parent_scheduler_versions)
+
+    result = EvolutionLoop(
+        snapshot=SNAPSHOT,
+        evolution_traces=(_trace("evolution"),),
+        final_evaluation_traces=(_trace("final"),),
+        initial_candidates=roots,
+        rounds=1,
+        mutation_probability=1.0,
+        reflection_agent=lambda reflection: "strengthen the chosen strategy",
+        coding_agent=coding_agent,
+        trusted_evaluator=evaluator,
+        oracle=lambda snapshot, records, candidate: (0.5,),
+        random_float=lambda: 0.0,
+        random_choice=lambda candidates: candidates[0],
+    ).run()
+
+    assert isinstance(result.evolution_graph, EvolutionGraph)
+    assert tuple(result.evolution_graph.candidates) == (1, 2, 3, 4)
+    assert result.evolution_graph.candidates[1].parent_scheduler_versions == ()
+    assert result.evolution_graph.candidates[4].parent_scheduler_versions == (2,)
+    assert result.selected_candidate.scheduler_version == 4
+    assert generated_requests[0].parent_source_codes == ("def schedule_2(view):\n    return {}\n",)
+
+
+def test_crossover_uses_least_similar_top_candidates_and_hides_source_from_reflection() -> None:
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+    reflections = []
+    requests = []
+    scores = {
+        1: (1.0, 0.0),
+        2: (0.0, 1.0),
+        3: (1.0, 1.0),
+        4: (0.5, 0.5),
+    }
+
+    def evaluator(snapshot, trace, candidate):
+        if trace.trace_id == "final":
+            return TraceEvaluation(trace, {}, "scored", 0.5, report)
+        index = ("left", "right").index(trace.trace_id)
+        return TraceEvaluation(trace, {}, "scored", scores[candidate.scheduler_version][index], report)
+
+    def coding_agent(request):
+        requests.append(request)
+        return _reference_candidate(4, parent_scheduler_versions=request.parent_scheduler_versions)
+
+    result = EvolutionLoop(
+        SNAPSHOT,
+        (_trace("left"), _trace("right")),
+        (_trace("final"),),
+        tuple(_reference_candidate(version) for version in (1, 2, 3)),
+        1,
+        0.0,
+        lambda reflection: reflections.append(reflection) or "combine complementary strengths",
+        coding_agent,
+        evaluator,
+        lambda snapshot, records, candidate: (0.25,),
+        random_float=lambda: 1.0,
+    ).run()
+
+    assert requests[0].operator == "crossover"
+    assert requests[0].parent_scheduler_versions == (1, 2)
+    assert requests[0].parent_source_codes == (
+        "def schedule_1(view):\n    return {}\n",
+        "def schedule_2(view):\n    return {}\n",
+    )
+    assert reflections[0].operator == "crossover"
+    assert reflections[0].strategy_descriptions == {1: "strategy for scheduler 1", 2: "strategy for scheduler 2"}
+    assert not hasattr(reflections[0], "parent_source_codes")
+    assert result.selected_candidate.scheduler_version == 3
+
+
+def test_evolution_loop_requires_three_distinct_roots_without_parents() -> None:
+    arguments = dict(
+        snapshot=SNAPSHOT,
+        evolution_traces=(_trace("evolution"),),
+        final_evaluation_traces=(_trace("final"),),
+        rounds=0,
+        mutation_probability=1.0,
+        reflection_agent=lambda reflection: "advice",
+        coding_agent=lambda request: _reference_candidate(4, parent_scheduler_versions=request.parent_scheduler_versions),
+        trusted_evaluator=lambda snapshot, trace, candidate: TraceEvaluation(
+            trace, {}, "scored", 0.5, EvaluationReport(snapshot.snapshot_digest, "scheduled", (), {})
+        ),
+        oracle=lambda snapshot, records, candidate: (0.5,),
+    )
+
+    with pytest.raises(ValueError, match="exactly three"):
+        EvolutionLoop(initial_candidates=(_reference_candidate(1), _reference_candidate(2)), **arguments)
+    with pytest.raises(ValueError, match="distinct"):
+        EvolutionLoop(initial_candidates=(_reference_candidate(1), _reference_candidate(1), _reference_candidate(2)), **arguments)
+    with pytest.raises(ValueError, match="must not have"):
+        EvolutionLoop(
+            initial_candidates=(
+                _reference_candidate(1),
+                _reference_candidate(2, parent_scheduler_versions=(1,)),
+                _reference_candidate(3),
+            ),
+            **arguments,
+        )
+
+
+def test_descendant_mutation_reflection_includes_direct_parent_evidence_and_strategy() -> None:
+    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
+    reflections = []
+    scores = {1: (0.2, 0.2), 2: (0.1, 0.1), 3: (0.0, 0.0), 4: (0.9, 0.4), 5: (0.8, 0.8)}
+
+    def evaluator(snapshot, trace, candidate):
+        if trace.trace_id == "final":
+            return TraceEvaluation(trace, {}, "scored", 0.5, report)
+        return TraceEvaluation(
+            trace, {}, "scored", scores[candidate.scheduler_version][("left", "right").index(trace.trace_id)], report
+        )
+
+    def coding_agent(request):
+        version = 3 + len(reflections)
+        return _reference_candidate(version, parent_scheduler_versions=request.parent_scheduler_versions)
+
+    EvolutionLoop(
+        SNAPSHOT,
+        (_trace("left"), _trace("right")),
+        (_trace("final"),),
+        tuple(_reference_candidate(version) for version in (1, 2, 3)),
+        2,
+        1.0,
+        lambda reflection: reflections.append(reflection) or "advice",
+        coding_agent,
+        evaluator,
+        lambda snapshot, records, candidate: (0.5,),
+        random_float=lambda: 0.0,
+        random_choice=lambda candidates: candidates[-1] if len(candidates) > 1 else candidates[0],
+    ).run()
+
+    descendant_reflection = reflections[1]
+    assert descendant_reflection.strategy_descriptions == {
+        1: "strategy for scheduler 1",
+        4: "strategy for scheduler 4",
+    }
+    assert [record.score_contribution for record in descendant_reflection.trace_evidence] == [0.9, 0.2, 0.4, 0.2]
+
+
+def test_scheduler_candidate_requires_executable_source_code() -> None:
+    with pytest.raises(ValueError, match="executable Python"):
+        SchedulerCandidate(1, lambda view: {}, source_code="not valid python source !")
 
 
 def _evaluate(
@@ -245,27 +295,6 @@ def test_scheduler_view_cannot_mutate_the_planner_dag() -> None:
 
     assert result.traces[0].status == "failed"
     assert result.traces[0].trace.dag.nodes[0].inputs["prompt"] == InputSource.request("prompt")
-
-
-def test_model_context_cannot_mutate_the_fixed_trace_set() -> None:
-    trace, final_trace = _trace("evolution"), _trace("final")
-    report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
-
-    def evaluator(snapshot, evaluated_trace, candidate):
-        return TraceEvaluation(evaluated_trace, {}, "scored", 0.5, report)
-
-    def proposer(context, candidate):
-        context.traces[0].trace.dag.nodes[0].inputs["prompt"] = InputSource.request("changed")
-        return _reference_candidate(2)
-
-    loop = EvolutionLoop(
-        SNAPSHOT, (trace,), (final_trace,), _reference_candidate(), 1, proposer,
-        lambda records: records, evaluator, lambda snapshot, records, candidate: (0.5,),
-    )
-
-    with pytest.raises(TypeError):
-        loop.run()
-    assert trace.dag.nodes[0].inputs["prompt"] == InputSource.request("prompt")
 
 
 def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comparison() -> None:
