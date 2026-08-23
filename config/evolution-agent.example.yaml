@@ -1,6 +1,0 @@
-# Copy this file to a private location and point your runner at it.
-# Keep the token in the environment rather than committing it to YAML.
-llm:
-  base_url: https://api.example.com/v1
-  token: ${EEC_SCHED_EVOLUTION_AGENT_TOKEN}
-  model: your-model-name
