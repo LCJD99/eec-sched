@@ -90,6 +90,24 @@ def test_evaluator_accounts_for_directional_transfer_latency_and_energy() -> Non
     assert report.communication_energy_j == pytest.approx(0.02000256)
 
 
+def test_evaluator_scores_over_budget_latency_instead_of_rejecting_it() -> None:
+    report = evaluate_scheduler_instance(
+        SNAPSHOT,
+        one_node_plan(),
+        lambda dag: {"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}},
+        minimum_accuracy=0.9,
+        maximum_latency_ms=5,
+        gamma=0.5,
+    )
+
+    assert report.scheduler_status == "scheduled"
+    assert report.accuracy_feasible is True
+    assert report.latency_feasible is False
+    assert report.feasible is False
+    assert report.utility is not None
+    assert report.utility < 0
+
+
 def test_invalid_and_incompatible_scheduler_outputs_are_rejected() -> None:
     plan = one_node_plan()
 

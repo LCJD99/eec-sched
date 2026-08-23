@@ -46,8 +46,6 @@ def _plan_utility(
     gamma: float,
     incremental_execution_energy_j: float,
 ) -> float:
-    if accuracy_lcb < minimum_accuracy or latency_ms > maximum_latency_ms:
-        raise ValueError("infeasible plan")
     accuracy_surplus = 0.0 if minimum_accuracy == 1 else (accuracy_lcb - minimum_accuracy) / (1 - minimum_accuracy)
     latency_surplus = (maximum_latency_ms - latency_ms) / maximum_latency_ms
     performance = gamma * accuracy_surplus + (1 - gamma) * latency_surplus
@@ -112,8 +110,7 @@ def test_utility_handles_A_m_equal_one_and_divides_by_incremental_energy() -> No
     utility = _plan_utility(1.0, 1.0, 10.0, 20.0, 0.5, 2.0)
     assert utility == pytest.approx(0.25 / (2.0 + UTILITY_EPSILON))
 
-    with pytest.raises(ValueError):
-        _plan_utility(0.999999, 1.0, 10.0, 20.0, 0.5, 2.0)
+    assert _plan_utility(0.999999, 1.0, 10.0, 20.0, 0.5, 2.0) == pytest.approx(0.25 / (2.0 + UTILITY_EPSILON))
 
 
 def test_illegal_scheduler_return_is_rejected_before_metric_evaluation() -> None:

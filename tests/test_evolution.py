@@ -13,6 +13,7 @@ from eec_sched import (
     FinalOutput,
     InputSource,
     SchedulerCandidate,
+    SchedulerCandidateDraft,
     SchedulerCandidateRegistry,
     TraceEvaluation,
     ToolCallPlan,
@@ -65,7 +66,8 @@ def test_evolution_graph_starts_with_three_roots_and_retains_mutation_lineage() 
 
     def coding_agent(request):
         generated_requests.append(request)
-        return _reference_candidate(4, parent_scheduler_versions=request.parent_scheduler_versions)
+        candidate = _reference_candidate(4)
+        return SchedulerCandidateDraft(candidate.propose, candidate.source_code, candidate.strategy_description)
 
     result = EvolutionLoop(
         snapshot=SNAPSHOT,
@@ -109,7 +111,8 @@ def test_crossover_uses_least_similar_top_candidates_and_hides_source_from_refle
 
     def coding_agent(request):
         requests.append(request)
-        return _reference_candidate(4, parent_scheduler_versions=request.parent_scheduler_versions)
+        candidate = _reference_candidate(4)
+        return SchedulerCandidateDraft(candidate.propose, candidate.source_code, candidate.strategy_description)
 
     result = EvolutionLoop(
         SNAPSHOT,
@@ -181,7 +184,8 @@ def test_descendant_mutation_reflection_includes_direct_parent_evidence_and_stra
 
     def coding_agent(request):
         version = 3 + len(reflections)
-        return _reference_candidate(version, parent_scheduler_versions=request.parent_scheduler_versions)
+        candidate = _reference_candidate(version)
+        return SchedulerCandidateDraft(candidate.propose, candidate.source_code, candidate.strategy_description)
 
     EvolutionLoop(
         SNAPSHOT,

@@ -5,19 +5,37 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "python-dotenv>=1.0",
     "jsonschema>=4.23",
     "pillow>=10",
     "pyyaml>=6.0",
+    "tqdm>=4.70",
     "torch>=2.2",
     "transformers>=4.40,<5",
 ]
 
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12"]
+build-backend = "uv_build"
+
 [tool.uv]
 package = true
+
+[[tool.uv.index]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+default = true
+
+[tool.uv.build-backend]
+module-root = "src"
+module-name = "eec_sched"
 
 [tool.pyright]
 include = ["src"]
 typeCheckingMode = "basic"
+
+[tool.ruff.lint]
+ignore = ["I001"]
 
 [dependency-groups]
 dev = [
@@ -33,4 +51,8 @@ profiling = [
     "torchcodec>=0.9",
     "pycocotools>=2.0.10",
     "pycocoevalcap>=1.2",
+]
+bayesian-optimization = [
+    "botorch>=0.13,<0.14",
+    "ultralytics>=8.3,<9",
 ]

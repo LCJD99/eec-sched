@@ -1,22 +1,46 @@
-"""Construct OpenAI-compatible Evolution Agents from a private YAML file.
+"""Run the LLM-backed Scheduler Candidate evolution loop.
 
-This runner deliberately does not create an Evolution Loop: traces, root
-Scheduler Candidates, and the Oracle are trusted application inputs, not LLM
-configuration.  Import ``build_evolution_agents`` when wiring those inputs
-into an ``EvolutionLoop``.
+The runner keeps all evaluation inside the trusted public evaluator boundary.
+It uses the dataset's deterministic train/test split for evolution and final
+evaluation, respectively, and loads three root Candidates plus one Oracle
+Candidate from source files.
 """
 
 from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass, fields, is_dataclass
+from datetime import datetime
 import json
 from pathlib import Path
-from typing import Callable, Mapping, cast
+from typing import Callable, Mapping, Sequence, cast
 from urllib.request import Request, urlopen
 
-from eec_sched import EvolutionAgentLlmConfig, load_evolution_agent_llm_config
-from eec_sched.evolution import CandidateGenerationRequest, CodingAgent, ReflectionAgent, ReflectionInput, SchedulerCandidate, SchedulerProposal, SchedulerView
+from dotenv import load_dotenv
+
+from eec_sched import (
+    CandidateEvaluation,
+    EvaluationTrace,
+    EvolutionAgentLlmConfig,
+    EvolutionLoop,
+    EvolutionLoopResult,
+    SchedulerCandidate,
+    SchedulerCandidateDraft,
+    SchedulerCandidateRegistry,
+    ToolCallPlanDataset,
+    evaluate_scheduler_candidate,
+    load_evolution_runner_config,
+    load_profiling_database,
+)
+from eec_sched.evolution import (
+    CandidateGenerationRequest,
+    CodingAgent,
+    ReflectionAgent,
+    ReflectionInput,
+    SchedulerProposal,
+    SchedulerView,
+    TraceEvaluation,
+)
 
 
 @dataclass(frozen=True)
@@ -27,12 +51,32 @@ class EvolutionAgents:
     coding_agent: CodingAgent
 
 
-def build_evolution_agents(config: EvolutionAgentLlmConfig) -> EvolutionAgents:
-    """Construct Reflection and Coding Agents sharing one LLM configuration."""
+class LlmTraceWriter:
+    """Write one JSON object for every completed LLM call in this run."""
+
+    def __init__(self, output_dir: Path) -> None:
+        output_dir.mkdir(parents=True, exist_ok=True)
+        self.timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.path = output_dir / f"evolution-trace_{self.timestamp}.jsonl"
+        self.result_path = output_dir / f"evolution-result_{self.timestamp}.json"
+        self.path.write_text("", encoding="utf-8")
+
+    def write(self, call_type: str, output: str) -> None:
+        with self.path.open("a", encoding="utf-8") as trace:
+            trace.write(json.dumps({"type": call_type, "output": output}, ensure_ascii=False) + "\n")
+
+
+def build_evolution_agents(
+    reflection_config: EvolutionAgentLlmConfig,
+    coding_config: EvolutionAgentLlmConfig | None = None,
+    trace_writer: LlmTraceWriter | None = None,
+) -> EvolutionAgents:
+    """Construct Reflection and Coding Agents from independent LLM configs."""
+    coding_config = reflection_config if coding_config is None else coding_config
 
     def reflection_agent(reflection: ReflectionInput) -> str:
-        return _chat_completion(
-            config,
+        output = _chat_completion(
+            reflection_config,
             system=(
                 "You are the Reflection Agent for Scheduler Candidate evolution. "
                 "Diagnose the supplied strategy descriptions and trusted Trace evidence. "
@@ -41,13 +85,16 @@ def build_evolution_agents(config: EvolutionAgentLlmConfig) -> EvolutionAgents:
             ),
             user={"reflection": _jsonable(reflection)},
         )
+        if trace_writer is not None:
+            trace_writer.write("reflection", output)
+        return output
 
-    def coding_agent(request: CandidateGenerationRequest) -> SchedulerCandidate:
+    def coding_agent(request: CandidateGenerationRequest) -> SchedulerCandidateDraft:
         content = _chat_completion(
-            config,
+            coding_config,
             system=(
                 "You are the Coding Agent for Scheduler Candidate evolution. "
-                "Return one JSON object with exactly scheduler_version, source_code, and "
+                "Return one JSON object with exactly source_code and "
                 "strategy_description. source_code must define propose(view), which returns "
                 "one configuration_id and device_id assignment for every DAG node. Keep the "
                 "trusted evaluator, scoring, timing, and execution order unchanged."
@@ -55,30 +102,23 @@ def build_evolution_agents(config: EvolutionAgentLlmConfig) -> EvolutionAgents:
             user={"candidate_generation_request": _jsonable(request)},
             json_output=True,
         )
+        if trace_writer is not None:
+            trace_writer.write("coding", content)
         try:
             candidate = json.loads(content)
         except json.JSONDecodeError as exc:
             raise ValueError("Coding Agent must return a JSON object") from exc
-        if not isinstance(candidate, dict) or set(candidate) != {
-            "scheduler_version",
-            "source_code",
-            "strategy_description",
-        }:
+        if not isinstance(candidate, dict) or set(candidate) != {"source_code", "strategy_description"}:
             raise ValueError(
-                "Coding Agent JSON must contain only scheduler_version, source_code, and strategy_description"
+                "Coding Agent JSON must contain only source_code and strategy_description"
             )
-        version = candidate["scheduler_version"]
         source_code = candidate["source_code"]
         description = candidate["strategy_description"]
-        if not isinstance(version, int) or isinstance(version, bool):
-            raise ValueError("Coding Agent scheduler_version must be an integer")
         if not isinstance(source_code, str) or not isinstance(description, str):
             raise ValueError("Coding Agent source_code and strategy_description must be strings")
-        return SchedulerCandidate(
-            scheduler_version=version,
+        return SchedulerCandidateDraft(
             propose=_proposal_from_source(source_code),
             source_code=source_code,
-            parent_scheduler_versions=request.parent_scheduler_versions,
             strategy_description=description,
         )
 
@@ -144,17 +184,113 @@ def _jsonable(value: object) -> object:
     raise TypeError(f"cannot serialize {type(value).__name__} for an Evolution Agent")
 
 
+def _load_candidate(source_path: Path, scheduler_version: int, description: str) -> SchedulerCandidate:
+    source_code = source_path.read_text(encoding="utf-8")
+    compiled = compile(source_code, str(source_path), "exec")
+
+    def propose(view: SchedulerView) -> SchedulerProposal:
+        namespace: dict[str, object] = {"__builtins__": __builtins__}
+        exec(compiled, namespace)  # noqa: S102 - source runs only in trusted evaluation.
+        generated = namespace.get("propose")
+        if not callable(generated):
+            raise ValueError(f"{source_path} must define callable propose(view)")
+        return cast(Callable[[SchedulerView], SchedulerProposal], generated)(view)
+
+    return SchedulerCandidate(
+        scheduler_version=scheduler_version,
+        propose=propose,
+        source_code=source_code,
+        strategy_description=description,
+    )
+
+
+def _split_traces(dataset: ToolCallPlanDataset, split: str) -> Sequence[EvaluationTrace]:
+    if split == "all":
+        return dataset.traces
+    splits = dataset.split()
+    return {"train": splits.train, "validation": splits.validation, "test": splits.test}[split]
+
+
+def _trusted_evaluator(snapshot: object, trace: EvaluationTrace, candidate: SchedulerCandidate) -> TraceEvaluation:
+    result = evaluate_scheduler_candidate(
+        snapshot,
+        (trace,),
+        candidate.scheduler_version,
+        SchedulerCandidateRegistry({candidate.scheduler_version: candidate}),
+    )
+    assert isinstance(result, CandidateEvaluation)
+    return result.traces[0]
+
+
+def _oracle(snapshot: object, records: tuple[TraceEvaluation, ...], oracle_candidate: SchedulerCandidate) -> Sequence[float | None]:
+    traces = tuple(record.trace for record in records)
+    result = evaluate_scheduler_candidate(
+        snapshot,
+        traces,
+        oracle_candidate.scheduler_version,
+        SchedulerCandidateRegistry({oracle_candidate.scheduler_version: oracle_candidate}),
+    )
+    assert isinstance(result, CandidateEvaluation)
+    return tuple(record.score_contribution for record in result.traces)
+
+
+def _result_json(result: object) -> dict[str, object]:
+    loop_result = cast(EvolutionLoopResult, result)
+    return {
+        "candidate_versions": sorted(loop_result.evolution_graph.candidates),
+        "selected_scheduler_version": loop_result.selected_candidate.scheduler_version,
+        "evolution_evaluations": {
+            str(version): evaluation.concise_projection()
+            for version, evaluation in loop_result.evolution_graph.evaluations.items()
+        },
+        "final_evaluation": loop_result.final_evaluation.concise_projection(),
+    }
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Construct OpenAI-compatible Evolution Agents from YAML.")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, type=Path, help="Path to private Evolution Agent YAML configuration.")
-    parser.add_argument("--check", action="store_true", help="Call the Reflection Agent once to verify the configured endpoint.")
+    parser.add_argument("--check", action="store_true", help="Only call Reflection Agent once and skip the evolution run.")
     arguments = parser.parse_args()
-    agents = build_evolution_agents(load_evolution_agent_llm_config(arguments.config))
+    load_dotenv(Path.cwd() / ".env")
+    runner_config = load_evolution_runner_config(arguments.config)
+    trace_writer = LlmTraceWriter(runner_config.output_dir)
+    agents = build_evolution_agents(runner_config.reflection_llm, runner_config.coding_llm, trace_writer)
     if arguments.check:
         agents.reflection_agent(ReflectionInput("mutation", {}, ()))
         print("Reflection Agent connection succeeded.")
-    else:
-        print("Reflection and Coding Agents constructed. Supply them to an EvolutionLoop with trusted inputs.")
+        return
+
+    snapshot = load_profiling_database(runner_config.profiling_database, runner_config.profiling_schema)
+    dataset = ToolCallPlanDataset.load(runner_config.dataset)
+    evolution_traces = _split_traces(dataset, runner_config.evolution_split)
+    final_traces = _split_traces(dataset, runner_config.final_split)
+    if {trace.trace_id for trace in evolution_traces} & {trace.trace_id for trace in final_traces}:
+        parser.error("evolution and final Trace splits must be disjoint")
+    initial_candidates = tuple(
+        _load_candidate(item.source, item.scheduler_version, f"root Candidate loaded from {item.source}")
+        for item in runner_config.root_candidates
+    )
+    oracle_candidate = _load_candidate(runner_config.oracle_source, runner_config.oracle_version, "Oracle reference Candidate")
+    result = EvolutionLoop(
+        snapshot=snapshot,
+        evolution_traces=evolution_traces,
+        final_evaluation_traces=final_traces,
+        initial_candidates=initial_candidates,
+        rounds=runner_config.rounds,
+        mutation_probability=runner_config.mutation_probability,
+        reflection_agent=agents.reflection_agent,
+        coding_agent=agents.coding_agent,
+        trusted_evaluator=_trusted_evaluator,
+        oracle=lambda current_snapshot, records, candidate: _oracle(current_snapshot, records, oracle_candidate),
+        show_progress=True,
+    ).run()
+    payload = _result_json(result)
+    payload["evolution_trace_count"] = len(evolution_traces)
+    payload["final_trace_count"] = len(final_traces)
+    rendered = json.dumps(payload, ensure_ascii=False, indent=2)
+    trace_writer.result_path.write_text(rendered + "\n", encoding="utf-8")
+    print(rendered)
 
 
 if __name__ == "__main__":

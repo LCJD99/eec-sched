@@ -1,6 +1,6 @@
 # repo instruction
 
-- use `uv run python` as python environment
+- use `uv run` as python environment
 
 ## Agent skills
 

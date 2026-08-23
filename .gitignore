@@ -8,6 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+.env
 
 # logs
 profiles/logs/
@@ -15,3 +16,7 @@ profiles/logs/
 # Local reference material and tool caches
 .cache/
 external/
+
+# Local, immutable BO campaign artifacts (potentially large model outputs)
+experiments/02_bayesian_optimization/campaigns/
+yolo11m.pt

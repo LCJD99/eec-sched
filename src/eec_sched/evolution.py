@@ -12,8 +12,11 @@ from dataclasses import dataclass
 from math import sqrt
 from random import choice as random_choice, random
 import signal
+import sys
 from types import MappingProxyType
-from typing import Any, Callable, Literal, Mapping, Sequence
+from typing import Any, Callable, Iterable, Literal, Mapping, Sequence
+
+from tqdm import tqdm
 
 from .domain import FinalOutput, ToolCallPlan, ToolNode
 from .profiling_database import ProfilingDatabaseSnapshot
@@ -102,6 +105,25 @@ class SchedulerCandidate:
             raise ValueError("Parent Scheduler Versions must be unique")
         if any(version <= 0 for version in self.parent_scheduler_versions):
             raise ValueError("Parent Scheduler Versions must be positive integers")
+
+
+@dataclass(frozen=True)
+class SchedulerCandidateDraft:
+    """A generated Scheduler strategy before trusted graph metadata is assigned."""
+
+    propose: Callable[[SchedulerView], SchedulerProposal]
+    source_code: str
+    strategy_description: str
+
+    def __post_init__(self) -> None:
+        if not self.source_code.strip():
+            raise ValueError("Scheduler Candidate source code must not be empty")
+        try:
+            compile(self.source_code, "scheduler-candidate-draft", "exec")
+        except SyntaxError as exc:
+            raise ValueError("Scheduler Candidate source code must be executable Python") from exc
+        if not self.strategy_description.strip():
+            raise ValueError("Scheduler Strategy Description must not be empty")
 
 
 @dataclass(frozen=True)
@@ -238,9 +260,9 @@ def evaluate_scheduler_candidate(
 ) -> CandidateEvaluation | FinalEvaluation:
     """Evaluate a Candidate over a fixed Trace set, optionally against an Oracle.
 
-    The same trusted evaluator produces every score.  A valid but infeasible
-    proposal is still a scored Trace with score zero; invalid proposals and
-    Candidate runtime failures have no score and therefore no Candidate Score.
+    The same trusted evaluator produces every score. Every valid proposal is
+    scored by the continuous utility formula; invalid proposals and Candidate
+    runtime failures have no score and therefore contribute zero.
     """
     _validate_trace_set(traces)
     if mode == "final" and oracle_reference is None:
@@ -428,7 +450,7 @@ class CandidateGenerationRequest:
 
 
 ReflectionAgent = Callable[[ReflectionInput], str]
-CodingAgent = Callable[[CandidateGenerationRequest], SchedulerCandidate]
+CodingAgent = Callable[[CandidateGenerationRequest], SchedulerCandidateDraft]
 
 
 @dataclass(frozen=True)
@@ -462,6 +484,7 @@ class EvolutionLoop:
     oracle: OracleDependency
     random_float: Callable[[], float] = random
     random_choice: Callable[[Sequence[SchedulerCandidate]], SchedulerCandidate] = random_choice
+    show_progress: bool = False
 
     def __post_init__(self) -> None:
         if self.rounds < 0:
@@ -488,11 +511,14 @@ class EvolutionLoop:
     def run(self) -> EvolutionLoopResult:
         candidates = {candidate.scheduler_version: candidate for candidate in self.initial_candidates}
         evaluations = {
-            candidate.scheduler_version: self._candidate_evaluation(candidate, self.evolution_traces)
+            candidate.scheduler_version: self._candidate_evaluation(
+                candidate, self.evolution_traces, progress_label=f"initial candidate {candidate.scheduler_version}"
+            )
             for candidate in self.initial_candidates
         }
 
-        for _ in range(self.rounds):
+        for round_number in range(1, self.rounds + 1):
+            self._report(f"Evolution round {round_number}/{self.rounds}: starting")
             operator: Literal["mutation", "crossover"] = (
                 "mutation" if self.random_float() < self.mutation_probability else "crossover"
             )
@@ -505,18 +531,28 @@ class EvolutionLoop:
                 tuple(parent.source_code for parent in parents),
                 advice,
             )
-            proposed = self.coding_agent(request)
-            if proposed.scheduler_version in candidates:
-                raise ValueError(f"duplicate Scheduler Candidate version: {proposed.scheduler_version}")
-            if proposed.parent_scheduler_versions != request.parent_scheduler_versions:
-                raise ValueError("Coding Agent must retain the selected Parent Scheduler Versions")
+            draft = self.coding_agent(request)
+            next_scheduler_version = max(candidates) + 1
+            proposed = SchedulerCandidate(
+                scheduler_version=next_scheduler_version,
+                propose=draft.propose,
+                source_code=draft.source_code,
+                parent_scheduler_versions=request.parent_scheduler_versions,
+                strategy_description=draft.strategy_description,
+            )
             candidates[proposed.scheduler_version] = proposed
-            evaluations[proposed.scheduler_version] = self._candidate_evaluation(proposed, self.evolution_traces)
+            evaluations[proposed.scheduler_version] = self._candidate_evaluation(
+                proposed,
+                self.evolution_traces,
+                progress_label=f"round {round_number}/{self.rounds} candidate {proposed.scheduler_version}",
+            )
 
         graph = EvolutionGraph(candidates, evaluations)
         selected_evaluation = _highest_scoring(tuple(graph.evaluations.values()))
         selected_candidate = candidates[selected_evaluation.scheduler_version]
-        final_candidate_evaluation = self._candidate_evaluation(selected_candidate, self.final_evaluation_traces)
+        final_candidate_evaluation = self._candidate_evaluation(
+            selected_candidate, self.final_evaluation_traces, progress_label="final evaluation"
+        )
         oracle_scores = tuple(self.oracle(self.snapshot, final_candidate_evaluation.traces, selected_candidate))
         if len(oracle_scores) != len(final_candidate_evaluation.traces):
             raise ValueError("Oracle dependency must return one score per Final Evaluation Trace")
@@ -573,9 +609,16 @@ class EvolutionLoop:
         return ReflectionInput(operator, descriptions, evidence)
 
     def _candidate_evaluation(
-        self, candidate: SchedulerCandidate, traces: Sequence[EvaluationTrace]
+        self,
+        candidate: SchedulerCandidate,
+        traces: Sequence[EvaluationTrace],
+        *,
+        progress_label: str | None = None,
     ) -> CandidateEvaluation:
-        records = tuple(self.trusted_evaluator(self.snapshot, trace, candidate) for trace in traces)
+        records = tuple(
+            self.trusted_evaluator(self.snapshot, trace, candidate)
+            for trace in _progress_traces(traces, progress_label, enabled=self.show_progress)
+        )
         for record, trace in zip(records, traces, strict=True):
             if record.trace != trace:
                 raise ValueError("trusted evaluator returned a result for a different Trace")
@@ -589,6 +632,19 @@ class EvolutionLoop:
         # Candidate Score glossary definition.
         score = sum(record.score_contribution for record in records) / len(records) if records else 0.0
         return CandidateEvaluation(SCHEMA_VERSION, candidate.scheduler_version, records, score)
+
+    def _report(self, message: str) -> None:
+        if self.show_progress:
+            print(message, file=sys.stderr, flush=True)
+
+
+def _progress_traces(
+    traces: Sequence[EvaluationTrace], label: str | None, *, enabled: bool
+) -> Iterable[EvaluationTrace]:
+    """Yield dataset traces with an optional tqdm progress bar."""
+    if not enabled or label is None:
+        return traces
+    return tqdm(traces, desc=label, unit="trace", file=sys.stderr)
 
 
 def _score_vector(evaluation: CandidateEvaluation) -> tuple[float, ...]:

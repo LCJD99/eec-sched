@@ -147,22 +147,20 @@ def evaluate_scheduler_instance(
     compute_energy = sum(_execution_energy(snapshot, node, assignments[node.node_id]) for node in dag.nodes)
     communication_energy = sum(t.energy_j for t in transfers)
     total_energy = compute_energy + communication_energy
-    accuracy_ok = accuracy >= minimum_accuracy
     latency_proxy = measured_scheduler_time_ms + makespan
+    # These comparisons are retained as diagnostics only. They must never
+    # gate scoring: quality and latency are reference points in the continuous
+    # utility formula, not hard SLA constraints.
+    accuracy_ok = accuracy >= minimum_accuracy
     latency_ok = latency_proxy <= maximum_latency_ms
-    feasible = accuracy_ok and latency_ok
-    performance = None
-    utility = None
-    if feasible:
-        accuracy_surplus = 0.0 if minimum_accuracy == 1 else (accuracy - minimum_accuracy) / (1 - minimum_accuracy)
-        latency_surplus = (maximum_latency_ms - latency_proxy) / maximum_latency_ms
-        performance = gamma * accuracy_surplus + (1 - gamma) * latency_surplus
-        utility = performance / (total_energy + UTILITY_EPSILON)
-    status = "scheduled" if feasible else "infeasible"
+    accuracy_surplus = 0.0 if minimum_accuracy == 1 else (accuracy - minimum_accuracy) / (1 - minimum_accuracy)
+    latency_surplus = (maximum_latency_ms - latency_proxy) / maximum_latency_ms
+    performance = gamma * accuracy_surplus + (1 - gamma) * latency_surplus
+    utility = performance / (total_energy + UTILITY_EPSILON)
     return EvaluationReport(
-        snapshot.snapshot_digest, status, (), assignments, nodes, transfers, accuracy,
+        snapshot.snapshot_digest, "scheduled", (), assignments, nodes, transfers, accuracy,
         makespan, measured_scheduler_time_ms, latency_proxy, compute_energy, communication_energy,
-        total_energy, accuracy_ok, latency_ok, feasible, performance, utility,
+        total_energy, accuracy_ok, latency_ok, accuracy_ok and latency_ok, performance, utility,
     )
 
 
