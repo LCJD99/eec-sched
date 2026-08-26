@@ -59,10 +59,11 @@ class InputSource:
     kind: Literal["request", "node"]
     name: str
     port: str | None = None
+    data_type: Modality | None = None
 
     @classmethod
-    def request(cls, name: str) -> "InputSource":
-        return cls("request", name)
+    def request(cls, name: str, data_type: Modality = "text") -> "InputSource":
+        return cls("request", name, None, data_type)
 
     @classmethod
     def node(cls, node_id: str, port: str) -> "InputSource":

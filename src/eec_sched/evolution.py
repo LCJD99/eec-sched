@@ -85,6 +85,9 @@ class SchedulerCandidate:
     source_code: str = "def propose(view):\n    raise NotImplementedError\n"
     parent_scheduler_versions: tuple[int, ...] = ()
     strategy_description: str = "legacy scheduler strategy"
+    reflection_context: str | None = None
+    reflection_feedback: str | None = None
+    coding_context: Mapping[str, object] | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -114,6 +117,9 @@ class SchedulerCandidateDraft:
     propose: Callable[[SchedulerView], SchedulerProposal]
     source_code: str
     strategy_description: str
+    reflection_context: str | None = None
+    reflection_feedback: str | None = None
+    coding_context: Mapping[str, object] | None = None
 
     def __post_init__(self) -> None:
         if not self.source_code.strip():
@@ -428,12 +434,37 @@ class EvolutionGraph:
 
 
 @dataclass(frozen=True)
+class ReflectionTraceEvidence:
+    """Small, source-free projection of trusted evidence for Reflection."""
+
+    trace_id: str
+    candidate_scheduler_version: int
+    candidate_status: Literal["scored", "rejected", "failed"]
+    candidate_score: float
+    candidate_reason: str | None
+    dag: tuple[str, ...]
+    task_input: str
+    assignments: tuple[str, ...]
+    metrics: Mapping[str, object]
+    compared_scheduler_version: int | None = None
+    compared_status: Literal["scored", "rejected", "failed"] | None = None
+    compared_score: float | None = None
+    compared_assignments: tuple[str, ...] = ()
+    score_delta: float | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metrics", MappingProxyType(dict(self.metrics)))
+
+
+@dataclass(frozen=True)
 class ReflectionInput:
-    """Source-free evidence the Reflection Agent may inspect."""
+    """Bounded evidence and parent source code used to build a Reflection prompt."""
 
     operator: Literal["mutation", "crossover"]
+    operator_description: str
     strategy_descriptions: Mapping[int, str]
-    trace_evidence: tuple[TraceEvaluation, ...]
+    parent_source_codes: tuple[str, ...]
+    trace_evidence: tuple[ReflectionTraceEvidence, ...]
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "strategy_descriptions", MappingProxyType(dict(self.strategy_descriptions)))
@@ -539,6 +570,9 @@ class EvolutionLoop:
                 source_code=draft.source_code,
                 parent_scheduler_versions=request.parent_scheduler_versions,
                 strategy_description=draft.strategy_description,
+                reflection_context=draft.reflection_context,
+                reflection_feedback=draft.reflection_feedback,
+                coding_context=draft.coding_context,
             )
             candidates[proposed.scheduler_version] = proposed
             evaluations[proposed.scheduler_version] = self._candidate_evaluation(
@@ -595,18 +629,24 @@ class EvolutionLoop:
         evaluations: Mapping[int, CandidateEvaluation],
     ) -> ReflectionInput:
         if operator == "crossover":
-            evidence = _crossover_evidence(evaluations[parents[0].scheduler_version], evaluations[parents[1].scheduler_version])
+            selected_evidence = _crossover_evidence(evaluations[parents[0].scheduler_version], evaluations[parents[1].scheduler_version])
         else:
             parent = parents[0]
             evaluation = evaluations[parent.scheduler_version]
-            evidence = _root_evidence(evaluation) if not parent.parent_scheduler_versions else _lineage_evidence(
+            selected_evidence = _root_evidence(evaluation) if not parent.parent_scheduler_versions else _lineage_evidence(
                 evaluation, tuple(evaluations[version] for version in parent.parent_scheduler_versions)
             )
         involved = parents if operator == "crossover" else (
             parents[0], *(candidates[version] for version in parents[0].parent_scheduler_versions)
         )
         descriptions = {candidate.scheduler_version: candidate.strategy_description for candidate in involved}
-        return ReflectionInput(operator, descriptions, evidence)
+        return ReflectionInput(
+            operator,
+            _operator_description(operator),
+            descriptions,
+            tuple(parent.source_code for parent in parents),
+            tuple(_reflection_trace_evidence(records) for records in selected_evidence),
+        )
 
     def _candidate_evaluation(
         self,
@@ -675,36 +715,97 @@ def _cosine_similarity(left: CandidateEvaluation, right: CandidateEvaluation) ->
     return sum(a * b for a, b in zip(left_vector, right_vector, strict=True)) / (left_norm * right_norm)
 
 
-def _root_evidence(evaluation: CandidateEvaluation) -> tuple[TraceEvaluation, ...]:
+def _operator_description(operator: Literal["mutation", "crossover"]) -> str:
+    if operator == "mutation":
+        return "Modify an existing strategy, preserve what works, and make a verifiable improvement based on the evaluation evidence."
+    return "Combine complementary ideas from two strategies while avoiding their respective weaknesses."
+
+
+def _root_evidence(evaluation: CandidateEvaluation) -> tuple[tuple[TraceEvaluation, ...], ...]:
     records = evaluation.traces
     if not records:
         return ()
-    return (max(records, key=lambda item: item.score_contribution), min(records, key=lambda item: item.score_contribution))
+    return (
+        (max(records, key=lambda item: item.score_contribution),),
+        (min(records, key=lambda item: item.score_contribution),),
+    )
 
 
 def _lineage_evidence(
     candidate: CandidateEvaluation, direct_parents: Sequence[CandidateEvaluation]
-) -> tuple[TraceEvaluation, ...]:
-    evidence: list[TraceEvaluation] = []
+) -> tuple[tuple[TraceEvaluation, ...], ...]:
+    evidence: list[tuple[TraceEvaluation, ...]] = []
     for parent in direct_parents:
         comparisons = tuple(zip(candidate.traces, parent.traces, strict=True))
         if comparisons:
             improvement = max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)
             regression = min(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)
-            evidence.extend((*improvement, *regression))
+            evidence.extend((improvement, regression))
     return tuple(evidence)
 
 
-def _crossover_evidence(left: CandidateEvaluation, right: CandidateEvaluation) -> tuple[TraceEvaluation, ...]:
+def _crossover_evidence(left: CandidateEvaluation, right: CandidateEvaluation) -> tuple[tuple[TraceEvaluation, ...], ...]:
     comparisons = tuple(zip(left.traces, right.traces, strict=True))
     if not comparisons:
         return ()
     return (
-        max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)[0],
-        max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution)[1],
-        max(comparisons, key=lambda pair: pair[1].score_contribution - pair[0].score_contribution)[1],
-        max(comparisons, key=lambda pair: pair[1].score_contribution - pair[0].score_contribution)[0],
+        max(comparisons, key=lambda pair: pair[0].score_contribution - pair[1].score_contribution),
+        max(comparisons, key=lambda pair: pair[1].score_contribution - pair[0].score_contribution)[::-1],
     )
+
+
+def _reflection_trace_evidence(records: tuple[TraceEvaluation, ...]) -> ReflectionTraceEvidence:
+    candidate = records[0]
+    compared = records[1] if len(records) > 1 else None
+    report = candidate.report
+    return ReflectionTraceEvidence(
+        trace_id=candidate.trace.trace_id,
+        candidate_scheduler_version=candidate.scheduler_version or 0,
+        candidate_status=candidate.status,
+        candidate_score=candidate.score_contribution,
+        candidate_reason=candidate.reason,
+        dag=tuple(
+            f"{node.node_id} uses {node.tool_id} with inputs {', '.join(sorted(node.inputs)) or 'none'}"
+            for node in candidate.trace.dag.nodes
+        ),
+        task_input=_compact_task_input(candidate.trace.task_input),
+        assignments=tuple(
+            f"{node_id} -> configuration={assignment.configuration_id}, device={assignment.device_id}"
+            for node_id, assignment in sorted(candidate.assignments.items())
+        ),
+        metrics={
+            "accuracy_lcb": report.accuracy_lcb,
+            "simulated_makespan_ms": report.simulated_makespan_ms,
+            "scheduler_solving_time_ms": candidate.scheduler_computation_time_ms,
+            "latency_proxy_ms": report.latency_proxy_ms,
+            "compute_energy_j": report.compute_energy_j,
+            "communication_energy_j": report.communication_energy_j,
+            "utility": report.utility,
+        },
+        compared_scheduler_version=compared.scheduler_version if compared is not None else None,
+        compared_status=compared.status if compared is not None else None,
+        compared_score=compared.score_contribution if compared is not None else None,
+        compared_assignments=(
+            tuple(
+                f"{node_id} -> configuration={assignment.configuration_id}, device={assignment.device_id}"
+                for node_id, assignment in sorted(compared.assignments.items())
+            )
+            if compared is not None
+            else ()
+        ),
+        score_delta=(
+            candidate.score_contribution - compared.score_contribution if compared is not None else None
+        ),
+    )
+
+
+def _compact_task_input(task_input: Mapping[str, object]) -> str:
+    """Keep task identity useful without allowing raw inputs to fill the prompt."""
+    rendered = ", ".join(
+        f"{key}={(f'{value:.3f}' if isinstance(value, float) else str(value))[:120]}"
+        for key, value in sorted(task_input.items())
+    )
+    return rendered[:400]
 
 
 def _highest_scoring(observed: Sequence[CandidateEvaluation]) -> CandidateEvaluation:

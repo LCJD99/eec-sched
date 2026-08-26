@@ -16,6 +16,8 @@ from .domain import ToolCallPlan
 from .profiling_database import ProfilingDatabaseSnapshot
 
 UTILITY_EPSILON = 1e-12
+END_DEVICE_ID = "device"
+FIXED_DATA_SIZE_BYTES = {"text": 256, "image": 262_144, "audio": 1_048_576}
 
 
 class Scheduler(Protocol):
@@ -143,7 +145,7 @@ def evaluate_scheduler_instance(
         accuracy = _accuracy(snapshot, dag, assignments)
     except (KeyError, TrustedEvaluationError) as exc:
         raise TrustedEvaluationError(f"trusted simulation failed: {exc}") from exc
-    makespan = max((n.finish_ms for n in nodes), default=0.0)
+    makespan = max((value for value in (*[n.finish_ms for n in nodes], *[t.finish_ms for t in transfers])), default=0.0)
     compute_energy = sum(_execution_energy(snapshot, node, assignments[node.node_id]) for node in dag.nodes)
     communication_energy = sum(t.energy_j for t in transfers)
     total_energy = compute_energy + communication_energy
@@ -244,6 +246,19 @@ def _simulate(snapshot: ProfilingDatabaseSnapshot, dag: ToolCallPlan, assignment
         node_id = min(ready)
         node = by_id[node_id]
         assignment = assignments[node_id]
+        for source in node.inputs.values():
+            if source.kind != "request" or assignment.device_id == END_DEVICE_ID:
+                continue
+            size = FIXED_DATA_SIZE_BYTES[_request_data_type(source)]
+            transfer = snapshot.transfer_profile(END_DEVICE_ID, assignment.device_id)
+            latency = _transfer_latency(transfer, size)
+            energy = _transfer_energy(transfer, size)
+            link = (END_DEVICE_ID, assignment.device_id)
+            transfer_start = link_free.get(link, 0.0)
+            transfer_finish = transfer_start + latency
+            link_free[link] = transfer_finish
+            transfer_ready[node_id] = max(transfer_ready[node_id], transfer_finish)
+            transfers.append(SimulatedTransfer(END_DEVICE_ID, node_id, END_DEVICE_ID, assignment.device_id, transfer_start, transfer_finish, latency, energy))
         start = max(device_free[assignment.device_id], transfer_ready[node_id])
         profile = snapshot.execution_profile(node.tool_id, assignment.configuration_id, assignment.device_id)
         finish_time = start + profile.warm_latency_p95_ms
@@ -268,7 +283,32 @@ def _simulate(snapshot: ProfilingDatabaseSnapshot, dag: ToolCallPlan, assignment
             transfer_ready[child_id] = max(transfer_ready[child_id], transfer_finish)
             transfers.append(SimulatedTransfer(node_id, child_id, assignment.device_id, child_assignment.device_id, transfer_start, transfer_finish, latency, energy))
         remaining.remove(node_id)
+    for output in dag.final_outputs:
+        assignment = assignments[output.node_id]
+        if assignment.device_id == END_DEVICE_ID:
+            continue
+        transfer = snapshot.transfer_profile(assignment.device_id, END_DEVICE_ID)
+        size = snapshot.representative_output_bytes(by_id[output.node_id].tool_id, assignment.configuration_id)
+        latency = _transfer_latency(transfer, size)
+        energy = _transfer_energy(transfer, size)
+        link = (assignment.device_id, END_DEVICE_ID)
+        transfer_start = max(finish[output.node_id], link_free.get(link, 0.0))
+        transfer_finish = transfer_start + latency
+        link_free[link] = transfer_finish
+        transfers.append(SimulatedTransfer(output.node_id, END_DEVICE_ID, assignment.device_id, END_DEVICE_ID, transfer_start, transfer_finish, latency, energy))
     return tuple(simulated[node_id] for node_id in sorted(simulated)), tuple(transfers)
+
+
+def _transfer_latency(transfer: Any, size: int) -> float:
+    return transfer.propagation_delay_ms + 1000.0 * size / transfer.bandwidth_bytes_per_second
+
+
+def _transfer_energy(transfer: Any, size: int) -> float:
+    return transfer.setup_energy_j + size * transfer.energy_per_byte_j
+
+
+def _request_data_type(source: Any) -> str:
+    return source.data_type or "text"
 
 
 def _execution_energy(snapshot: ProfilingDatabaseSnapshot, node: Any, assignment: NodeAssignment) -> float:

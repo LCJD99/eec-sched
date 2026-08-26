@@ -46,9 +46,10 @@ def test_evaluator_returns_immutable_replayable_report_and_includes_trusted_sche
 
     assert first == second
     assert first.scheduler_status == "scheduled"
-    assert first.simulated_makespan_ms == pytest.approx(10)
-    assert first.latency_proxy_ms == pytest.approx(11)
-    assert first.incremental_execution_energy_j == pytest.approx(0.14)
+    assert first.simulated_makespan_ms == pytest.approx(68.0384)
+    assert first.latency_proxy_ms == pytest.approx(69.0384)
+    assert [(transfer.source_device_id, transfer.destination_device_id) for transfer in first.transfers] == [("device", "cloud"), ("cloud", "device")]
+    assert first.incremental_execution_energy_j == pytest.approx(0.31001664)
     assert first.utility is not None
     with pytest.raises(TypeError):
         first.assignments["other"] = first.assignments["generate"]  # type: ignore[index]
@@ -84,10 +85,13 @@ def test_evaluator_accounts_for_directional_transfer_latency_and_energy() -> Non
     )
 
     assert report.scheduler_status == "scheduled"
-    assert len(report.transfers) == 1
+    assert len(report.transfers) == 2
     assert report.transfers[0].latency_ms == pytest.approx(4.00512)
     assert report.transfers[0].energy_j == pytest.approx(0.02000256)
-    assert report.communication_energy_j == pytest.approx(0.02000256)
+    assert report.transfers[1].source_device_id == "edge"
+    assert report.transfers[1].destination_device_id == "device"
+    assert report.transfers[1].latency_ms == pytest.approx(4.5056888889)
+    assert report.communication_energy_j == pytest.approx(0.045005632)
 
 
 def test_evaluator_scores_over_budget_latency_instead_of_rejecting_it() -> None:

@@ -136,7 +136,10 @@ def test_crossover_uses_least_similar_top_candidates_and_hides_source_from_refle
     )
     assert reflections[0].operator == "crossover"
     assert reflections[0].strategy_descriptions == {1: "strategy for scheduler 1", 2: "strategy for scheduler 2"}
-    assert not hasattr(reflections[0], "parent_source_codes")
+    assert reflections[0].parent_source_codes == (
+        "def schedule_1(view):\n    return {}\n",
+        "def schedule_2(view):\n    return {}\n",
+    )
     assert result.selected_candidate.scheduler_version == 3
 
 
@@ -207,7 +210,9 @@ def test_descendant_mutation_reflection_includes_direct_parent_evidence_and_stra
         1: "strategy for scheduler 1",
         4: "strategy for scheduler 4",
     }
-    assert [record.score_contribution for record in descendant_reflection.trace_evidence] == [0.9, 0.2, 0.4, 0.2]
+    assert [record.candidate_score for record in descendant_reflection.trace_evidence] == [0.9, 0.4]
+    assert [record.compared_score for record in descendant_reflection.trace_evidence] == [0.2, 0.2]
+    assert [record.score_delta for record in descendant_reflection.trace_evidence] == [0.7, 0.2]
 
 
 def test_scheduler_candidate_requires_executable_source_code() -> None:
@@ -347,7 +352,7 @@ def test_candidate_evaluation_records_the_trusted_scheduler_boundary(monkeypatch
     assert record.scheduler_version == 7
     assert record.scheduler_computation_time_ms == pytest.approx(2.5)
     assert record.report.scheduler_solving_time_ms == pytest.approx(2.5)
-    assert record.report.latency_proxy_ms == pytest.approx(12.5)
+    assert record.report.latency_proxy_ms == pytest.approx(70.5384)
     assert set(record.scheduler_view.snapshot_evidence) == {"devices", "tools", "transfer_profiles"}
     with pytest.raises(TypeError):
         record.scheduler_view.snapshot_evidence["tools"] = ()  # type: ignore[index]
@@ -460,7 +465,7 @@ def test_candidate_cannot_control_canonical_order_for_ready_nodes() -> None:
     second = _evaluate((trace,), candidate)
 
     assert [(node.node_id, node.start_ms) for node in first.traces[0].report.nodes] == [
-        ("alpha", 0.0),
-        ("beta", 10.0),
+        ("alpha", pytest.approx(28.0213333333)),
+        ("beta", pytest.approx(56.0426666667)),
     ]
     assert first.traces[0].report.nodes == second.traces[0].report.nodes

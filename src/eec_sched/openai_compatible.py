@@ -19,7 +19,7 @@ def plan_from_dict(value: dict[str, Any]) -> ToolCallPlan:
     nodes = tuple(
         ToolNode(
             node_id=node["node_id"], tool_id=node["tool_id"],
-            inputs={name: InputSource(source["kind"], source["name"], source.get("port")) for name, source in node["inputs"].items()},
+            inputs={name: InputSource(source["kind"], source["name"], source.get("port"), source.get("data_type", "text") if source["kind"] == "request" else None) for name, source in node["inputs"].items()},
         )
         for node in value["nodes"]
     )

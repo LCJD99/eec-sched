@@ -63,7 +63,7 @@ def test_candidate_evaluation_retains_three_device_proposal_and_uses_trusted_sim
         "summarize": "edge",
         "classify": "cloud",
     }
-    assert len(record.report.transfers) == 2
+    assert len(record.report.transfers) == 3
     assert record.score is not None
     single_device_record = single_device_result.traces[0]
     assert single_device_record.status == "scored"
@@ -71,7 +71,7 @@ def test_candidate_evaluation_retains_three_device_proposal_and_uses_trusted_sim
     assert {
         node_id: assignment.device_id for node_id, assignment in single_device_record.assignments.items()
     } == {"generate": "device", "summarize": "device", "classify": "device"}
-    assert record.score > single_device_record.score
+    assert record.score < single_device_record.score
 
 
 def test_evolution_candidates_share_one_trace_set_and_expose_only_candidate_scores() -> None:
@@ -109,7 +109,7 @@ def test_evolution_candidates_share_one_trace_set_and_expose_only_candidate_scor
     assert competing_result.traces[1].score_contribution == 0.0
     assert selected_result.candidate_score == pytest.approx(selected_result.traces[0].score_contribution / 2)
     assert competing_result.candidate_score == pytest.approx(competing_result.traces[0].score_contribution / 2)
-    assert selected_result.candidate_score > competing_result.candidate_score
+    assert selected_result.candidate_score < competing_result.candidate_score
 
     concise = selected_result.concise_projection()
     assert set(concise) == {"schema_version", "scheduler_version", "traces", "candidate_score"}

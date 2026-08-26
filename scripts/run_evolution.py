@@ -37,6 +37,7 @@ from eec_sched.evolution import (
     CodingAgent,
     ReflectionAgent,
     ReflectionInput,
+    ReflectionTraceEvidence,
     SchedulerProposal,
     SchedulerView,
     TraceEvaluation,
@@ -73,8 +74,11 @@ def build_evolution_agents(
 ) -> EvolutionAgents:
     """Construct Reflection and Coding Agents from independent LLM configs."""
     coding_config = reflection_config if coding_config is None else coding_config
+    pending_reflection_context: str | None = None
 
     def reflection_agent(reflection: ReflectionInput) -> str:
+        nonlocal pending_reflection_context
+        pending_reflection_context = _reflection_prompt(reflection)
         output = _chat_completion(
             reflection_config,
             system=(
@@ -83,7 +87,7 @@ def build_evolution_agents(
                 "Return concise textual Reflection Advice. You never receive or request "
                 "Scheduler source code, and you must not propose evaluator changes."
             ),
-            user={"reflection": _jsonable(reflection)},
+            user={"reflection_prompt": pending_reflection_context},
         )
         if trace_writer is not None:
             trace_writer.write("reflection", output)
@@ -120,6 +124,9 @@ def build_evolution_agents(
             propose=_proposal_from_source(source_code),
             source_code=source_code,
             strategy_description=description,
+            reflection_context=pending_reflection_context,
+            reflection_feedback=request.reflection_advice,
+            coding_context=cast(dict[str, object], _jsonable(request)),
         )
 
     return EvolutionAgents(reflection_agent, coding_agent)
@@ -137,6 +144,62 @@ def _proposal_from_source(source_code: str) -> Callable[[SchedulerView], Schedul
         return cast(Callable[[SchedulerView], SchedulerProposal], generated_propose)(view)
 
     return propose
+
+
+def _reflection_prompt(reflection: ReflectionInput) -> str:
+    """Render bounded trusted evidence into the natural-language prompt seam."""
+    strategies = "\n".join(
+        f"- Candidate {version}: {description}"
+        for version, description in sorted(reflection.strategy_descriptions.items())
+    ) or "- No strategy description was supplied."
+    parent_sources = "\n\n".join(
+        f"Parent Candidate {index + 1} source code:\n```python\n{source}\n```"
+        for index, source in enumerate(reflection.parent_source_codes)
+    ) or "No parent source code is available."
+    evidence = "\n\n".join(_format_trace_evidence(item) for item in reflection.trace_evidence)
+    return (
+        "You are the Reflection Agent for Scheduler Candidate evolution.\n"
+        f"Current operation: {reflection.operator_description}\n"
+        "Using the strategy descriptions and trusted evaluation evidence below, identify the most likely scheduling strategy issue "
+        "and give the Coding Agent concise, actionable, verifiable improvement advice. "
+        "Do not modify the evaluator. You may inspect the parent source code, but output advice only.\n\n"
+        "Relevant strategies:\n"
+        f"{strategies}\n\n"
+        "Parent source code:\n"
+        f"{parent_sources}\n\n"
+        "Selected evaluation evidence:\n"
+        f"{evidence or 'No Trace evidence is available.'}\n\n"
+        "Output only Reflection Advice. State what scheduling tendency should change and why."
+    )
+
+
+def _format_trace_evidence(evidence: ReflectionTraceEvidence) -> str:
+    lines = [
+        f"Trace {evidence.trace_id} (Candidate {evidence.candidate_scheduler_version})",
+        f"- Task input summary: {evidence.task_input}",
+        f"- DAG: {'; '.join(evidence.dag) or 'empty'}",
+        f"- Candidate result: status={evidence.candidate_status}, score={evidence.candidate_score:.3f}",
+        f"- Candidate assignments: {'; '.join(evidence.assignments) or 'none'}",
+    ]
+    if evidence.candidate_reason:
+        lines.append(f"- Failure or rejection reason: {evidence.candidate_reason}")
+    metrics = ", ".join(
+        f"{name}={value:.3f}" if isinstance(value, float) else f"{name}={value}"
+        for name, value in evidence.metrics.items()
+        if value is not None
+    )
+    if metrics:
+        lines.append(f"- Trusted evaluation metrics: {metrics}")
+    if evidence.compared_scheduler_version is not None:
+        lines.extend(
+            [
+                f"- Compared with parent Candidate {evidence.compared_scheduler_version}: "
+                f"status={evidence.compared_status}, score={evidence.compared_score:.3f}, "
+                f"score_delta={evidence.score_delta:+.3f}",
+                f"- Parent assignments: {'; '.join(evidence.compared_assignments) or 'none'}",
+            ]
+        )
+    return "\n".join(lines)
 
 
 def _chat_completion(
@@ -161,7 +224,7 @@ def _chat_completion(
         headers={"Authorization": f"Bearer {config.token}", "Content-Type": "application/json"},
         method="POST",
     )
-    with urlopen(request, timeout=60) as response:  # noqa: S310 - configured compatible endpoint
+    with urlopen(request, timeout=360) as response:  # noqa: S310 - configured compatible endpoint
         body = json.loads(response.read())
     try:
         content = body["choices"][0]["message"]["content"]
@@ -236,14 +299,69 @@ def _oracle(snapshot: object, records: tuple[TraceEvaluation, ...], oracle_candi
 
 def _result_json(result: object) -> dict[str, object]:
     loop_result = cast(EvolutionLoopResult, result)
+    evolution_evaluations = {}
+    for version, evaluation in loop_result.evolution_graph.evaluations.items():
+        candidate = loop_result.evolution_graph.candidates[version]
+        projection = {
+            **evaluation.concise_projection(),
+            "parent_scheduler_versions": list(candidate.parent_scheduler_versions),
+            "strategy_description": candidate.strategy_description,
+            "source_code": candidate.source_code,
+            "reflection_context": candidate.reflection_context,
+            "reflection_feedback": candidate.reflection_feedback,
+            "coding_context": candidate.coding_context,
+        }
+        # Keep lightweight test doubles and older callers compatible while
+        # recording the complete payload for real CandidateEvaluation values.
+        if hasattr(evaluation, "traces"):
+            projection.update(
+                traces=[_trace_json(record) for record in evaluation.traces],
+            )
+        evolution_evaluations[str(version)] = projection
     return {
         "candidate_versions": sorted(loop_result.evolution_graph.candidates),
         "selected_scheduler_version": loop_result.selected_candidate.scheduler_version,
-        "evolution_evaluations": {
-            str(version): evaluation.concise_projection()
-            for version, evaluation in loop_result.evolution_graph.evaluations.items()
-        },
+        "evolution_evaluations": evolution_evaluations,
         "final_evaluation": loop_result.final_evaluation.concise_projection(),
+    }
+
+
+def _trace_json(record: TraceEvaluation) -> dict[str, object]:
+    """Serialize the trace evidence needed by the evolution visualizer."""
+    return {
+        "trace_id": record.trace.trace_id,
+        "task_input": dict(record.trace.task_input),
+        "dag": {
+            "nodes": [
+                {
+                    "node_id": node.node_id,
+                    "tool_id": node.tool_id,
+                    "inputs": {
+                        name: {
+                            "kind": source.kind,
+                            "name": source.name,
+                            **({"port": source.port} if source.port is not None else {}),
+                        }
+                        for name, source in node.inputs.items()
+                    },
+                }
+                for node in record.trace.dag.nodes
+            ],
+            "final_outputs": [
+                {"node_id": output.node_id, "port": output.port}
+                for output in record.trace.dag.final_outputs
+            ],
+        },
+        "status": record.status,
+        "score": record.score_contribution,
+        "reason": record.reason,
+        "assignments": {
+            node_id: {
+                "configuration_id": assignment.configuration_id,
+                "device_id": assignment.device_id,
+            }
+            for node_id, assignment in record.assignments.items()
+        },
     }
 
 
@@ -257,7 +375,7 @@ def main() -> None:
     trace_writer = LlmTraceWriter(runner_config.output_dir)
     agents = build_evolution_agents(runner_config.reflection_llm, runner_config.coding_llm, trace_writer)
     if arguments.check:
-        agents.reflection_agent(ReflectionInput("mutation", {}, ()))
+        agents.reflection_agent(ReflectionInput("mutation", "Modify an existing strategy based on evaluation evidence.", {}, (), ()))
         print("Reflection Agent connection succeeded.")
         return
 
@@ -290,7 +408,6 @@ def main() -> None:
     payload["final_trace_count"] = len(final_traces)
     rendered = json.dumps(payload, ensure_ascii=False, indent=2)
     trace_writer.result_path.write_text(rendered + "\n", encoding="utf-8")
-    print(rendered)
 
 
 if __name__ == "__main__":

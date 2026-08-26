@@ -151,7 +151,7 @@ def iter_dataset(url: str) -> Iterable[dict[str, object]]:
             yield row
 
 
-def export(dataset_url: str, output_path: Path) -> tuple[int, int]:
+def export(dataset_url: str, output_path: Path, *, exclude_single_node: bool = False) -> tuple[int, int]:
     schema_path = Path(__file__).parents[1] / "docs/schemas/tool-call-dag.schema.json"
     validator = Draft202012Validator(json.loads(schema_path.read_text()))
     catalog = {spec.tool_id: spec for spec in mnms_tool_specs()}
@@ -162,6 +162,8 @@ def export(dataset_url: str, output_path: Path) -> tuple[int, int]:
         for row in iter_dataset(dataset_url):
             try:
                 dag, request_inputs = project_plan(row.get("plan_str"), catalog)
+                if exclude_single_node and len(dag["nodes"]) == 1:
+                    raise SkipQuery("single-node plan is excluded")
                 validator.validate(dag)
                 plan = plan_from_dict(dag)
                 errors = validate_plan(
@@ -185,8 +187,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset-url", default=DEFAULT_DATASET_URL, help="Direct URL to a MnMS JSONL file.")
     parser.add_argument("--output", type=Path, required=True, help="Destination JSONL containing schema DAG values.")
+    parser.add_argument(
+        "--exclude-single-node",
+        action="store_true",
+        help="Exclude dataset records whose converted DAG contains only one node.",
+    )
     args = parser.parse_args()
-    exported, skipped = export(args.dataset_url, args.output)
+    exported, skipped = export(args.dataset_url, args.output, exclude_single_node=args.exclude_single_node)
     print(f"Exported {exported} validated DAGs; skipped {skipped} queries.")
     return 0
 

@@ -146,8 +146,8 @@ def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch)
     first = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
     second = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
     assert first == second
-    assert first.simulated_makespan_ms == pytest.approx(10)
-    assert first.incremental_execution_energy_j == pytest.approx(0.14)
+    assert first.simulated_makespan_ms == pytest.approx(68.0384)
+    assert first.incremental_execution_energy_j == pytest.approx(0.31001664)
 
 
 def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch) -> None:
@@ -169,5 +169,5 @@ def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch
         gamma=0.5,
     )
     assert report.scheduler_solving_time_ms == pytest.approx(2)
-    assert report.latency_proxy_ms == pytest.approx(12)
+    assert report.latency_proxy_ms == pytest.approx(70.0384)
     assert report.utility is not None
