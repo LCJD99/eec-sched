@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Callable, Sequence
 
 from eec_sched.mnms_tools import MNMS_MODELS, MnmsToolRunner, mnms_tool_specs
-from eec_sched.profile_evaluation import EvaluationSample, profile_suite, save_profile_artifact
+from eec_sched.profiling.profiles import EvaluationSample, profile_suite, save_profile_artifact
 from profile_mnms import SUITES
 
 

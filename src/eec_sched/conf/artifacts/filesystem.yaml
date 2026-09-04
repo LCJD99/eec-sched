@@ -1,0 +1,2 @@
+_target_: eec_sched.artifacts.JsonlArtifactStore
+output_dir: ${hydra:runtime.cwd}/outputs

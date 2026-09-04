@@ -1,0 +1,36 @@
+{
+  "model_id": "yolo11m.pt",
+  "model_revision": null,
+  "dataset": {
+    "root": "external/coco",
+    "panoptic_annotations": "annotations/panoptic_val2017.json",
+    "instance_annotations": "annotations/instances_val2017.json",
+    "images": "val2017",
+    "sample_count": 100,
+    "sample_seed": 20260816
+  },
+  "search_space": {
+    "min_imgsz": 320,
+    "max_imgsz": 960,
+    "imgsz_step": 32,
+    "min_conf": 0.05,
+    "max_conf": 0.70,
+    "conf_precision": 0.01,
+    "illegal_combinations": []
+  },
+  "fixed_yolo_parameters": {
+    "device": "cuda:0",
+    "batch": 1,
+    "quantize": "fp16",
+    "iou": 0.7,
+    "max_det": 300
+  },
+  "campaign": {
+    "budget": 30,
+    "initial_points": 12,
+    "batch_size": 1,
+    "warmup_runs": 1,
+    "seed": 20260816,
+    "observation_noise_variance": 0.0001
+  }
+}

@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from eec_sched.mnms_tools import mnms_tool_specs
-from eec_sched.profiling_database import ProfilingDatabaseValidationError, load_profiling_database, snapshot_digest, validate_profiling_database
+from eec_sched.profiling.snapshot import ProfilingDatabaseValidationError, load_profiling_database, snapshot_digest, validate_profiling_database
 
 
 ROOT = Path(__file__).parents[1]

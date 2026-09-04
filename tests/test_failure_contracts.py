@@ -1,20 +1,15 @@
 from __future__ import annotations
 
 from eec_sched import (
-    AccuracyProfile,
     Configuration,
-    FakePlannerClient,
     FinalOutput,
-    InMemoryProfileRepository,
     InputSource,
-    LatencyProfile,
     PlanningRequest,
     Port,
     ToolCallPlan,
     ToolNode,
     ToolRegistry,
     ToolSpec,
-    execute_request,
 )
 from eec_sched.planning import validate_plan
 
@@ -59,23 +54,3 @@ def test_rejects_non_connectable_request_value() -> None:
     invalid_request = PlanningRequest("work", {"payload": object()}, 0.5, 20, 0.5)
     codes = {error.code for error in validate_plan(plan, invalid_request, registry())}
     assert "modality_mismatch" in codes
-
-
-def test_missing_current_device_latency_returns_profiling_required() -> None:
-    tool_registry = registry()
-    plan = ToolCallPlan((ToolNode("a", "text", {"text": InputSource.request("prompt")}),), (FinalOutput("a", "text"),))
-    result = execute_request(
-        request(), registry=tool_registry, planner=FakePlannerClient([plan]),
-        profiles=InMemoryProfileRepository(accuracy=(AccuracyProfile("text", "base", 1),)), device="cpu",
-    )
-    assert result.status == "profiling_required"
-
-
-def test_missing_accuracy_profile_returns_accuracy_profile_required() -> None:
-    tool_registry = registry()
-    plan = ToolCallPlan((ToolNode("a", "text", {"text": InputSource.request("prompt")}),), (FinalOutput("a", "text"),))
-    result = execute_request(
-        request(), registry=tool_registry, planner=FakePlannerClient([plan]),
-        profiles=InMemoryProfileRepository(latency=(LatencyProfile("text", "base", "cpu", "default", 1, 1, 2),)), device="cpu",
-    )
-    assert result.status == "accuracy_profile_required"

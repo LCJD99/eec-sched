@@ -1,0 +1,2 @@
+database: ${hydra:runtime.cwd}/docs/examples/profiling-database.fake.json
+schema: ${hydra:runtime.cwd}/docs/schemas/profiling-database.schema.json

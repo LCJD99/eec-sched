@@ -15,7 +15,7 @@ from typing import Any
 import pytest
 
 from eec_sched import FinalOutput, InputSource, ToolCallPlan, ToolNode, UTILITY_EPSILON, evaluate_scheduler_instance
-from eec_sched.profiling_database import load_profiling_database
+from eec_sched.profiling.snapshot import load_profiling_database
 
 
 ROOT = Path(__file__).parents[1]
@@ -133,7 +133,7 @@ def test_illegal_scheduler_return_is_rejected_before_metric_evaluation() -> None
 
 def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch) -> None:
     """Replay the same snapshot, DAG, and Scheduler output twice and compare reports."""
-    import eec_sched.trusted_evaluation as trusted_evaluation
+    import eec_sched.evaluation.evaluator as trusted_evaluation
 
     ticks = iter((1.0, 1.001, 2.0, 2.001))
     monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
@@ -152,7 +152,7 @@ def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch)
 
 def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch) -> None:
     """Scheduler solving time must be reported and included in the latency proxy."""
-    import eec_sched.trusted_evaluation as trusted_evaluation
+    import eec_sched.evaluation.evaluator as trusted_evaluation
 
     ticks = iter((1.0, 1.002))
     monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))

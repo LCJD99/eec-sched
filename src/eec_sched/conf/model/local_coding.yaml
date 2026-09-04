@@ -1,0 +1,5 @@
+_target_: eec_sched.llm.OpenAICompatibleChatModel
+base_url: http://localhost:9888/v1
+token: ${oc.env:EEC_SCHED_CODING_TOKEN,missing-token}
+model: qwen3.8-27b
+timeout_seconds: 360

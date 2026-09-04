@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "hydra-core>=1.3,<2",
     "python-dotenv>=1.0",
     "jsonschema>=4.23",
     "pillow>=10",
@@ -13,6 +14,9 @@ dependencies = [
     "torch>=2.2",
     "transformers>=4.40,<5",
 ]
+
+[project.scripts]
+eec-sched = "eec_sched.app.run_evolution:main"
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12"]
@@ -32,6 +36,13 @@ module-name = "eec_sched"
 
 [tool.pyright]
 include = ["src"]
+# These adapters are checked by their dependency-group tests. Their third-party
+# libraries and type stubs are intentionally absent from the base environment.
+ignore = [
+    "src/eec_sched/profiling/adapters.py",
+    "src/eec_sched/profiling/campaign.py",
+    "src/eec_sched/profiling/scorers.py",
+]
 typeCheckingMode = "basic"
 
 [tool.ruff.lint]
@@ -39,10 +50,11 @@ ignore = ["I001"]
 
 [dependency-groups]
 dev = [
-    "pyright>=1.1.411",
+    "pyright[nodejs]>=1.1.411",
     "pytest>=9.1.1",
 ]
 profiling = [
+	"datasets>=2.19,<4",
     "evaluate>=0.4",
     "jiwer>=3",
     "librosa>=0.10",
@@ -50,9 +62,15 @@ profiling = [
     "soundfile>=0.12",
     "torchcodec>=0.9",
     "pycocotools>=2.0.10",
-    "pycocoevalcap>=1.2",
+	"pycocoevalcap>=1.2",
+	"timm>=0.9",
+	"easyocr>=1.7",
+    "kaggle>=1.7",
 ]
 bayesian-optimization = [
     "botorch>=0.13,<0.14",
     "ultralytics>=8.3,<9",
+]
+agentic-reflection = [
+    "openai-agents>=0.12",
 ]

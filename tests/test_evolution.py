@@ -329,7 +329,7 @@ def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comp
 
 
 def test_candidate_evaluation_records_the_trusted_scheduler_boundary(monkeypatch) -> None:
-    import eec_sched.trusted_evaluation as trusted_evaluation
+    import eec_sched.evaluation.evaluator as trusted_evaluation
 
     ticks = iter((10.0, 10.0025))
     monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
@@ -370,13 +370,13 @@ def test_trusted_registry_resolves_the_scheduler_version_without_source_in_the_r
 
 
 def test_trusted_evaluator_fault_is_not_converted_to_a_candidate_status(monkeypatch) -> None:
-    import eec_sched.trusted_evaluation as trusted_evaluation
+    import eec_sched.evaluation.evaluator as trusted_evaluation
     from eec_sched import TrustedEvaluationError
 
     def broken_simulation(snapshot, dag, assignments):
         raise TrustedEvaluationError("broken trusted simulator")
 
-    monkeypatch.setattr(trusted_evaluation, "_simulate", broken_simulation)
+    monkeypatch.setattr(trusted_evaluation, "simulate", broken_simulation)
 
     with pytest.raises(TrustedEvaluationError, match="trusted simulation failed"):
         _evaluate((_trace("system-error"),), _reference_candidate())

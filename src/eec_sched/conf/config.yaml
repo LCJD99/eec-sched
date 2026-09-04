@@ -1,0 +1,33 @@
+defaults:
+  - workflow: mnms
+  - evidence: fake_snapshot
+  - evaluation: canonical
+  - diagnosis: one_shot
+  - search: psocm
+  - memory: in_run
+  - candidate_runtime: in_process
+  - model@models.diagnosis: local_diagnosis
+  - model@models.coding: local_coding
+  - artifacts: filesystem
+  - experiment: null
+  - _self_
+
+run:
+  rounds: 3
+  seed: 42
+  evolution_split: train
+  final_split: test
+  root_candidates:
+    - scheduler_version: 1
+      source: ${hydra:runtime.cwd}/schedulers/naive_fastest.py
+    - scheduler_version: 2
+      source: ${hydra:runtime.cwd}/schedulers/naive_quality.py
+    - scheduler_version: 3
+      source: ${hydra:runtime.cwd}/schedulers/naive_energy.py
+  oracle_version: 99
+  oracle_source: ${hydra:runtime.cwd}/schedulers/oracle_source.py
+
+hydra:
+  run:
+    dir: .
+  output_subdir: null

@@ -1,0 +1,2 @@
+_target_: eec_sched.evolution.memory.JsonlMemory
+path: ${hydra:runtime.cwd}/outputs/evolution-memory.jsonl

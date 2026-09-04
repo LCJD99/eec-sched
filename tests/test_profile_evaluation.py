@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from eec_sched import Configuration
-from eec_sched.profile_evaluation import (
+from eec_sched.profiling.profiles import (
     EvaluationSample,
     EvaluationSuite,
     load_persisted_samples,

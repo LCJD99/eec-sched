@@ -1,0 +1,6 @@
+operator_selector: probabilistic
+mutation_probability: 0.5
+mutation_parent_selector: feature_diverse
+crossover_parent_selector: complementary_behavior
+behavior_descriptor: performance_behavior
+repertoire: feature_archive

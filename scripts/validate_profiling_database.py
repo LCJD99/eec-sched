@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from eec_sched.profiling_database import load_profiling_database
+from eec_sched.profiling.snapshot import load_profiling_database
 
 
 def main() -> int:

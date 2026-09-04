@@ -28,7 +28,7 @@ from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
 from eec_sched.mnms_tools import MNMS_MODELS, MnmsToolRunner, mnms_tool_specs
-from eec_sched.profile_evaluation import (
+from eec_sched.profiling.profiles import (
     EvaluationSample,
     EvaluationSuite,
     load_persisted_samples,
@@ -49,7 +49,7 @@ SUITES: dict[str, EvaluationSuite] = {
     "visual_question_answering": EvaluationSuite("visual_question_answering", "VQAv2", "v2", "validation", "VQA accuracy", True, "official VQA evaluator"),
     "object_detection": EvaluationSuite("object_detection", "COCO 2017", "2017", "validation", "box AP", True, "pycocotools COCOeval"),
     "image_segmentation": EvaluationSuite("image_segmentation", "COCO 2017", "2017", "validation", "mask AP", True, "pycocotools COCOeval"),
-    "optical_character_recognition": EvaluationSuite("optical_character_recognition", "ICDAR 2015 RRC Challenge 4", "2015", "test", "Hmean", True, "official ICDAR RRC evaluator"),
+    "optical_character_recognition": EvaluationSuite("optical_character_recognition", "ICDAR 2019 MLT", "2019", "train", "Hmean", True, "official MLT Task-4 evaluator"),
 }
 
 

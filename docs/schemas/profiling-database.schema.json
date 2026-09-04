@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/LCJD99/eec-sched/blob/main/docs/schemas/profiling-database.schema.json",
   "title": "EEC Scheduler Profiling Database Snapshot",
-  "description": "A complete, immutable evaluator input. Structural rules live here; cross-record completeness is enforced by eec_sched.profiling_database.",
+  "description": "A complete, immutable evaluator input. Structural rules live here; cross-record completeness is enforced by eec_sched.profiling.snapshot.",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "snapshot_id", "snapshot_digest", "data_kind", "created_at", "measurement_scope", "devices", "provenances", "tools", "transfer_profiles"],

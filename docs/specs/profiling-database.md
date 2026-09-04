@@ -7,7 +7,7 @@ This document defines the schema-first deliverable for [issue #3](https://github
 - [`../schemas/profiling-database.schema.json`](../schemas/profiling-database.schema.json) is the normative JSON Schema Draft 2020-12 document.
 - [`../examples/profiling-database.fake.json`](../examples/profiling-database.fake.json) is a complete synthetic snapshot for downstream development.
 - `scripts/generate_fake_profiling_database.py` deterministically rebuilds that snapshot from the side-effect-free `mnms_tool_specs()` catalog without loading models or using external services.
-- `eec_sched.profiling_database` validates cross-record invariants, verifies the snapshot digest, and returns deeply immutable mappings and tuples.
+- `eec_sched.profiling.snapshot` validates cross-record invariants, verifies the snapshot digest, and returns deeply immutable mappings and tuples.
 - `scripts/validate_profiling_database.py` is the command-line validation entry point.
 
 The existing files under `profiles/*.json` are v1 profiling-run artifacts from the earlier single-device implementation. They are useful source evidence, but they are **not** profiling database v1 snapshots and must not be silently interpreted as such.
@@ -97,7 +97,7 @@ transfer_latency_ms = propagation_delay_ms + 1000 * S / bandwidth_bytes_per_seco
 transfer_energy_j = setup_energy_j + S * energy_per_byte_j
 ```
 
-Same-device DAG edges have zero transfer cost and therefore have no Transfer Profile.
+Same-device DAG edges have zero transfer cost and therefore have no Transfer Profile. The `device` endpoint is also the request/end-user endpoint: request inputs use `device -> assigned_device`, and each final output uses `assigned_device -> device`. For synthetic evaluation, request payload sizes are fixed by data type (`text`, `image`, or `audio`) in the evaluator; node outputs use the Configuration's representative output size.
 
 ## Validation responsibilities
 

@@ -30,7 +30,7 @@ def one_node_plan() -> ToolCallPlan:
 
 
 def test_evaluator_returns_immutable_replayable_report_and_includes_trusted_scheduler_time(monkeypatch) -> None:
-    import eec_sched.trusted_evaluation as trusted_evaluation
+    import eec_sched.evaluation.evaluator as trusted_evaluation
 
     ticks = iter((1.0, 1.001, 2.0, 2.001))
     monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))

@@ -16,6 +16,7 @@ Example:
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import shutil
 import ssl
@@ -115,8 +116,25 @@ def build_icdar(images_zip: Path, ground_truth_zip: Path, output: Path) -> None:
                 shutil.copyfileobj(source, destination)
             with ground_truth.open(gt_name) as source, gt_path.open("wb") as destination:
                 shutil.copyfileobj(source, destination)
-            manifest.append({"id": stem, "image": image_path.name, "ground_truth": gt_path.name})
+            boxes, transcriptions = _read_icdar_ground_truth(gt_path)
+            manifest.append({"id": stem, "image": str(image_path.resolve()), "ground_truth": str(gt_path.resolve()), "boxes": boxes, "transcription": transcriptions})
     _write(output / "manifest.json", {"samples": manifest})
+    (output / "samples.jsonl").write_text("".join(json.dumps(row, ensure_ascii=False) + "\n" for row in manifest), encoding="utf-8")
+
+
+def _read_icdar_ground_truth(path: Path) -> tuple[list[list[list[float]]], list[str]]:
+    boxes: list[list[list[float]]] = []
+    transcriptions: list[str] = []
+    with path.open(encoding="utf-8-sig", newline="") as file:
+        for row in csv.reader(file):
+            if len(row) < 9:
+                continue
+            coordinates = [float(value.strip()) for value in row[:8]]
+            boxes.append([[coordinates[index], coordinates[index + 1]] for index in range(0, 8, 2)])
+            transcriptions.append(",".join(row[8:]).strip())
+    if not boxes:
+        raise ValueError(f"ICDAR ground truth is empty or malformed: {path}")
+    return boxes, transcriptions
 
 
 def main() -> int:

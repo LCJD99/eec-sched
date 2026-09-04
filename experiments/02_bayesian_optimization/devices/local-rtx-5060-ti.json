@@ -1,0 +1,5 @@
+{
+  "device_id": "local-nvidia-geforce-rtx-5060-ti",
+  "hardware_class": "nvidia_geforce_rtx_5060_ti",
+  "description": "Local NVIDIA GeForce RTX 5060 Ti, 16 GiB VRAM, CUDA driver 591.86, CUDA device 0"
+}

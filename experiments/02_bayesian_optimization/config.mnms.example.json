@@ -1,0 +1,189 @@
+{
+  "dataset_dir": "data/benchmarks",
+    "evaluation_samples": 10,
+    "models": [
+        "text_summarization",
+        "text_classification",
+        "question_answering",
+        "automatic_speech_recognition",
+        "image_captioning",
+        "image_classification",
+        "visual_question_answering",
+        "object_detection",
+        "image_segmentation",
+        "optical_character_recognition"
+    ],
+    "model_overrides": {
+        "text_summarization": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_summarization",
+            "scorer": "eec_sched.profiling.scorers:rouge_l",
+            "search_space": {
+                "max_new_tokens": {
+                    "type": "int",
+                    "min": 32,
+                    "max": 256,
+                    "step": 16
+                },
+                "num_beams": { "type": "int", "min": 1, "max": 8, "step": 1 }
+            }
+        },
+        "text_classification": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_text_classification",
+            "scorer": "eec_sched.profiling.scorers:accuracy",
+            "search_space": {
+                "max_length": {
+                    "type": "int",
+                    "min": 64,
+                    "max": 512,
+                    "step": 64
+                }
+            }
+        },
+        "question_answering": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_question_answering",
+            "scorer": "eec_sched.profiling.scorers:squad_v2_f1",
+            "search_space": {
+                "max_length": {
+                    "type": "int",
+                    "min": 256,
+                    "max": 512,
+                    "step": 64
+                },
+                "doc_stride": {
+                    "type": "int",
+                    "min": 64,
+                    "max": 192,
+                    "step": 64
+                }
+            }
+        },
+        "automatic_speech_recognition": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_asr",
+            "scorer": "eec_sched.profiling.scorers:wer",
+            "search_space": {
+                "chunk_length_s": {
+                    "type": "int",
+                    "min": 15,
+                    "max": 30,
+                    "step": 5
+                },
+                "beam_size": { "type": "int", "min": 1, "max": 5, "step": 2 },
+                "max_new_tokens": {
+                    "type": "int",
+                    "min": 64,
+                    "max": 128,
+                    "step": 8
+                }
+            }
+        },
+        "image_captioning": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_captioning",
+            "scorer": "eec_sched.profiling.scorers:cider",
+            "search_space": {
+                "max_new_tokens": {
+                    "type": "int",
+                    "min": 16,
+                    "max": 64,
+                    "step": 16
+                },
+                "num_beams": { "type": "int", "min": 1, "max": 5, "step": 2 }
+            }
+        },
+        "image_classification": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_image_classification",
+            "scorer": "eec_sched.profiling.scorers:imagenet_top1",
+            "search_space": {
+                "image_size": {
+                    "type": "int",
+                    "min": 224,
+                    "max": 384,
+                    "step": 32
+                },
+                "top_k": { "type": "int", "min": 1, "max": 5 }
+            }
+        },
+        "visual_question_answering": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_vqa",
+            "scorer": "eec_sched.profiling.scorers:vqa_accuracy",
+            "search_space": {
+                "max_length": {
+                    "type": "int",
+                    "min": 16,
+                    "max": 64,
+                    "step": 16
+                },
+                "num_beams": { "type": "int", "min": 1, "max": 5, "step": 2 }
+            }
+        },
+        "object_detection": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_coco_detection",
+            "search_space": {
+                "shortest_edge": {
+                    "type": "int",
+                    "min": 480,
+                    "max": 800,
+                    "step": 64
+                },
+                "score_threshold": {
+                    "type": "float",
+                    "min": 0.05,
+                    "max": 0.5,
+                    "step": 0.05,
+                    "precision": 2
+                }
+            }
+        },
+        "image_segmentation": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_coco_segmentation",
+            "search_space": {
+                "shortest_edge": {
+                    "type": "int",
+                    "min": 480,
+                    "max": 800,
+                    "step": 64
+                },
+                "score_threshold": {
+                    "type": "float",
+                    "min": 0.05,
+                    "max": 0.5,
+                    "step": 0.05,
+                    "precision": 2
+                }
+            }
+        },
+        "optical_character_recognition": {
+            "adapter": "eec_sched.profiling.adapters:evaluate_ocr",
+            "scorer": "eec_sched.profiling.scorers:mlt19_hmean",
+            "search_space": {
+                "canvas_size": {
+                    "type": "int",
+                    "min": 1280,
+                    "max": 1920,
+                    "step": 320
+                },
+                "text_threshold": {
+                    "type": "float",
+                    "min": 0.4,
+                    "max": 0.8,
+                    "step": 0.1,
+                    "precision": 1
+                },
+                "width_ths": {
+                    "type": "float",
+                    "min": 0.3,
+                    "max": 1.2,
+                    "step": 0.1,
+                    "precision": 1
+                }
+            }
+        }
+    },
+    "campaign": {
+        "budget": 120,
+        "initial_points": 20,
+        "retain_count": 100,
+        "seed": 20260816,
+        "observation_noise_variance": 0.0001,
+        "resource_metric": "peak_gpu_memory_mib"
+    }
+}

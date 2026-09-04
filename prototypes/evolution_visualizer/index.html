@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scheduler Evolution Explorer</title>
+    <style>
+      :root { color-scheme: light; --bg:#f3f6fb; --panel:#ffffff; --panel-2:#f7f9fc; --line:#d9e1ec; --text:#172338; --muted:#66758c; --blue:#2b6cb0; --teal:#087f70; --gold:#a86b00; --red:#b4234d; }
+      * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Inter,ui-sans-serif,system-ui,sans-serif; }
+      button,input { font:inherit; } button { cursor:pointer; } .shell { min-height:100vh; padding:28px; }
+      header { max-width:1500px; margin:0 auto 18px; display:flex; justify-content:space-between; gap:20px; align-items:end; border-bottom:1px solid var(--line); padding-bottom:18px; }
+      h1,h2,h3,p { margin:0; } h1 { font-size:27px; letter-spacing:-.04em; } h2 { font-size:16px; } h3 { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
+      .eyebrow { color:var(--teal); font-size:11px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px; } .sub,.meta { color:var(--muted); margin-top:6px; }
+      .actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:end; } .button { border:1px solid #b8c7da; border-radius:7px; padding:8px 11px; color:var(--text); background:#eef4fb; } .button:hover { border-color:var(--blue); background:#e4effb; } .file { display:none; }
+      .status { color:var(--muted); font-size:12px; } .status.error { color:var(--red); } .mono,pre,code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; } .muted { color:var(--muted); }
+      .workspace { max-width:1500px; margin:0 auto; display:grid; grid-template-columns:minmax(500px,1.08fr) minmax(470px,.92fr); gap:16px; align-items:start; }
+      .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; } .panel-head { padding:16px 18px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:12px; align-items:center; }
+      .tree-wrap { height:calc(100vh - 155px); min-height:580px; overflow:auto; background:linear-gradient(180deg,#f8fbff,#eef4fa); } .tree-canvas { min-width:100%; min-height:100%; padding:28px; }
+      svg { display:block; overflow:visible; } .edge { fill:none; stroke:#9aaec5; stroke-width:1.5; } .edge.selected { stroke:var(--blue); stroke-width:2.5; } .node { cursor:pointer; outline:none; } .node-card { fill:#ffffff; stroke:#9db2ca; stroke-width:1.5; } .node:hover .node-card,.node:focus .node-card { stroke:var(--blue); } .node.selected .node-card { fill:#e6f2fb; stroke:var(--teal); stroke-width:2; } .node.selected-root .node-card { stroke:var(--gold); } .node-label { fill:var(--text); font-size:13px; font-weight:750; } .node-score { fill:var(--teal); font:700 13px ui-monospace,monospace; } .node-parent { fill:var(--muted); font-size:10px; }
+      .detail { height:calc(100vh - 155px); min-height:580px; overflow:hidden; display:flex; flex-direction:column; } .detail-body { overflow:auto; padding:18px; } .detail-title { display:flex; justify-content:space-between; gap:12px; align-items:start; } .version { color:var(--teal); font:700 16px ui-monospace,monospace; }
+      .score { text-align:right; } .score strong { display:block; color:var(--gold); font:700 21px ui-monospace,monospace; } .score span { color:var(--muted); font-size:11px; } .desc { color:#44536b; margin:15px 0; }
+      .section { border-top:1px solid var(--line); padding-top:15px; margin-top:15px; } .section-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; } .pill { color:var(--muted); border:1px solid #c6d2e1; border-radius:999px; padding:3px 7px; font-size:11px; background:#f8fafc; } .pill.good { color:var(--teal); border-color:#8ccfc5; background:#effaf8; } .pill.bad { color:var(--red); border-color:#e4a8ba; background:#fff3f6; }
+      pre { margin:0; padding:13px; white-space:pre; overflow:auto; max-height:295px; background:#f5f8fc; border:1px solid #cbd7e5; border-radius:7px; color:#24344c; font-size:12px; line-height:1.55; }
+      .context-grid { display:grid; grid-template-columns:1fr; gap:8px; } .context-card { border:1px solid var(--line); border-radius:8px; background:#fbfcfe; overflow:hidden; } .context-card summary { cursor:pointer; list-style:none; padding:11px 12px; color:#31445f; font-weight:750; display:flex; align-items:center; justify-content:space-between; gap:10px; } .context-card summary::-webkit-details-marker { display:none; } .context-card summary::after { content:'+'; color:var(--muted); font-size:17px; font-weight:400; } .context-card[open] summary::after { content:'−'; } .context-card summary:hover { background:#f0f5fb; } .context-card pre { max-height:260px; margin:0 10px 10px; }
+      .trace-layout { display:grid; grid-template-columns:210px 1fr; gap:12px; } .trace-list { max-height:360px; overflow:auto; border:1px solid var(--line); border-radius:7px; } .trace-button { width:100%; display:flex; justify-content:space-between; gap:8px; border:0; border-bottom:1px solid #e1e7ef; padding:8px 9px; text-align:left; color:var(--muted); background:transparent; } .trace-button:last-child { border-bottom:0; } .trace-button:hover,.trace-button.active { color:var(--text); background:#eaf3fb; } .trace-score { color:var(--teal); font:11px ui-monospace,monospace; }
+      .trace-content { min-width:0; } .trace-meta { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:11px; } .dag-node { border:1px solid var(--line); border-radius:6px; padding:9px; background:var(--panel-2); margin-bottom:7px; } .dag-node strong { color:var(--blue); } .assignment { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid #e1e7ef; font-size:12px; } .assignment:last-child { border-bottom:0; } .assignment span:last-child { color:var(--gold); }
+      .empty { padding:70px 20px; text-align:center; color:var(--muted); } .hint { color:var(--muted); font-size:12px; } .legend { display:flex; gap:12px; color:var(--muted); font-size:11px; } .legend i { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--teal); margin-right:4px; } .legend i.root { background:var(--gold); }
+      @media (max-width:1000px) { .shell { padding:18px 12px; } header { display:block; } .actions { justify-content:start; margin-top:14px; } .workspace { grid-template-columns:1fr; } .tree-wrap,.detail { height:auto; min-height:500px; } .detail { max-height:none; } }
+      @media (max-width:620px) { .tree-wrap { min-height:430px; } .trace-layout { grid-template-columns:1fr; } .trace-list { max-height:180px; } }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <div><div class="eyebrow">Prototype · scheduler evolution graph</div><h1>Scheduler Evolution Explorer</h1><p class="sub">纵向查看父子版本、分数变化，并检查每个候选的代码与 Trace 证据。</p></div>
+        <div class="actions"><span id="status" class="status">正在加载结果…</span><label class="button" for="file">加载 JSON</label><input id="file" class="file" type="file" accept="application/json,.json" /></div>
+      </header>
+      <div id="workspace" class="workspace"><div class="panel"><div class="panel-head"><div><h2>Evolution forest</h2><p id="tree-meta" class="meta">—</p></div><div class="legend"><span><i class="root"></i>Root</span><span><i></i>Selected</span></div></div><div id="tree" class="tree-wrap"><div class="empty">等待结果文件</div></div></div><section id="detail" class="panel detail"><div class="empty">点击左侧节点查看候选详情</div></section></div>
+    </main>
+    <script>
+      let result = null, selectedVersion = null, selectedTraceId = null;
+      const esc = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const fmt = (value, digits=4) => value == null ? '—' : Number(value).toLocaleString(undefined,{maximumFractionDigits:digits});
+      const candidates = () => Object.values(result?.evolution_evaluations || {}).sort((a,b)=>a.scheduler_version-b.scheduler_version);
+      const candidate = () => candidates().find(item => item.scheduler_version === selectedVersion) || candidates()[0];
+      const traces = () => candidate()?.traces || [];
+      function score(value) { return value == null ? '—' : Number(value).toFixed(4); }
+      function contextText(value, fallback='该节点没有记录此上下文。') {
+        if (value == null) return fallback;
+        if (typeof value === 'string') return value;
+        try { return JSON.stringify(value, null, 2); } catch (error) { return String(value); }
+      }
+      function layoutGraph(items) {
+        const byId = new Map(items.map(item => [item.scheduler_version, item]));
+        const levels = new Map();
+        const levelOf = (item, visiting=new Set()) => { if (levels.has(item.scheduler_version)) return levels.get(item.scheduler_version); if (visiting.has(item.scheduler_version)) return 0; visiting.add(item.scheduler_version); const parents=(item.parent_scheduler_versions||[]).map(id=>byId.get(id)).filter(Boolean); const level=parents.length ? Math.max(...parents.map(parent=>levelOf(parent,visiting)))+1 : 0; levels.set(item.scheduler_version,level); return level; };
+        items.forEach(item=>levelOf(item));
+        const groups = new Map(); items.forEach(item=>{ const level=levels.get(item.scheduler_version); if(!groups.has(level))groups.set(level,[]);groups.get(level).push(item); });
+        const width=Math.max(620,...[...groups.values()].map(group=>group.length*184+70)), rowH=140, nodeW=148, nodeH=64;
+        const positions=new Map(); [...groups.entries()].sort((a,b)=>a[0]-b[0]).forEach(([level,group])=>{ const gap=36; const total=group.length*nodeW+(group.length-1)*gap; const start=(width-total)/2; group.forEach((item,index)=>positions.set(item.scheduler_version,{x:start+index*(nodeW+gap),y:32+level*rowH})); });
+        return {byId,levels,positions,width,height:Math.max(280,(Math.max(...levels.values(),0)+1)*rowH+55),nodeW,nodeH};
+      }
+      function renderTree() {
+        if(!result) return; const items=candidates(), graph=layoutGraph(items), selected=selectedVersion;
+        const edgeParts=[]; items.forEach(item=>{ const child=graph.positions.get(item.scheduler_version); (item.parent_scheduler_versions||[]).forEach(parentId=>{ const parent=graph.positions.get(parentId); if(!parent)return; const x1=parent.x+graph.nodeW/2,y1=parent.y+graph.nodeH,x2=child.x+graph.nodeW/2,y2=child.y; const mid=(y1+y2)/2; edgeParts.push(`<path class="edge ${selected===item.scheduler_version||selected===parentId?'selected':''}" d="M ${x1} ${y1} C ${x1} ${mid}, ${x2} ${mid}, ${x2} ${y2}"/>`); }); });
+        const nodeParts=items.map(item=>{ const p=graph.positions.get(item.scheduler_version), root=!(item.parent_scheduler_versions||[]).length, active=item.scheduler_version===selected; return `<g class="node ${active?'selected':''} ${root?'selected-root':''}" data-version="${item.scheduler_version}" tabindex="0" role="button" aria-label="Scheduler version ${item.scheduler_version}, score ${score(item.candidate_score)}" transform="translate(${p.x},${p.y})"><rect class="node-card" width="${graph.nodeW}" height="${graph.nodeH}" rx="8"/><text class="node-label" x="13" y="23">Scheduler v${item.scheduler_version}</text><text class="node-score" x="13" y="45">${score(item.candidate_score)}</text><text class="node-parent" x="${graph.nodeW-12}" y="21" text-anchor="end">${root?'ROOT':`${(item.parent_scheduler_versions||[]).length} PARENT`}</text></g>`; }).join('');
+        document.getElementById('tree').innerHTML=`<div class="tree-canvas"><svg width="${graph.width}" height="${graph.height}" viewBox="0 0 ${graph.width} ${graph.height}" aria-label="Scheduler evolution forest">${edgeParts.join('')}${nodeParts}</svg></div>`;
+        document.getElementById('tree-meta').textContent=`${items.length} 个版本 · 选中 v${selected} · 纵向父子关系`;
+        document.querySelectorAll('[data-version]').forEach(node=>{ node.addEventListener('click',()=>selectVersion(Number(node.dataset.version))); node.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();selectVersion(Number(node.dataset.version));}}); });
+      }
+      function renderDetail() {
+        const item=candidate(); if(!item){document.getElementById('detail').innerHTML='<div class="empty">结果中没有候选版本</div>';return;}
+        const list=traces(), trace=list.find(t=>t.trace_id===selectedTraceId)||list[0]; selectedTraceId=trace?.trace_id;
+        const traceButtons=list.map(t=>`<button class="trace-button ${t.trace_id===selectedTraceId?'active':''}" data-trace="${esc(t.trace_id)}"><span class="mono">${esc(t.trace_id)}</span><span class="trace-score">${score(t.score)}</span></button>`).join('');
+        document.getElementById('detail').innerHTML=`<div class="panel-head"><div><div class="version">Scheduler v${item.scheduler_version}</div><p class="meta">父版本：${(item.parent_scheduler_versions||[]).length?item.parent_scheduler_versions.map(v=>'v'+v).join('、'):'无（根节点）'}</p></div><div class="score"><strong>${score(item.candidate_score)}</strong><span>Candidate score</span></div></div><div class="detail-body"><p class="desc">${esc(item.strategy_description||'结果文件未包含策略描述。')}</p><div class="section"><div class="section-head"><h3>LLM contexts</h3><span class="pill">点击展开</span></div><div class="context-grid"><details class="context-card"><summary>Reflection context <span class="hint">输入</span></summary><pre>${esc(contextText(item.reflection_context))}</pre></details><details class="context-card"><summary>Reflection feedback <span class="hint">输出</span></summary><pre>${esc(contextText(item.reflection_feedback))}</pre></details><details class="context-card"><summary>Coding context <span class="hint">输入</span></summary><pre>${esc(contextText(item.coding_context))}</pre></details></div></div><div class="section"><div class="section-head"><h3>Source code</h3><span class="pill">Python</span></div><pre>${esc(item.source_code||'结果文件未包含 source_code。')}</pre></div><div class="section"><div class="section-head"><h3>Trace evidence</h3><span class="pill">${list.length} traces</span></div><div class="trace-layout"><div class="trace-list">${traceButtons||'<div class="empty">没有 trace</div>'}</div><div id="trace-content" class="trace-content"></div></div></div></div>`;
+        document.querySelectorAll('[data-trace]').forEach(button=>button.addEventListener('click',()=>{selectedTraceId=button.dataset.trace;renderDetail();})); renderTrace(trace);
+      }
+      function renderTrace(trace) {
+        const target=document.getElementById('trace-content'); if(!target||!trace)return; const nodes=trace.dag?.nodes||[]; const assignments=trace.assignments||{};
+        target.innerHTML=`<div class="trace-meta"><span class="pill ${trace.status==='scored'?'good':'bad'}">${esc(trace.status)}</span><span class="pill">score ${score(trace.score)}</span>${trace.reason?`<span class="pill bad">${esc(trace.reason)}</span>`:''}</div><div class="section" style="margin-top:0"><div class="section-head"><h3>DAG · ${esc(trace.trace_id)}</h3><span class="hint">${nodes.length} nodes</span></div>${nodes.map(node=>`<div class="dag-node"><strong>${esc(node.node_id)}</strong> · <span>${esc(node.tool_id)}</span><div class="hint">inputs: ${esc(Object.keys(node.inputs||{}).join(', ')||'none')}</div></div>`).join('')||'<p class="muted">没有 DAG 节点</p>'}</div><div class="section"><div class="section-head"><h3>Assignments</h3><span class="hint">configuration × device</span></div>${Object.entries(assignments).map(([node,assignment])=>`<div class="assignment"><span class="mono">${esc(node)}</span><span>${esc(assignment.configuration_id)} · ${esc(assignment.device_id)}</span></div>`).join('')||'<p class="muted">没有分配记录</p>'}</div>`;
+      }
+      function selectVersion(version) { selectedVersion=version; selectedTraceId=null; renderTree(); renderDetail(); }
+      function load(data) { if(!data||!data.evolution_evaluations) throw new Error('不是 run_evolution.py 生成的结果 JSON：缺少 evolution_evaluations。'); result=data; selectedVersion=Number(data.selected_scheduler_version)||candidates()[0]?.scheduler_version; selectedTraceId=null; document.getElementById('status').textContent=`已加载 · ${candidates().length} 个版本`; document.getElementById('status').className='status'; renderTree();renderDetail(); }
+      async function loadRemote() { try { const response=await fetch(`/result.json?refresh=${Date.now()}`, {cache:'no-store'}); if(!response.ok)throw new Error('服务器没有配置 result_path'); load(await response.json()); const source=response.headers.get('X-Evolution-Result-Path'); if(source)document.getElementById('status').textContent=`已加载 · ${source.split(/[\\/]/).pop()}`; } catch(error) { document.getElementById('status').textContent=error.message; document.getElementById('status').className='status error'; } }
+      document.getElementById('file').addEventListener('change',async event=>{const file=event.target.files[0];if(!file)return;try{load(JSON.parse(await file.text()));}catch(error){document.getElementById('status').textContent=error.message;document.getElementById('status').className='status error';}});
+      loadRemote();
+    </script>
+  </body>
+</html>

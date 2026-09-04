@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LCJD99/eec-sched/blob/main/docs/schemas/tool-call-dag.schema.json",
+  "title": "EEC Scheduler Tool-Call DAG",
+  "description": "The device-independent JSON projection of eec_sched.domain.ToolCallPlan. Structural rules live here; tool, port, modality, reference, uniqueness, and acyclicity rules are enforced by eec_sched.planning.validate_plan.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["nodes", "final_outputs"],
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/toolNode"}
+    },
+    "final_outputs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/finalOutput"}
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "tool_id", "inputs"],
+      "properties": {
+        "node_id": {"$ref": "#/$defs/nonEmptyString"},
+        "tool_id": {"$ref": "#/$defs/nonEmptyString"},
+        "inputs": {
+          "type": "object",
+          "propertyNames": {"$ref": "#/$defs/nonEmptyString"},
+          "additionalProperties": {"$ref": "#/$defs/inputSource"}
+        }
+      }
+    },
+    "inputSource": {
+      "oneOf": [
+        {"$ref": "#/$defs/requestInputSource"},
+        {"$ref": "#/$defs/nodeInputSource"}
+      ]
+    },
+    "requestInputSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name"],
+      "properties": {
+        "kind": {"const": "request"},
+        "name": {"$ref": "#/$defs/nonEmptyString"},
+        "data_type": {"enum": ["audio", "image", "text"]}
+      }
+    },
+    "nodeInputSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "port"],
+      "properties": {
+        "kind": {"const": "node"},
+        "name": {"$ref": "#/$defs/nonEmptyString"},
+        "port": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "finalOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_id", "port"],
+      "properties": {
+        "node_id": {"$ref": "#/$defs/nonEmptyString"},
+        "port": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    }
+  }
+}

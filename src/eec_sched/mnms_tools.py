@@ -271,7 +271,12 @@ class MnmsToolRunner(ToolRunner):
                 import requests  # type: ignore[import-not-found]
                 from openai import OpenAI  # type: ignore[import-not-found]
                 response = OpenAI().images.generate(model="dall-e-3", prompt=prompt, size="1024x1024", quality="hd", n=1)
-                downloaded = requests.get(response.data[0].url, timeout=60)
+                if not response.data:
+                    raise RuntimeError("image generation response did not include image data")
+                image_url = response.data[0].url
+                if image_url is None:
+                    raise RuntimeError("image generation response did not include a URL")
+                downloaded = requests.get(image_url, timeout=60)
                 downloaded.raise_for_status()
                 return {"image": Image.open(io.BytesIO(downloaded.content)).convert("RGB")}
             import torch

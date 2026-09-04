@@ -1,0 +1,3 @@
+minimum_accuracy: 0.0
+maximum_latency_ms: 100.0
+gamma: 0.5

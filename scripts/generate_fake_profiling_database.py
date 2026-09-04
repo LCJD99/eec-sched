@@ -14,7 +14,7 @@ from typing import Any, Mapping, Sequence
 
 from eec_sched.domain import Configuration, ToolSpec
 from eec_sched.mnms_tools import mnms_tool_specs
-from eec_sched.profiling_database import snapshot_digest, validate_profiling_database
+from eec_sched.profiling.snapshot import snapshot_digest, validate_profiling_database
 
 
 ROOT = Path(__file__).parents[1]

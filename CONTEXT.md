@@ -88,8 +88,24 @@ _Avoid_: Oracle score, weighted score, per-Trace score
 One of `scored` for a valid proposal with a score, `rejected` for invalid input or assignments, or `failed` when the Scheduler Candidate cannot run to completion. A trusted-evaluator fault is reported as a system error, not as a Scheduler Candidate status.
 _Avoid_: Feasible, infeasible, detailed failure taxonomy
 **Evolution Module**:
-The module that compares Scheduler Candidates using every per-Trace score, selects relevant full Trace contexts for model context, and asks a model for a proposed Scheduler Candidate change. It does not calculate scores or change trusted evaluation rules.
+The module that maintains Scheduler Candidates in a Repertoire, selects parents using Candidate quality and Behavior Feature Vectors, and asks a model for a proposed Scheduler Candidate change. It does not calculate scores or change trusted evaluation rules.
 _Avoid_: Scheduler Candidate, trusted evaluator, automatic evaluator modification
+
+**Bottleneck Diagnosis**:
+A structured conclusion drawn from trusted Candidate Evaluation Evidence, containing the scheduling behavior to change and evidence supporting that change. An Empty Diagnosis deliberately supplies no localized bottleneck evidence for ablation.
+_Avoid_: Candidate-reported explanation, evaluator modification, ungrounded reflection
+
+**Behavior Feature Vector**:
+An ordered projection of Candidate Evaluation Evidence describing how a Scheduler Candidate behaves, such as its latency, resource use, quality, or device-placement preference. It distinguishes behavior from Candidate Score.
+_Avoid_: Reward vector, Candidate Score, arbitrary embedding
+
+**Repertoire**:
+The population view used by an Evolution Loop to retain Scheduler Candidates according to quality and Behavior Feature Vector coverage. The Evolution Graph remains the complete lineage record even when a Repertoire retains only representatives.
+_Avoid_: Evolution Graph, Parent Candidate Pool, cross-run memory
+
+**Experience Memory**:
+Retrievable evidence about prior successful or failed Scheduler changes supplied to later evolution rounds. Empty Memory is the explicit no-memory implementation used for ablation.
+_Avoid_: Evolution Graph, model weights, hidden chat history
 
 **Model Context**:
 The selected full Trace contexts supplied by the Evolution Module to a model, including the DAG, Scheduler Candidate choices, evaluation result, and score.
@@ -104,12 +120,12 @@ A rule that selects one or more Scheduler Candidates from the Parent Candidate P
 _Avoid_: Final Candidate selection, Trace Selection Strategy
 
 **Mutation Parent Selection Strategy**:
-The Parent Selection Strategy that forms the Pareto frontier of the Parent Candidate Pool using Trace Score Vectors, then uniformly samples one Candidate as the mutation parent.
-_Avoid_: Crossover parent selection, Candidate Score winner selection
+A Parent Selection Strategy that chooses one Scheduler Candidate for mutation. Pareto sampling over Trace Score Vectors and feature-space diversity selection are distinct implementations of this strategy.
+_Avoid_: Crossover parent selection, final Candidate selection
 
 **Crossover Parent Selection Strategy**:
-The Parent Selection Strategy that takes up to five Scheduler Candidates with the highest Candidate Scores, then selects the pair whose Trace Score Vectors have the lowest cosine similarity. When fewer than five Candidates exist, it uses all available Candidates.
-_Avoid_: Uniform Pareto sampling, arbitrary Candidate pair
+A Parent Selection Strategy that chooses two Scheduler Candidates for crossover. Trace-score cosine diversity and complementary Behavior Feature Vectors are distinct implementations of this strategy.
+_Avoid_: Mutation parent selection, arbitrary Candidate pair
 
 **Evolution Operator Selection Strategy**:
 A probabilistic rule that selects mutation or crossover for each Evolution Loop round using configurable probabilities.
@@ -148,11 +164,11 @@ The textual Scheduler change guidance produced from selected Candidate Evaluatio
 _Avoid_: Code patch, Scheduler Strategy Description, trusted evaluation result
 
 **Reflection Input Policy**:
-A replaceable rule for constructing Reflection Agent input. The current policy supplies the relevant Scheduler Strategy Descriptions and selected full Trace evidence, but excludes Scheduler source code; experiments may replace the policy without changing Candidate Evaluation or Coding Agent authority.
+A replaceable rule for constructing Reflection Agent input. The current policy supplies the relevant Scheduler Strategy Descriptions, parent Scheduler source code, and selected full Trace evidence; experiments may replace the policy without changing Candidate Evaluation or Coding Agent authority.
 _Avoid_: Fixed prompt implementation, Coding Agent input, source-code execution
 
 **Evolution Loop**:
-A configured fixed-number sequence in which every round probabilistically selects mutation or crossover, produces one new Scheduler Candidate, evaluates it, and adds it to the active Evolution Graph before comparing Candidate Scores.
+A configured fixed-number sequence in which every round selects mutation or crossover, diagnoses selected evidence, produces one new Scheduler Candidate, evaluates it, and updates the Evolution Graph, Repertoire, and Experience Memory before comparing Candidate Scores.
 _Avoid_: Open-ended agent loop, evaluator mutation
 
 **Candidate Evaluation**:

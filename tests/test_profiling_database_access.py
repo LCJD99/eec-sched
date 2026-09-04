@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from eec_sched.profiling_database import load_profiling_database
+from eec_sched.profiling.snapshot import load_profiling_database
 
 
 ROOT = Path(__file__).parents[1]

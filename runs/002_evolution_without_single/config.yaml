@@ -1,0 +1,31 @@
+# Copy this file to a private location and point your runner at it.
+# Paths are relative to the directory from which the runner is invoked.
+# Keep tokens in the local .env file rather than committing them to YAML.
+llm:
+  reflection:
+    base_url: http://127.0.0.1:9888/v1
+    token: ${EEC_SCHED_REFLECTION_TOKEN}
+    model: qwen3-8b
+  coding:
+    base_url: http://127.0.0.1:9888/v1
+    token: ${EEC_SCHED_CODING_TOKEN}
+    model: qwen3-8b
+
+run:
+  dataset: data/mnms-gt-without-single.jsonl
+  profiling_database: docs/examples/profiling-database.fake.json
+  profiling_schema: docs/schemas/profiling-database.schema.json
+  root_candidates:
+    - scheduler_version: 1
+      source: schedulers/naive_fastest.py
+    - scheduler_version: 2
+      source: schedulers/naive_quality.py
+    - scheduler_version: 3
+      source: schedulers/naive_energy.py
+  oracle_source: schedulers/oracle_source.py
+  oracle_version: 99
+  rounds: 3
+  mutation_probability: 0.5
+  evolution_split: train
+  final_split: test
+  output_dir: runs/002_evolution_without_single

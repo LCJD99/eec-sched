@@ -1,0 +1,2 @@
+kind: in_process
+timeout_seconds: 5.0
