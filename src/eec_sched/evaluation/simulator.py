@@ -16,10 +16,6 @@ def transfer_latency(transfer: Any, size: int) -> float:
     return transfer.propagation_delay_ms + 1000.0 * size / transfer.bandwidth_bytes_per_second
 
 
-def transfer_energy(transfer: Any, size: int) -> float:
-    return transfer.setup_energy_j + size * transfer.energy_per_byte_j
-
-
 def _request_data_type(source: Any) -> str:
     return source.data_type or "text"
 
@@ -65,17 +61,23 @@ def simulate(
             size = FIXED_DATA_SIZE_BYTES[_request_data_type(source)]
             transfer = snapshot.transfer_profile(END_DEVICE_ID, assignment.device_id)
             latency = transfer_latency(transfer, size)
-            energy = transfer_energy(transfer, size)
             link = (END_DEVICE_ID, assignment.device_id)
             start = link_free.get(link, 0.0)
             finish_time = start + latency
             link_free[link] = finish_time
             transfer_ready[node_id] = max(transfer_ready[node_id], finish_time)
-            transfers.append(SimulatedTransfer(END_DEVICE_ID, node_id, END_DEVICE_ID, assignment.device_id, start, finish_time, latency, energy))
+            transfers.append(SimulatedTransfer(END_DEVICE_ID, node_id, END_DEVICE_ID, assignment.device_id, start, finish_time, latency))
         start = max(device_free[assignment.device_id], transfer_ready[node_id])
         profile = snapshot.execution_profile(node.tool_id, assignment.configuration_id, assignment.device_id)
         finish_time = start + profile.warm_latency_p95_ms
-        simulated[node_id] = SimulatedNode(node_id, assignment.configuration_id, assignment.device_id, start, finish_time)
+        simulated[node_id] = SimulatedNode(
+            node_id,
+            assignment.configuration_id,
+            assignment.device_id,
+            start,
+            finish_time,
+            profile.gpu_memory_mib,
+        )
         finish[node_id] = finish_time
         device_free[assignment.device_id] = finish_time
         for child_id, child_predecessors in graph.items():
@@ -88,13 +90,12 @@ def simulate(
             transfer = snapshot.transfer_profile(assignment.device_id, child_assignment.device_id)
             size = snapshot.representative_output_bytes(node.tool_id, assignment.configuration_id)
             latency = transfer_latency(transfer, size)
-            energy = transfer_energy(transfer, size)
             link = (assignment.device_id, child_assignment.device_id)
             start = max(finish_time, link_free.get(link, 0.0))
             transfer_finish = start + latency
             link_free[link] = transfer_finish
             transfer_ready[child_id] = max(transfer_ready[child_id], transfer_finish)
-            transfers.append(SimulatedTransfer(node_id, child_id, assignment.device_id, child_assignment.device_id, start, transfer_finish, latency, energy))
+            transfers.append(SimulatedTransfer(node_id, child_id, assignment.device_id, child_assignment.device_id, start, transfer_finish, latency))
         remaining.remove(node_id)
     for output in dag.final_outputs:
         assignment = assignments[output.node_id]
@@ -103,12 +104,11 @@ def simulate(
         transfer = snapshot.transfer_profile(assignment.device_id, END_DEVICE_ID)
         size = snapshot.representative_output_bytes(by_id[output.node_id].tool_id, assignment.configuration_id)
         latency = transfer_latency(transfer, size)
-        energy = transfer_energy(transfer, size)
         link = (assignment.device_id, END_DEVICE_ID)
         start = max(finish[output.node_id], link_free.get(link, 0.0))
         transfer_finish = start + latency
         link_free[link] = transfer_finish
-        transfers.append(SimulatedTransfer(output.node_id, END_DEVICE_ID, assignment.device_id, END_DEVICE_ID, start, transfer_finish, latency, energy))
+        transfers.append(SimulatedTransfer(output.node_id, END_DEVICE_ID, assignment.device_id, END_DEVICE_ID, start, transfer_finish, latency))
     return tuple(simulated[node_id] for node_id in sorted(simulated)), tuple(transfers)
 
 
@@ -116,4 +116,3 @@ def simulate(
 _simulate = simulate
 _predecessors = predecessors
 _transfer_latency = transfer_latency
-_transfer_energy = transfer_energy

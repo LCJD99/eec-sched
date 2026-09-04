@@ -39,7 +39,7 @@ eec-sched 不应该把“Memory”实现成一个不断追加文字的长 prompt
 - 可信归一化后的完整 `SchedulerProposal`；
 - `scored`、`rejected` 或 `failed` 状态和原因；
 - Scheduler Computation Time；
-- [`EvaluationReport`](../src/eec_sched/evaluation/models.py) 中逐节点模拟结果、跨设备传输、quality、latency、execution / communication Resource Score 以及最终 utility。
+- [`EvaluationReport`](../src/eec_sched/evaluation/models.py) 中逐节点模拟结果、跨设备传输、accuracy、latency、GPU-memory resource 以及最终 Composite Score。
 
 因此当前问题不是“评估器没有产生历史”，而是“模型上下文没有把历史整理成容易归因的证据”。
 
@@ -51,14 +51,13 @@ eec-sched 不应该把“Memory”实现成一个不断追加文字的长 prompt
 - 涉及 Candidate 的 Scheduler Strategy Description；
 - 由 root、lineage 或 crossover 规则选出的若干完整 `TraceEvaluation`。
 
-当前选择规则有价值：root 看最好和最差 Trace；descendant mutation 看相对直接父代的最大进步和最大回退；crossover 看两个父代各自最占优的 Trace。但它仍有四个限制：
+当前选择规则有价值：root 看最好和最差 Trace；descendant mutation 看相对直接父代的最大进步和最大回退；crossover 看两个父代各自最占优的 Trace。但它仍有三个限制：
 
 1. `TraceEvaluation` 太深，里面的 DAG、Snapshot evidence 和完整报告会让 prompt 体积随 Trace 复杂度增长；
 2. 没有明确告诉 Reflection “为何选择这个 Trace”和“它与哪个证据形成对比”；
-3. score 没有被拆成 quality、latency、Resource Score、跨设备传输和 Scheduler Computation Time 的变化；
-4. 没有跨运行经验、被证伪的旧假设、Replay Trace 或 Final Evaluation 防泄漏策略。
+3. 没有跨运行经验、被证伪的旧假设、Replay Trace 或 Final Evaluation 防泄漏策略。
 
-当前 Concise Projection 只留下 `trace_id`、status、score 和 reason，适合报告，不足以反思；直接传完整 `TraceEvaluation` 又太冗杂。建议在两者中间增加专门的证据表示。
+当前 Concise Projection 已留下 `trace_id`、status、Composite Score、accuracy、latency 和 GPU-memory resource，适合报告；但直接传完整 `TraceEvaluation` 仍可能过于冗杂。建议在两者中间增加专门的证据表示。
 
 ### 2.3 当前不能提前宣称的能力
 
@@ -95,7 +94,7 @@ eec-sched 不应该把“Memory”实现成一个不断追加文字的长 prompt
 - 适用条件，例如 Snapshot / Scoring Context 版本、tool 组合、DAG 结构和设备环境；
 - 现象与可能根因；
 - 建议改变的决策因素；
-- 预测的 quality、latency 或 Resource Score 变化；
+- 预测的 accuracy、latency 或 GPU-memory resource 变化；
 - 支持证据 ID 和反对证据 ID；
 - 状态：`proposed`、`supported`、`contradicted` 或 `retired`；
 - 最近一次验证所在的 run。
@@ -165,16 +164,16 @@ Candidate 抛出的异常文本属于**不可信数据**：它可能很长，也
 ### 5.4 可信后果
 
 - status 与 score contribution；
-- quality lower bound；
-- simulated makespan、latency proxy；
-- execution 与 communication Resource Score；
-- normalized performance 和 utility；
+- normalized quality；
+- simulated makespan、latency；
+- execution GPU-memory resource；
+- accuracy、latency、GPU-memory resource 和 Composite Score；
 - 逐节点 start / finish 与关键路径投影；
-- transfer 的 source / destination device、latency 与 Resource Score；
+- transfer 的 source / destination device 与 latency；
 - validation errors 或 Candidate exception；
 - 与直接父代、另一个 crossover parent 或选定 baseline 的逐指标 delta。
 
-失败状态不能只按 score 排序。当前契约中 `rejected` / `failed` 固定贡献零，而合法 Proposal 的 utility 可能为负；如果简单选择“最低分 Trace”，有可能漏掉真实运行失败。
+失败状态不能只按 score 排序。当前契约中 `rejected` / `failed` 固定贡献零；如果简单选择“最低分 Trace”，有可能漏掉真实运行失败。
 
 ### 5.5 进化语义
 
@@ -215,7 +214,7 @@ Reflection 不应看到全部账本，也不应只看到 score。建议每次构
 证据身份：evidence_id、run、Candidate、Trace、Snapshot / evaluator 版本
 场景签名：DAG 结构、tool 组合、Scoring Context、相关 profile 版本
 决策差异：相对比较对象改变的 assignments 与新增/消失的 transfers
-结果分解：status、reason、quality、latency、Resource Score、utility 及 delta
+结果分解：status、reason、accuracy、latency、GPU-memory resource、Composite Score 及 delta
 机制线索：关键路径、主要 transfer、Scheduler Computation Time
 选择理由：regression / matched-success / boundary / unique-failure / replay
 原始引用：可以定位到不可变 artifact，但默认不展开
@@ -380,7 +379,7 @@ FunSearch 在 program database 中按多输入 score signature 聚类并保持�
 
 ```text
 在“宽 DAG + 大输出跨设备边”范围内，减少 device switch；
-预期 communication Resource Score 下降，quality 不下降，latency 不明显回退。
+预期 communication latency 下降，accuracy 不下降，GPU-memory resource 不明显回退。
 ```
 
 新 Candidate 跑完**完整固定 Evolution Trace Set**后，再对照预测：
@@ -575,7 +574,7 @@ flowchart TD
 
 | 失败模式 | 具体后果 | 防护 |
 |---|---|---|
-| 只传 Candidate Score | 不知道是 quality、latency、Resource Score、传输还是程序耗时造成变化 | 指标分解 + assignment delta + 关键路径 / transfer 证据 |
+| 只传 Candidate Score | 不知道是 accuracy、latency、GPU-memory resource、传输还是程序耗时造成变化 | 指标分解 + assignment delta + 关键路径 / transfer 证据 |
 | 直接传完整系统 Trace | 大量 task payload、重复 profile 和无关节点稀释注意力 | 原始 archive + 确定性 EvidenceCard + budget |
 | 只选最低分 | 漏掉 `failed` / `rejected`，也缺少可归因的成功对照 | status 分层 + matched success + boundary case |
 | 只检索相似成功 | 形成确认偏误，看不到当前策略的回归边界 | 必选反证和历史 Replay slot |

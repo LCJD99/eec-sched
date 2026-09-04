@@ -16,16 +16,16 @@ _Avoid_: Parameter combination, preset, Cartesian-product choice
 Device-independent evidence for one tool Configuration's raw semantic metric and conservative normalized quality lower bound.
 _Avoid_: Accuracy score, device profile
 
-**Resource Score**:
-An unqualified scalar for resource consumption; lower values indicate a less resource-intensive execution or transfer.
+**Resource**:
+The aggregate GPU memory consumed by a Trace's selected executions, recorded in MiB; lower values indicate a less resource-intensive execution.
 _Avoid_: Cost score, normalized rating
 
 **Execution Profile**:
-Measured warm latency, incremental execution Resource Score, and representative output size for one compatible Configuration-device pair.
+Measured warm latency, GPU-memory Resource, and representative output size for one compatible Configuration-device pair.
 _Avoid_: Latency profile, hardware benchmark
 
 **Transfer Profile**:
-Measured propagation, bandwidth, setup Resource Score, and per-byte Resource Score evidence for one directed cross-device path.
+Measured propagation and bandwidth evidence for one directed cross-device path; transfers contribute latency but not GPU-memory Resource.
 _Avoid_: Network estimate, undirected link
 
 **Compatible Device**:
@@ -53,7 +53,7 @@ A textual explanation of the scheduling strategy embodied by one Scheduler Candi
 _Avoid_: Reflection Advice, executable Scheduler code
 
 **Candidate Evaluation Evidence**:
-The retained per-Trace Scheduler Proposals and trusted evaluation results for one Scheduler Candidate, including detailed metrics and every Tool-Call DAG node's Configuration and Compatible Device assignment.
+The retained per-Trace Scheduler Proposals and trusted evaluation results for one Scheduler Candidate, including raw accuracy, latency, GPU-memory Resource, the Composite Score, and every Tool-Call DAG node's Configuration and Compatible Device assignment.
 _Avoid_: Profiling Database Snapshot, Candidate-reported score
 
 **Scheduler Version**:
@@ -69,7 +69,7 @@ The Scheduler Candidate's complete assignment of one Configuration and Compatibl
 _Avoid_: Candidate-reported timing, Candidate-controlled execution order, score claim
 
 **Scheduler Computation Time**:
-The wall-clock time the trusted evaluator measures while a Scheduler Candidate computes one Scheduler Proposal. It is stored as its own result field and, for a scored proposal, is included in the total latency used for the final score.
+The wall-clock time the trusted evaluator measures while a Scheduler Candidate computes one Scheduler Proposal. It is stored as its own result field and, for a scored proposal, is included in the latency used for the Composite Score.
 _Avoid_: Candidate-reported time, simulated tool execution time
 
 **Canonical Evaluation Order**:
@@ -77,12 +77,16 @@ The trusted evaluator's deterministic order for simulating a Tool-Call DAG: depe
 _Avoid_: Scheduler-controlled ordering, runtime-dependent ordering
 
 **Oracle Reference**:
-The trusted reference score calculated only during final evaluation, using the same score definition as a Scheduler Candidate for comparison.
+The trusted reference Composite Score calculated only during final evaluation, using the same three-metric score definition as a Scheduler Candidate for comparison.
 _Avoid_: Evolution-loop signal, real execution result, scoring formula
 
+**Composite Score**:
+A trusted weighted combination of the normalized accuracy, latency, and GPU-memory Resource indicators for one Trace; higher values are better and no component is a hard feasibility gate. With configured positive scales (L) and (R), the indicators are (a=accuracy), (l=1/(1+latency/L)), and (r=1/(1+resource/R)), and the score is the normalized weighted mean (w_a a+w_l l+w_r r). `latency` includes Scheduler Computation Time, while `resource` is the aggregate of the selected nodes' `gpu_memory_mib` values.
+_Avoid_: Utility, constrained score, single raw metric
+
 **Candidate Score**:
-The simple arithmetic mean over every Trace in one fixed Trace set, used to compare Scheduler Candidates during evolution. A `failed` or `rejected` Trace contributes zero while retaining its failure or rejection reason.
-_Avoid_: Oracle score, weighted score, per-Trace score
+The simple arithmetic mean of Composite Scores over every Trace in one fixed Trace set, used to compare Scheduler Candidates during evolution. A `failed` or `rejected` Trace contributes zero while retaining its failure or rejection reason.
+_Avoid_: Oracle score, weighted raw metric, per-Trace score
 
 **Evaluation Status**:
 One of `scored` for a valid proposal with a score, `rejected` for invalid input or assignments, or `failed` when the Scheduler Candidate cannot run to completion. A trusted-evaluator fault is reported as a system error, not as a Scheduler Candidate status.

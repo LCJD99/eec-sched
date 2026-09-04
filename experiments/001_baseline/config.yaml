@@ -1,0 +1,24 @@
+# @package _global_
+defaults:
+  - /run: baseline
+  - /workflow: mnms
+  - /evidence: fake_snapshot
+  - /evaluation: canonical
+  - /diagnosis: one_shot
+  - /search: psocm
+  - /memory: in_run
+  - /candidate_runtime: in_process
+  - /model@models.diagnosis: local_diagnosis
+  - /model@models.coding: local_coding
+  - /artifacts: filesystem
+  - /experiment: null
+  - _self_
+  - override /hydra/job_logging: disabled
+  - override /hydra/hydra_logging: disabled
+
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/configs
+  run:
+    dir: .
+  output_subdir: null

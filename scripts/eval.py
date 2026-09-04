@@ -81,11 +81,15 @@ def dag_projection(dag: ToolCallPlan) -> dict[str, object]:
 
 
 def trace_projection(record: TraceEvaluation) -> dict[str, object]:
+    metrics = dict(record.raw_metrics)
+    if record.report.raw_accuracy_metrics:
+        metrics["raw_accuracy_metrics"] = dict(record.report.raw_accuracy_metrics)
     return {
         "trace_id": record.trace.trace_id,
         "dag": dag_projection(record.trace.dag),
         "status": record.status,
         "score": record.score_contribution,
+        "metrics": metrics,
         "reason": record.reason,
         "assignments": {
             node_id: {"configuration_id": assignment.configuration_id, "device_id": assignment.device_id}

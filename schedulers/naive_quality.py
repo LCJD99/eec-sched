@@ -1,7 +1,7 @@
 """Naive quality-first Scheduler Candidate.
 
 For each node, choose the configuration with the highest normalized quality
-lower confidence bound, then choose the lowest-energy compatible device for
+lower confidence bound, then choose the lowest-resource compatible device for
 that configuration.  It is deliberately local and ignores DAG-wide effects.
 """
 
@@ -36,7 +36,7 @@ def propose(view):
             candidates,
             key=lambda profile: (
                 -quality[profile["configuration_id"]],
-                profile["mean_incremental_execution_energy_j"],
+                profile["gpu_memory_mib"],
                 profile["warm_latency_p95_ms"],
                 profile["configuration_id"],
                 profile["device_id"],

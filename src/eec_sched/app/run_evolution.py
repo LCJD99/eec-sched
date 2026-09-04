@@ -5,8 +5,8 @@ from __future__ import annotations
 from dataclasses import fields, is_dataclass
 import json
 from pathlib import Path
-from typing import Callable, Mapping, Sequence, cast
 from random import Random
+from typing import Callable, Mapping, Sequence, cast
 
 import hydra
 from hydra.utils import instantiate
@@ -41,6 +41,10 @@ from ..evolution import (
 from ..llm import OpenAICompatibleChatModel
 from ..profiling.snapshot import load_profiling_database
 from ..workflow import ToolCallPlanDataset
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_SECRET_CONFIG_KEYS = {"token", "api_key", "password", "secret"}
 
 
 def _jsonable(value: object) -> object:
@@ -168,9 +172,42 @@ def _result_json(result: EvolutionLoopResult) -> dict[str, object]:
     }
 
 
+def _resolved_config(config: DictConfig) -> dict[str, object]:
+    value = OmegaConf.to_container(config, resolve=True)
+    if not isinstance(value, dict):
+        raise TypeError("the composed Hydra configuration must be a mapping")
+    return cast(dict[str, object], _redact_config(value))
+
+
+def _redact_config(value: object, *, key: str | None = None) -> object:
+    """Keep run records useful without copying credentials from the environment."""
+    if key is not None and key.lower() in _SECRET_CONFIG_KEYS:
+        return "<redacted>"
+    if isinstance(value, Mapping):
+        return {str(item_key): _redact_config(item, key=str(item_key)) for item_key, item in value.items()}
+    if isinstance(value, tuple | list):
+        return [_redact_config(item) for item in value]
+    return value
+
+
+def _instantiate_memory(config: DictConfig, artifacts: ArtifactStore):
+    """Instantiate memory with relative paths rooted in the current run."""
+    kwargs: dict[str, object] = {}
+    if "path" in config:
+        path = Path(str(config.path))
+        if not path.is_absolute():
+            if artifacts.run_dir is None:
+                raise ValueError("persistent memory requires an artifact run directory")
+            path = artifacts.run_dir / path
+        kwargs["path"] = path
+    return instantiate(config, **kwargs)
+
+
 def run(config: DictConfig) -> Path | None:
     load_dotenv(Path.cwd() / ".env")
     artifacts = cast(ArtifactStore, instantiate(config.artifacts))
+    resolved_config = _resolved_config(config)
+    artifacts.write_config(resolved_config)
     diagnosis_model = cast(OpenAICompatibleChatModel, instantiate(config.models.diagnosis))
     coding_model = cast(OpenAICompatibleChatModel, instantiate(config.models.coding))
     reflection_agent, coding_agent = build_agents(
@@ -190,9 +227,11 @@ def run(config: DictConfig) -> Path | None:
     )
     oracle = load_candidate(config.run.oracle_source, config.run.oracle_version, "Oracle reference Candidate")
     scoring_context = ScoringContext(
-        minimum_accuracy=float(config.evaluation.minimum_accuracy),
-        maximum_latency_ms=float(config.evaluation.maximum_latency_ms),
-        gamma=float(config.evaluation.gamma),
+        accuracy_weight=float(config.evaluation.accuracy_weight),
+        latency_weight=float(config.evaluation.latency_weight),
+        resource_weight=float(config.evaluation.resource_weight),
+        latency_scale_ms=float(config.evaluation.latency_scale_ms),
+        resource_scale_mib=float(config.evaluation.resource_scale_mib),
     )
 
     descriptor = (
@@ -210,7 +249,7 @@ def run(config: DictConfig) -> Path | None:
         if config.search.crossover_parent_selector == "complementary_behavior"
         else TopKCosineCrossoverParentSelector()
     )
-    memory = instantiate(config.memory)
+    memory = _instantiate_memory(config.memory, artifacts)
     repertoire = (
         InMemoryRepertoire(descriptor)
         if config.search.repertoire == "feature_archive"
@@ -269,14 +308,21 @@ def run(config: DictConfig) -> Path | None:
     ).run()
     payload = _result_json(result)
     payload.update(
-        resolved_config=OmegaConf.to_container(config, resolve=True),
+        resolved_config=resolved_config,
         evolution_trace_count=len(evolution_traces),
         final_trace_count=len(final_traces),
     )
+    if artifacts.run_dir is not None:
+        payload["run_directory"] = str(artifacts.run_dir)
+        payload["run_id"] = artifacts.run_dir.name
     return artifacts.write_result(payload)
 
 
-@hydra.main(version_base=None, config_path="../conf", config_name="config")
+@hydra.main(
+    version_base=None,
+    config_path=str(PROJECT_ROOT),
+    config_name="experiments/001_baseline/config",
+)
 def main(config: DictConfig) -> None:
     result_path = run(config)
     if result_path is not None:

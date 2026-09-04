@@ -10,6 +10,21 @@ default local model adapters read `EEC_SCHED_REFLECTION_TOKEN` and
 uv run eec-sched
 ```
 
+The composition root is the selected experiment under `experiments/`. Shared
+Hydra options live in `configs/`; the default is
+`experiments/001_baseline/config.yaml`. Every execution creates one fresh
+record under `runs/<experiment>_<YYYYMMDDTHHmmss>/` containing the resolved
+`config.yaml`, event trace, result, and any run-local persistent memory.
+Credential values from environment-backed settings are redacted in the saved
+record. A run directory is never reused.
+
+Select an explicit experiment or use an ablation without changing Python code:
+
+```bash
+uv run eec-sched --config-name experiments/002_ablation_no_memory/config
+uv run eec-sched --config-name experiments/003_ablation_no_diagnosis/config
+```
+
 Every replaceable experiment seam can be overridden without editing source:
 
 ```bash
@@ -23,6 +38,12 @@ Inspect the fully composed configuration before a run:
 
 ```bash
 uv run eec-sched --cfg job --resolve
+```
+
+For a deterministic local smoke run that does not call a model endpoint:
+
+```bash
+uv run eec-sched diagnosis=empty run.rounds=0
 ```
 
 The source packages are grouped by implementation depth: profiling, trusted

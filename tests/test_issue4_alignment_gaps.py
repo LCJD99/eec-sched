@@ -1,9 +1,7 @@
-"""Independent Issue #4 alignment tests and blocked evaluator test plan.
+"""Independent coverage for profiling and the composite-score evaluator.
 
-This file intentionally does not import a not-yet-existing evaluator API.  The
-first group exercises the profiling-database seam and the normative arithmetic
-directly.  The skipped tests are executable placeholders for the evaluator
-contract once that seam exists.
+The tests exercise the profiling-database seam, the three raw metrics, and the
+normative composite-score arithmetic directly.
 """
 
 from __future__ import annotations
@@ -14,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from eec_sched import FinalOutput, InputSource, ToolCallPlan, ToolNode, UTILITY_EPSILON, evaluate_scheduler_instance
+from eec_sched import FinalOutput, InputSource, ToolCallPlan, ToolNode, composite_score, evaluate_scheduler_instance
 from eec_sched.profiling.snapshot import load_profiling_database
 
 
@@ -38,20 +36,6 @@ def _normalized_quality_lcb(
     return max(0.0, min(1.0, value))
 
 
-def _plan_utility(
-    accuracy_lcb: float,
-    minimum_accuracy: float,
-    latency_ms: float,
-    maximum_latency_ms: float,
-    gamma: float,
-    incremental_execution_energy_j: float,
-) -> float:
-    accuracy_surplus = 0.0 if minimum_accuracy == 1 else (accuracy_lcb - minimum_accuracy) / (1 - minimum_accuracy)
-    latency_surplus = (maximum_latency_ms - latency_ms) / maximum_latency_ms
-    performance = gamma * accuracy_surplus + (1 - gamma) * latency_surplus
-    return performance / (incremental_execution_energy_j + UTILITY_EPSILON)
-
-
 def test_fake_snapshot_contains_the_complete_issue4_input_surface() -> None:
     snapshot = load_profiling_database(FAKE_DATABASE_PATH, SCHEMA_PATH)
     payload = snapshot.data
@@ -68,7 +52,7 @@ def test_fake_snapshot_contains_the_complete_issue4_input_surface() -> None:
             continue
         assert all("normalized_quality_lcb" in profile for profile in tool["quality_profiles"])
         assert all("representative_output_bytes" in profile for profile in tool["quality_profiles"])
-        assert all("mean_incremental_execution_energy_j" in profile for profile in tool["execution_profiles"])
+        assert all("gpu_memory_mib" in profile for profile in tool["execution_profiles"])
 
 
 def test_lower_confidence_bound_uses_conservative_endpoint_and_direction() -> None:
@@ -100,17 +84,13 @@ def test_cross_device_transfer_formula_uses_output_bytes_and_direction() -> None
     )
     output_bytes = 256
     expected_latency = profile["propagation_delay_ms"] + 1000 * output_bytes / profile["bandwidth_bytes_per_second"]
-    expected_energy = profile["setup_energy_j"] + output_bytes * profile["energy_per_byte_j"]
-
     assert expected_latency == pytest.approx(4.00512)
-    assert expected_energy == pytest.approx(0.02000256)
 
 
-def test_utility_handles_A_m_equal_one_and_divides_by_incremental_energy() -> None:
-    utility = _plan_utility(1.0, 1.0, 10.0, 20.0, 0.5, 2.0)
-    assert utility == pytest.approx(0.25 / (2.0 + UTILITY_EPSILON))
-
-    assert _plan_utility(0.999999, 1.0, 10.0, 20.0, 0.5, 2.0) == pytest.approx(0.25 / (2.0 + UTILITY_EPSILON))
+def test_composite_score_is_defined_at_metric_endpoints() -> None:
+    score = composite_score(1.0, 0.0, 0.0)
+    assert score == pytest.approx(1.0)
+    assert composite_score(0.999999, 10.0, 2.0) > 0.0
 
 
 def test_illegal_scheduler_return_is_rejected_before_metric_evaluation() -> None:
@@ -122,16 +102,13 @@ def test_illegal_scheduler_return_is_rejected_before_metric_evaluation() -> None
         load_profiling_database(FAKE_DATABASE_PATH, SCHEMA_PATH),
         plan,
         lambda dag: {},
-        minimum_accuracy=0,
-        maximum_latency_ms=100,
-        gamma=0.5,
     )
     assert report.scheduler_status == "rejected"
-    assert report.utility is None
+    assert report.composite_score is None
     assert any("missing node assignments" in error for error in report.validation_errors)
 
 
-def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch) -> None:
+def test_deterministic_replay_includes_makespan_transfer_and_gpu_memory(monkeypatch) -> None:
     """Replay the same snapshot, DAG, and Scheduler output twice and compare reports."""
     import eec_sched.evaluation.evaluator as trusted_evaluation
 
@@ -143,15 +120,15 @@ def test_deterministic_replay_includes_makespan_transfer_and_energy(monkeypatch)
     )
     scheduler = lambda dag: {"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}}
     snapshot = load_profiling_database(FAKE_DATABASE_PATH, SCHEMA_PATH)
-    first = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
-    second = evaluate_scheduler_instance(snapshot, plan, scheduler, minimum_accuracy=0, maximum_latency_ms=100, gamma=0.5)
+    first = evaluate_scheduler_instance(snapshot, plan, scheduler)
+    second = evaluate_scheduler_instance(snapshot, plan, scheduler)
     assert first == second
     assert first.simulated_makespan_ms == pytest.approx(68.0384)
-    assert first.incremental_execution_energy_j == pytest.approx(0.31001664)
+    assert first.resource == pytest.approx(sum(node.gpu_memory_mib for node in first.nodes))
 
 
-def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch) -> None:
-    """Scheduler solving time must be reported and included in the latency proxy."""
+def test_evaluator_report_separates_scheduler_time_from_composite_score(monkeypatch) -> None:
+    """Scheduler solving time must be reported and included in latency."""
     import eec_sched.evaluation.evaluator as trusted_evaluation
 
     ticks = iter((1.0, 1.002))
@@ -164,10 +141,7 @@ def test_evaluator_report_separates_scheduler_time_from_plan_utility(monkeypatch
         load_profiling_database(FAKE_DATABASE_PATH, SCHEMA_PATH),
         plan,
         lambda dag: {"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}},
-        minimum_accuracy=0,
-        maximum_latency_ms=100,
-        gamma=0.5,
     )
     assert report.scheduler_solving_time_ms == pytest.approx(2)
-    assert report.latency_proxy_ms == pytest.approx(70.0384)
-    assert report.utility is not None
+    assert report.latency == pytest.approx(70.0384)
+    assert report.composite_score is not None

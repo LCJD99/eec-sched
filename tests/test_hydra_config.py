@@ -1,11 +1,17 @@
-from hydra import compose, initialize_config_module
+from pathlib import Path
+
+from hydra import compose, initialize_config_dir
 from hydra.utils import instantiate
 
 from eec_sched.diagnosis import EmptyDiagnosis
 
+ROOT = Path(__file__).parents[1]
+
 
 def test_default_hydra_config_composes_replaceable_experiment_modules() -> None:
-    with initialize_config_module(config_module="eec_sched.conf", version_base=None):
+    with initialize_config_dir(
+        config_dir=str(ROOT / "experiments/001_baseline"), version_base=None
+    ):
         config = compose(config_name="config")
 
     assert config.search.behavior_descriptor == "performance_behavior"
@@ -15,7 +21,9 @@ def test_default_hydra_config_composes_replaceable_experiment_modules() -> None:
 
 
 def test_hydra_ablation_replaces_diagnosis_without_changing_source_layout() -> None:
-    with initialize_config_module(config_module="eec_sched.conf", version_base=None):
+    with initialize_config_dir(
+        config_dir=str(ROOT / "experiments/001_baseline"), version_base=None
+    ):
         config = compose(config_name="config", overrides=["diagnosis=empty"])
 
     diagnosis = EmptyDiagnosis(config.diagnosis.advice)

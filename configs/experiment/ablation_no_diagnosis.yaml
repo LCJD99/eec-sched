@@ -1,3 +1,5 @@
 # @package _global_
 defaults:
   - override /diagnosis: empty
+run:
+  experiment_name: 003_ablation_no_diagnosis

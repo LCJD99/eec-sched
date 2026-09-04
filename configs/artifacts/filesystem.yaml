@@ -1,0 +1,3 @@
+_target_: eec_sched.artifacts.RunArtifactStore
+output_dir: ${run.runs_root}
+experiment_name: ${run.experiment_name}

@@ -35,9 +35,9 @@ The following decisions apply to every profiling campaign.
 - Every campaign freezes the dataset revision, evaluation sample IDs, search
   space, canonicalization rules, model revision, runtime, random seed, campaign
   budget, and Bayesian-optimization settings before adaptive sampling starts.
-- Quality, warm end-to-end latency, and mean incremental execution energy are
+- Quality, warm end-to-end latency, and peak GPU-memory resource are
   measured as separate objectives. Metric direction comes from the tool's
-  quality contract; latency and energy are minimized. The campaign must freeze
+  quality contract; latency and GPU-memory resource are minimized. The campaign must freeze
   the target device or the deterministic cross-device aggregation used by its
   execution objectives.
 - Formal measurements use batch size one on each compatible target device.
@@ -46,7 +46,7 @@ The following decisions apply to every profiling campaign.
   including the observations needed for quality confidence intervals and warm
   latency p95. A single warm observation or peak GPU memory may be used as a
   BO demo signal, but cannot be published as the schema's p95 latency or mean
-  incremental execution energy.
+  GPU-memory resource.
 - Segmentation and OCR keep their masks/detection boxes in an evaluation-only
   path. They remain non-connectable: DAG outputs are still image/text values.
 
@@ -93,8 +93,7 @@ measured Pareto fronts.
 
 Only successful, distinct canonical Configurations with all campaign objectives measured
 are eligible for the final catalog. Rank them by successive non-dominated
-fronts over normalized quality, warm latency, and mean incremental execution
-energy. Preserve the quality, latency, and energy extreme points, then select
+fronts over normalized quality, warm latency, and peak GPU-memory resource. Preserve the quality, latency, and GPU-memory resource extreme points, then select
 for deterministic coverage in normalized objective space until exactly 100
 points remain. When a front must be truncated, use greedy hypervolume
 contribution; break remaining ties by the canonical Configuration
@@ -136,7 +135,7 @@ Profiles before publication.
    seed, scheduler, guidance scale, width/height, steps, and strength.
 3. Profile each retained Configuration with batch size one. Record warm
    end-to-end p95 (preprocess + inference + postprocess + necessary transfers),
-   mean incremental execution energy, sample counts, and input bucket. Exclude
+   peak GPU-memory resource, sample counts, and input bucket. Exclude
    download and model loading. BO exploration measurements that do not meet
    this protocol are evidence for candidate discovery only and must be repeated
    before the Configuration is published.

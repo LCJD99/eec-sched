@@ -3,11 +3,9 @@
 This source is intentionally self-contained because Candidate source is loaded
 without importing project modules.  It enumerates every compatible
 configuration/device assignment and scores each assignment using the same
-latency, energy, transfer, and quality formula as the trusted evaluator.
+latency, GPU-memory resource, transfer, and quality formula as the trusted
+evaluator.
 """
-
-
-_EPSILON = 1e-12
 
 
 def _predecessors(dag):
@@ -89,7 +87,7 @@ def _simulate(view, assignments, tools, predecessors, transfers, devices):
     transfer_ready = {node.node_id: 0.0 for node in view.dag.nodes}
     remaining = {node.node_id for node in view.dag.nodes}
     by_id = {node.node_id: node for node in view.dag.nodes}
-    total_energy = 0.0
+    total_resource = 0.0
 
     while remaining:
         ready = [
@@ -107,7 +105,7 @@ def _simulate(view, assignments, tools, predecessors, transfers, devices):
         finish_time = start + profile["warm_latency_p95_ms"]
         finish[node_id] = finish_time
         device_free[device_id] = finish_time
-        total_energy += profile["mean_incremental_execution_energy_j"]
+        total_resource += profile["gpu_memory_mib"]
 
         for child_id, parents in predecessors.items():
             if node_id not in parents:
@@ -119,16 +117,14 @@ def _simulate(view, assignments, tools, predecessors, transfers, devices):
             transfer = _transfer(transfers, device_id, child_device)
             output_bytes = _profile(tools[node.tool_id], configuration_id)["representative_output_bytes"]
             latency = transfer["propagation_delay_ms"] + 1000.0 * output_bytes / transfer["bandwidth_bytes_per_second"]
-            energy = transfer["setup_energy_j"] + output_bytes * transfer["energy_per_byte_j"]
             link = (device_id, child_device)
             transfer_start = max(finish_time, link_free.get(link, 0.0))
             transfer_finish = transfer_start + latency
             link_free[link] = transfer_finish
             transfer_ready[child_id] = max(transfer_ready[child_id], transfer_finish)
-            total_energy += energy
         remaining.remove(node_id)
 
-    return max(finish.values(), default=0.0), total_energy
+    return max(finish.values(), default=0.0), total_resource
 
 
 def _accuracy(view, assignments, tools, relevant, by_id):
@@ -141,15 +137,18 @@ def _accuracy(view, assignments, tools, relevant, by_id):
 
 
 def _score(view, assignments, tools, relevant, by_id, predecessors, transfers, devices):
-    makespan, energy = _simulate(view, assignments, tools, predecessors, transfers, devices)
+    makespan, resource = _simulate(view, assignments, tools, predecessors, transfers, devices)
     accuracy = _accuracy(view, assignments, tools, relevant, by_id)
     context = view.scoring_context
-    accuracy_surplus = 0.0 if context.minimum_accuracy == 1 else (
-        (accuracy - context.minimum_accuracy) / (1 - context.minimum_accuracy)
-    )
-    latency_surplus = (context.maximum_latency_ms - makespan) / context.maximum_latency_ms
-    performance = context.gamma * accuracy_surplus + (1 - context.gamma) * latency_surplus
-    return performance / (energy + _EPSILON)
+    total_weight = context.accuracy_weight + context.latency_weight + context.resource_weight
+    accuracy_indicator = max(0.0, min(1.0, accuracy))
+    latency_indicator = 1.0 / (1.0 + makespan / context.latency_scale_ms)
+    resource_indicator = 1.0 / (1.0 + resource / context.resource_scale_mib)
+    return (
+        context.accuracy_weight * accuracy_indicator
+        + context.latency_weight * latency_indicator
+        + context.resource_weight * resource_indicator
+    ) / total_weight
 
 
 def propose(view):

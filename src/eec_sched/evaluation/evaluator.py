@@ -13,8 +13,8 @@ from typing import Any, Callable, Mapping, Protocol, Sequence, cast
 from ..domain import ToolCallPlan
 from ..profiling.snapshot import ProfilingDatabaseSnapshot
 from .models import EvaluationReport, NodeAssignment
-from .scoring import UTILITY_EPSILON, accuracy, execution_energy, normalized_performance, utility
-from .simulator import END_DEVICE_ID, FIXED_DATA_SIZE_BYTES, simulate
+from .scoring import ScoringContext, accuracy, composite_score, raw_accuracy_metrics, resource
+from .simulator import simulate
 
 
 class Scheduler(Protocol):
@@ -80,9 +80,7 @@ def evaluate_scheduler_instance(
     dag: ToolCallPlan,
     scheduler: Scheduler | Any,
     *,
-    minimum_accuracy: float,
-    maximum_latency_ms: float,
-    gamma: float,
+    scoring_context: ScoringContext | None = None,
     _clock=None,
     _simulator=None,
 ) -> EvaluationReport:
@@ -91,15 +89,8 @@ def evaluate_scheduler_instance(
         _clock = perf_counter
     if _simulator is None:
         _simulator = simulate
+    scoring_context = scoring_context or ScoringContext()
     errors: list[str] = []
-    if not 0 <= minimum_accuracy <= 1:
-        errors.append("minimum_accuracy must be in [0, 1]")
-    if maximum_latency_ms <= 0:
-        errors.append("maximum_latency_ms must be positive")
-    if not 0 < gamma < 1:
-        errors.append("gamma must be in (0, 1)")
-    if errors:
-        return _invalid(snapshot, *errors)
     node_ids = tuple(node.node_id for node in dag.nodes)
     if len(set(node_ids)) != len(node_ids):
         errors.append("duplicate node_id in DAG")
@@ -130,22 +121,32 @@ def evaluate_scheduler_instance(
     from .models import TrustedEvaluationError
     try:
         nodes, transfers = _simulator(snapshot, dag, assignments)
-        accuracy_lcb = accuracy(snapshot, dag, assignments)
+        accuracy_value = accuracy(snapshot, dag, assignments)
     except (KeyError, TrustedEvaluationError) as exc:
         raise TrustedEvaluationError(f"trusted simulation failed: {exc}") from exc
     makespan = max((value for value in (*[node.finish_ms for node in nodes], *[transfer.finish_ms for transfer in transfers])), default=0.0)
-    compute_energy = sum(execution_energy(snapshot, node, assignments[node.node_id]) for node in dag.nodes)
-    communication_energy = sum(transfer.energy_j for transfer in transfers)
-    total_energy = compute_energy + communication_energy
-    latency_proxy = measured_time + makespan
-    accuracy_ok = accuracy_lcb >= minimum_accuracy
-    latency_ok = latency_proxy <= maximum_latency_ms
-    performance = normalized_performance(accuracy_lcb, latency_proxy, minimum_accuracy=minimum_accuracy, maximum_latency_ms=maximum_latency_ms, gamma=gamma)
+    latency_value = measured_time + makespan
+    resource_value = resource(snapshot, dag, assignments)
+    composite = composite_score(
+        accuracy_value,
+        latency_value,
+        resource_value,
+        scoring_context,
+    )
     return EvaluationReport(
-        snapshot.snapshot_digest, "scheduled", (), assignments, nodes, transfers, accuracy_lcb,
-        makespan, measured_time, latency_proxy, compute_energy, communication_energy,
-        total_energy, accuracy_ok, latency_ok, accuracy_ok and latency_ok, performance,
-        utility(performance, total_energy),
+        snapshot_digest=snapshot.snapshot_digest,
+        scheduler_status="scheduled",
+        validation_errors=(),
+        assignments=assignments,
+        nodes=nodes,
+        transfers=transfers,
+        accuracy=accuracy_value,
+        raw_accuracy_metrics=raw_accuracy_metrics(snapshot, dag, assignments),
+        simulated_makespan_ms=makespan,
+        scheduler_solving_time_ms=measured_time,
+        latency=latency_value,
+        resource=resource_value,
+        composite_score=composite,
     )
 
 

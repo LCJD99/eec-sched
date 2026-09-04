@@ -21,6 +21,18 @@ configuration follows the PSOCM direction with performance behavior features,
 feature-diverse mutation, complementary crossover, a feature repertoire, and
 run-local memory. Baseline and ablation variants remain explicit choices.
 
+Shared Hydra options live under the repository-level `configs/` directory.
+Each runnable experiment owns its composition root at
+`experiments/<NNN_name>/config.yaml`; the packaged Python source tree does not
+own experiment configuration. The evolution entry point defaults to
+`experiments/001_baseline/config.yaml`, and another experiment can be selected
+with Hydra's `--config-name` option.
+
+Each execution creates a new `runs/<NNN_name>_<YYYYMMDDTHHmmss>/` directory.
+The resolved configuration is written to `config.yaml` before any work starts,
+and event traces, results, and run-local persistent memory are written beside
+it. A run directory is never reused.
+
 Python source is grouped by implementation depth:
 
 - `profiling` owns measurement campaigns, scorers, profiles, and immutable

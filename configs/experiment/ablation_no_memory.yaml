@@ -1,3 +1,5 @@
 # @package _global_
 defaults:
   - override /memory: empty
+run:
+  experiment_name: 002_ablation_no_memory

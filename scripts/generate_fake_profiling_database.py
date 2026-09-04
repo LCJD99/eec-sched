@@ -62,7 +62,7 @@ def _provenance() -> list[dict[str, Any]]:
                 "warmup_count": 5,
                 "observation_count": 50,
                 "timing_method": "No timing performed; deterministic formula only.",
-                "energy_measurement_method": "No energy measurement performed; deterministic formula only.",
+                "resource_measurement_method": "Synthetic peak GPU memory formula only; no device measurement performed.",
                 "model_revision": "catalog-declared-or-synthetic-reference",
                 "runtime_versions": {"generator": "synthetic-v1", "runtime": "not-invoked"},
             },
@@ -76,7 +76,6 @@ def _provenance() -> list[dict[str, Any]]:
                 "payload_sizes_bytes": [0, 1024, 1048576],
                 "repetition_count": 50,
                 "timing_method": "No transfer performed; deterministic formula only.",
-                "energy_measurement_method": "No energy measurement performed; deterministic formula only.",
             },
         },
     ]
@@ -163,7 +162,7 @@ def _eligible_tool(spec: ToolSpec, tool_index: int) -> dict[str, Any]:
     quality_profiles: list[dict[str, Any]] = []
     execution_profiles: list[dict[str, Any]] = []
     device_latency_factors = {"device": 2.5, "edge": 1.3, "cloud": 1.0}
-    device_energy_factors = {"device": 0.7, "edge": 1.0, "cloud": 1.4}
+    device_memory_factors = {"device": 0.8, "edge": 1.0, "cloud": 1.2}
 
     for configuration_index, configuration in enumerate(configurations):
         point, lower, upper, normalized = _quality_values(
@@ -189,13 +188,13 @@ def _eligible_tool(spec: ToolSpec, tool_index: int) -> dict[str, Any]:
         )
         for device_id in DEVICES:
             base_latency = 10.0 + tool_index * 3.0 + configuration_index * 5.0
-            base_energy = 0.1 + tool_index * 0.04 + configuration_index * 0.03
+            base_memory = 1024.0 + tool_index * 128.0 + configuration_index * 64.0
             execution_profiles.append(
                 {
                     "configuration_id": configuration.configuration_id,
                     "device_id": device_id,
                     "warm_latency_p95_ms": round(base_latency * device_latency_factors[device_id], 6),
-                    "mean_incremental_execution_energy_j": round(base_energy * device_energy_factors[device_id], 6),
+                    "gpu_memory_mib": round(base_memory * device_memory_factors[device_id], 6),
                     "sample_count": 50,
                     "provenance_id": "synthetic-execution-v1",
                 }
@@ -223,12 +222,12 @@ def _eligible_tool(spec: ToolSpec, tool_index: int) -> dict[str, Any]:
 
 def _transfers() -> list[dict[str, Any]]:
     values = {
-        ("device", "edge"): (4.0, 50_000_000, 0.02, 1.0e-8),
-        ("device", "cloud"): (28.0, 12_000_000, 0.08, 3.0e-8),
-        ("edge", "device"): (4.5, 45_000_000, 0.025, 1.2e-8),
-        ("edge", "cloud"): (18.0, 80_000_000, 0.04, 1.5e-8),
-        ("cloud", "device"): (30.0, 15_000_000, 0.09, 3.5e-8),
-        ("cloud", "edge"): (19.0, 75_000_000, 0.045, 1.6e-8),
+        ("device", "edge"): (4.0, 50_000_000),
+        ("device", "cloud"): (28.0, 12_000_000),
+        ("edge", "device"): (4.5, 45_000_000),
+        ("edge", "cloud"): (18.0, 80_000_000),
+        ("cloud", "device"): (30.0, 15_000_000),
+        ("cloud", "edge"): (19.0, 75_000_000),
     }
     return [
         {
@@ -236,12 +235,10 @@ def _transfers() -> list[dict[str, Any]]:
             "destination_device_id": destination,
             "propagation_delay_ms": propagation,
             "bandwidth_bytes_per_second": bandwidth,
-            "setup_energy_j": setup_energy,
-            "energy_per_byte_j": energy_per_byte,
             "sample_count": 50,
             "provenance_id": "synthetic-transfer-v1",
         }
-        for (source, destination), (propagation, bandwidth, setup_energy, energy_per_byte) in values.items()
+        for (source, destination), (propagation, bandwidth) in values.items()
     ]
 
 
@@ -250,7 +247,7 @@ def build_fake_profiling_database(specs: Sequence[ToolSpec] | None = None) -> di
 
     catalog = tuple(mnms_tool_specs() if specs is None else specs)
     payload: dict[str, Any] = {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "snapshot_id": "synthetic-mnms-catalog-v1",
         "snapshot_digest": "sha256:" + "0" * 64,
         "data_kind": "synthetic",

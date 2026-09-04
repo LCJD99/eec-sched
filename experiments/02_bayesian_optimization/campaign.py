@@ -650,7 +650,7 @@ def run(
                 "noise_note": "Assumed variance; no repeated measurement was collected.",
                 "oom_filter": "After an OOM, candidates at or above the smallest OOM imgsz are conservatively excluded.",
             },
-            "scope_note": "Demo artifact only: warm_latency_ms is not p95 and peak_gpu_memory_mib is not formal execution energy.",
+            "scope_note": "Demo artifact only: warm_latency_ms is not p95 and peak_gpu_memory_mib is a device resource observation.",
         }
         if not output_dir.exists():
             write_campaign(output_dir, payload)

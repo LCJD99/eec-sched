@@ -1,0 +1,4 @@
+_target_: eec_sched.evolution.memory.JsonlMemory
+# Relative paths are resolved below the current run directory by the
+# composition root.
+path: evolution-memory.jsonl

@@ -1,0 +1,15 @@
+experiment_name: 001_baseline
+runs_root: ${hydra:runtime.cwd}/runs
+rounds: 3
+seed: 42
+evolution_split: train
+final_split: test
+root_candidates:
+  - scheduler_version: 1
+    source: ${hydra:runtime.cwd}/schedulers/naive_fastest.py
+  - scheduler_version: 2
+    source: ${hydra:runtime.cwd}/schedulers/naive_quality.py
+  - scheduler_version: 3
+    source: ${hydra:runtime.cwd}/schedulers/naive_resource.py
+oracle_version: 99
+oracle_source: ${hydra:runtime.cwd}/schedulers/oracle_source.py

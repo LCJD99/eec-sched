@@ -315,10 +315,16 @@ def test_concise_projections_are_versioned_and_final_projection_adds_oracle_comp
 
     concise_evolution = evolution.concise_projection()
     concise_final = final.concise_projection()
+    concise_metrics = dict(evolution.traces[0].raw_metrics)
     assert concise_evolution == {
         "schema_version": "v1",
         "scheduler_version": 1,
-        "traces": [{"trace_id": "trace", "status": "scored", "score": pytest.approx(evolution.candidate_score)}],
+        "traces": [{
+            "trace_id": "trace",
+            "status": "scored",
+            "score": pytest.approx(evolution.candidate_score),
+            "metrics": concise_metrics,
+        }],
         "candidate_score": pytest.approx(evolution.candidate_score),
     }
     assert "oracle_reference_score" not in concise_evolution["traces"][0]
@@ -347,12 +353,14 @@ def test_candidate_evaluation_records_the_trusted_scheduler_boundary(monkeypatch
     record = result.traces[0]
     assert result.scheduler_version == 7
     assert received == [record.scheduler_view]
-    assert record.scheduler_view.scoring_context.minimum_accuracy == 0.0
+    assert record.scheduler_view.scoring_context.accuracy_weight == pytest.approx(1 / 3)
+    assert record.scheduler_view.scoring_context.latency_weight == pytest.approx(1 / 3)
+    assert record.scheduler_view.scoring_context.resource_weight == pytest.approx(1 / 3)
     assert record.scheduler_proposal == record.assignments
     assert record.scheduler_version == 7
     assert record.scheduler_computation_time_ms == pytest.approx(2.5)
     assert record.report.scheduler_solving_time_ms == pytest.approx(2.5)
-    assert record.report.latency_proxy_ms == pytest.approx(70.5384)
+    assert record.report.latency == pytest.approx(70.5384)
     assert set(record.scheduler_view.snapshot_evidence) == {"devices", "tools", "transfer_profiles"}
     with pytest.raises(TypeError):
         record.scheduler_view.snapshot_evidence["tools"] = ()  # type: ignore[index]

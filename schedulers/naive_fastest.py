@@ -2,7 +2,7 @@
 
 For each node, choose the compatible execution profile with the smallest
 warm p95 latency.  This is intentionally local: it does not reason about
-downstream transfers or the global utility score.
+downstream transfers or the global composite score.
 """
 
 
@@ -31,7 +31,7 @@ def propose(view):
             candidates,
             key=lambda profile: (
                 profile["warm_latency_p95_ms"],
-                profile["mean_incremental_execution_energy_j"],
+                profile["gpu_memory_mib"],
                 profile["configuration_id"],
                 profile["device_id"],
             ),

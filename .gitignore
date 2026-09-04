@@ -13,6 +13,10 @@ wheels/
 # logs
 profiles/logs/
 
+# Generated execution records. Historical records already committed under
+# runs/ remain visible, while every new run is kept out of source control.
+/runs/*/
+
 # Local reference material and tool caches
 .cache/
 external/

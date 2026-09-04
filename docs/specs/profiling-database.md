@@ -1,4 +1,4 @@
-# Profiling database schema v1
+# Profiling database schema v1.1
 
 This document defines the schema-first deliverable for [issue #3](https://github.com/LCJD99/eec-sched/issues/3). It freezes the evaluator input shape and supplies synthetic development data. It does **not** claim that the required real profiling campaign is complete.
 
@@ -78,23 +78,23 @@ The semantic validator recomputes this value. Raw metrics remain the source evid
 One Execution Profile identifies a `(tool, Configuration, compatible device)` tuple and stores:
 
 - warm p95 end-to-end node latency in milliseconds;
-- mean incremental execution energy in joules;
+- peak GPU memory resource in MiB;
 - observation count;
 - measurement provenance.
 
 The snapshot has one global fixed input bucket, batch size one, and a declared execution boundary. Model download and loading remain outside the warm execution boundary in v1.
 
-Execution provenance pins input IDs, warmup and observation counts, timing and energy methods, model revision, and runtime versions. Transfer provenance separately pins payload sizes, repetition count, timing method, and energy method. A Profile cannot reference provenance of the wrong subject type.
+Execution provenance pins input IDs, warmup and observation counts, timing and GPU-memory measurement methods, model revision, and runtime versions. Transfer provenance separately pins payload sizes, repetition count, and timing method. A Profile cannot reference provenance of the wrong subject type.
 
 ### Transfer Profile
 
-The database contains exactly six records: every ordered pair of distinct `device`, `edge`, and `cloud`. Direction is significant. Each record stores propagation delay, bandwidth, setup energy, per-byte energy, observation count, and provenance.
+The database contains exactly six records: every ordered pair of distinct `device`, `edge`, and `cloud`. Direction is significant. Each record stores propagation delay, bandwidth, observation count, and provenance.
 
 For representative output size `S` bytes, the evaluator derives:
 
 ```text
 transfer_latency_ms = propagation_delay_ms + 1000 * S / bandwidth_bytes_per_second
-transfer_energy_j = setup_energy_j + S * energy_per_byte_j
+Transfers have no GPU-memory Resource component; only their latency contributes to the Trace metrics.
 ```
 
 Same-device DAG edges have zero transfer cost and therefore have no Transfer Profile. The `device` endpoint is also the request/end-user endpoint: request inputs use `device -> assigned_device`, and each final output uses `assigned_device -> device`. For synthetic evaluation, request payload sizes are fixed by data type (`text`, `image`, or `audio`) in the evaluator; node outputs use the Configuration's representative output size.

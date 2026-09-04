@@ -29,7 +29,7 @@ from .evaluation import (
     SimulatedNode,
     SimulatedTransfer,
     TrustedEvaluationError,
-    UTILITY_EPSILON,
+    composite_score,
     evaluate_scheduler_instance,
 )
 from .evolution import (

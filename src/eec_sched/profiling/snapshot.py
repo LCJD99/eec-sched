@@ -139,7 +139,7 @@ class ExecutionProfile:
     configuration_id: str
     device_id: str
     warm_latency_p95_ms: float
-    mean_incremental_execution_energy_j: float
+    gpu_memory_mib: float
     sample_count: int
     provenance_id: str
 
@@ -150,8 +150,6 @@ class TransferProfile:
     destination_device_id: str
     propagation_delay_ms: float
     bandwidth_bytes_per_second: int
-    setup_energy_j: float
-    energy_per_byte_j: float
     sample_count: int
     provenance_id: str
 

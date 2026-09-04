@@ -13,6 +13,7 @@ from typing import Any, Callable, Literal, Mapping, Sequence
 
 from .domain import FinalOutput, ToolCallPlan, ToolNode
 from .evaluation.models import EvaluationReport, NodeAssignment
+from .evaluation.scoring import ScoringContext
 
 SCHEMA_VERSION = "v1"
 SchedulerProposal = Mapping[str, Any] | Sequence[Any]
@@ -34,13 +35,6 @@ def readonly_dag(dag: ToolCallPlan) -> ToolCallPlan:
         tuple(ToolNode(node.node_id, node.tool_id, MappingProxyType(dict(node.inputs))) for node in dag.nodes),
         tuple(FinalOutput(output.node_id, output.port) for output in dag.final_outputs),
     )
-
-
-@dataclass(frozen=True)
-class ScoringContext:
-    minimum_accuracy: float
-    maximum_latency_ms: float
-    gamma: float
 
 
 @dataclass(frozen=True)
@@ -152,6 +146,11 @@ class TraceEvaluation:
     def score_contribution(self) -> float:
         return self.score if self.score is not None else 0.0
 
+    @property
+    def raw_metrics(self) -> Mapping[str, object]:
+        """Raw accuracy, latency, and GPU-memory values for this Trace."""
+        return self.report.raw_metrics
+
 
 @dataclass(frozen=True)
 class CandidateEvaluation:
@@ -197,7 +196,15 @@ class FinalEvaluation:
 
 
 def _concise_trace(record: TraceEvaluation) -> dict[str, object]:
-    result: dict[str, object] = {"trace_id": record.trace.trace_id, "status": record.status, "score": record.score_contribution}
+    metrics = dict(record.raw_metrics)
+    if record.report.raw_accuracy_metrics:
+        metrics["raw_accuracy_metrics"] = dict(record.report.raw_accuracy_metrics)
+    result: dict[str, object] = {
+        "trace_id": record.trace.trace_id,
+        "status": record.status,
+        "score": record.score_contribution,
+        "metrics": metrics,
+    }
     if record.reason is not None:
         result["reason"] = record.reason
     return result

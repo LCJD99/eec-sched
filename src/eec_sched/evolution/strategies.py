@@ -24,7 +24,7 @@ class TraceScoreBehaviorDescriptor:
 
 
 class PerformanceBehaviorDescriptor:
-    """Describe quality, latency, energy, and device-placement behavior.
+    """Describe quality, latency, resource, and device-placement behavior.
 
     The coordinates are aggregate behavior observations rather than evaluator
     objectives, allowing similarly scored Candidates to remain distinguishable.
@@ -34,12 +34,9 @@ class PerformanceBehaviorDescriptor:
         scored = [record for record in evaluation.traces if record.status == "scored"]
         if not scored:
             return (0.0,) * 6
-        accuracies = [record.report.accuracy_lcb or 0.0 for record in scored]
-        latencies = [record.report.latency_proxy_ms or 0.0 for record in scored]
-        energies = [
-            (record.report.compute_energy_j or 0.0) + (record.report.communication_energy_j or 0.0)
-            for record in scored
-        ]
+        accuracies = [record.report.accuracy or 0.0 for record in scored]
+        latencies = [record.report.latency or 0.0 for record in scored]
+        resources = [record.report.resource or 0.0 for record in scored]
         assignments = [assignment for record in scored for assignment in record.assignments.values()]
         total = max(1, len(assignments))
         placement = tuple(
@@ -49,7 +46,7 @@ class PerformanceBehaviorDescriptor:
         return (
             fmean(accuracies),
             fmean(latencies),
-            fmean(energies),
+            fmean(resources),
             *placement,
         )
 

@@ -116,12 +116,14 @@ def test_evolution_candidates_share_one_trace_set_and_expose_only_candidate_scor
     assert concise["schema_version"] == "v1"
     assert concise["scheduler_version"] == 102
     concise_scored, concise_rejected = concise["traces"]
-    assert set(concise_scored) == {"trace_id", "status", "score"}
+    assert set(concise_scored) == {"trace_id", "status", "score", "metrics"}
     assert concise_scored["status"] == "scored"
     assert concise_scored["score"] == pytest.approx(selected_result.traces[0].score)
-    assert set(concise_rejected) == {"trace_id", "status", "score", "reason"}
+    assert set(concise_rejected) == {"trace_id", "status", "score", "metrics", "reason"}
     assert concise_rejected["status"] == "rejected"
     assert concise_rejected["score"] == 0.0
+    assert concise_scored["metrics"] == dict(selected_result.traces[0].raw_metrics)
+    assert concise_rejected["metrics"] == {}
     assert concise_rejected["reason"] == selected_result.traces[1].reason
     assert all("oracle_reference_score" not in trace and "difference" not in trace for trace in concise["traces"])
 
@@ -182,6 +184,7 @@ def test_final_evaluation_compares_only_selected_candidate_on_an_independent_tra
             "trace_id": "final-only",
             "status": "scored",
             "score": pytest.approx(comparison.trace_evaluation.score),
+            "metrics": dict(comparison.trace_evaluation.raw_metrics),
             "oracle_reference_score": pytest.approx(comparison.oracle_reference_score),
             "difference": pytest.approx(comparison.difference),
         }

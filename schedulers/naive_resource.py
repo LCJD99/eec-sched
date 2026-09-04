@@ -1,7 +1,7 @@
-"""Naive energy-first Scheduler Candidate.
+"""Naive resource-first Scheduler Candidate.
 
-For each node, choose the compatible execution profile with the lowest mean
-incremental execution energy.  Latency and quality are deterministic tie
+For each node, choose the compatible execution profile with the lowest
+profiled GPU-memory resource. Latency and quality are deterministic tie
 breakers; DAG-wide transfer effects are intentionally ignored.
 """
 
@@ -35,7 +35,7 @@ def propose(view):
         selected = min(
             candidates,
             key=lambda profile: (
-                profile["mean_incremental_execution_energy_j"],
+                profile["gpu_memory_mib"],
                 profile["warm_latency_p95_ms"],
                 -quality[profile["configuration_id"]],
                 profile["configuration_id"],

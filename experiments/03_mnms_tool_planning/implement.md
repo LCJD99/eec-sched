@@ -72,7 +72,7 @@ CLI 和测试都走这个接口。内部可以拆函数，但不新增暂时没�
 6. 依次使用 `docs/schemas/tool-call-dag.schema.json` 做 JSON Schema 校验，再执行
    `plan_from_dict()` 和 `validate_plan()`。
 7. 用开发 profiling snapshot 和确定性合法 assignment 调用可信评估入口，确认 DAG
-   确实能作为 Scheduler 输入。此步的 score 不保存为研究结论。
+   确实能作为 Scheduler 输入。此步的 Composite Score 不保存为研究结论。
 8. 只将全部通过的记录追加到 `dags.jsonl`；其余写入 `failures.jsonl`。
 
 ## MnMS 数据加载
@@ -145,7 +145,7 @@ Schema 有意不重复实现工具存在性、端口模态、引用目标、节�
 Scheduler 输入兼容检查使用假 profiling snapshot：为每个节点确定性选择该工具第一
 个合法 Configuration 和兼容设备，再通过 `evaluate_scheduler_instance()` 的公开 seam
 运行一次。此检查只记录 passed/failed；因为 profiles 是 synthetic，产生的 latency、
-energy、quality 或 utility 都不得写成真实实验指标。
+resource、accuracy 或 Composite Score 都不得写成真实实验指标。
 
 ## 运行方式（coding 完成后的目标）
 

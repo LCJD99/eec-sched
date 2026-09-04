@@ -1,0 +1,5 @@
+accuracy_weight: 0.3333333333333333
+latency_weight: 0.3333333333333333
+resource_weight: 0.3333333333333333
+latency_scale_ms: 100.0
+resource_scale_mib: 8192.0

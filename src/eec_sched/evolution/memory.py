@@ -48,7 +48,7 @@ class InMemoryMemory:
 
 
 class JsonlMemory:
-    """Persistent cross-run memory with an append-only, inspectable format."""
+    """Persistent run-local memory with an append-only, inspectable format."""
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)

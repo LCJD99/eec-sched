@@ -1,7 +1,7 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "snapshot_id": "synthetic-mnms-catalog-v1",
-  "snapshot_digest": "sha256:655fbd64a0c690ee44c77fb4d76708a4f784d3eb35e5d4cfac1e1af90018cef5",
+  "snapshot_digest": "sha256:39e99d5241481d2b8b5eb44d1cdff2e7f71e38035bd371dd228d80185081fbb4",
   "data_kind": "synthetic",
   "created_at": "2026-08-07T00:00:00Z",
   "measurement_scope": {
@@ -224,7 +224,7 @@
         "warmup_count": 5,
         "observation_count": 50,
         "timing_method": "No timing performed; deterministic formula only.",
-        "energy_measurement_method": "No energy measurement performed; deterministic formula only.",
+        "resource_measurement_method": "Synthetic peak GPU memory formula only; no device measurement performed.",
         "model_revision": "catalog-declared-or-synthetic-reference",
         "runtime_versions": {
           "generator": "synthetic-v1",
@@ -252,8 +252,7 @@
           1048576
         ],
         "repetition_count": 50,
-        "timing_method": "No transfer performed; deterministic formula only.",
-        "energy_measurement_method": "No energy measurement performed; deterministic formula only."
+        "timing_method": "No transfer performed; deterministic formula only."
       }
     }
   ],
@@ -353,7 +352,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "device",
           "warm_latency_p95_ms": 25.0,
-          "mean_incremental_execution_energy_j": 0.07,
+          "gpu_memory_mib": 819.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -361,7 +360,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 13.0,
-          "mean_incremental_execution_energy_j": 0.1,
+          "gpu_memory_mib": 1024.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -369,7 +368,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 10.0,
-          "mean_incremental_execution_energy_j": 0.14,
+          "gpu_memory_mib": 1228.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -575,7 +574,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 32.5,
-          "mean_incremental_execution_energy_j": 0.098,
+          "gpu_memory_mib": 921.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -583,7 +582,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 16.9,
-          "mean_incremental_execution_energy_j": 0.14,
+          "gpu_memory_mib": 1152.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -591,7 +590,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 13.0,
-          "mean_incremental_execution_energy_j": 0.196,
+          "gpu_memory_mib": 1382.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -599,7 +598,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 45.0,
-          "mean_incremental_execution_energy_j": 0.119,
+          "gpu_memory_mib": 972.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -607,7 +606,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 23.4,
-          "mean_incremental_execution_energy_j": 0.17,
+          "gpu_memory_mib": 1216.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -615,7 +614,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 18.0,
-          "mean_incremental_execution_energy_j": 0.238,
+          "gpu_memory_mib": 1459.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -623,7 +622,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 57.5,
-          "mean_incremental_execution_energy_j": 0.14,
+          "gpu_memory_mib": 1024.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -631,7 +630,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 29.9,
-          "mean_incremental_execution_energy_j": 0.2,
+          "gpu_memory_mib": 1280.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -639,7 +638,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 23.0,
-          "mean_incremental_execution_energy_j": 0.28,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -839,7 +838,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 40.0,
-          "mean_incremental_execution_energy_j": 0.126,
+          "gpu_memory_mib": 1024.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -847,7 +846,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 20.8,
-          "mean_incremental_execution_energy_j": 0.18,
+          "gpu_memory_mib": 1280.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -855,7 +854,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 16.0,
-          "mean_incremental_execution_energy_j": 0.252,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -863,7 +862,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 52.5,
-          "mean_incremental_execution_energy_j": 0.147,
+          "gpu_memory_mib": 1075.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -871,7 +870,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 27.3,
-          "mean_incremental_execution_energy_j": 0.21,
+          "gpu_memory_mib": 1344.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -879,7 +878,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 21.0,
-          "mean_incremental_execution_energy_j": 0.294,
+          "gpu_memory_mib": 1612.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -887,7 +886,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 65.0,
-          "mean_incremental_execution_energy_j": 0.168,
+          "gpu_memory_mib": 1126.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -895,7 +894,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 33.8,
-          "mean_incremental_execution_energy_j": 0.24,
+          "gpu_memory_mib": 1408.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -903,7 +902,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 26.0,
-          "mean_incremental_execution_energy_j": 0.336,
+          "gpu_memory_mib": 1689.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -1106,7 +1105,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 47.5,
-          "mean_incremental_execution_energy_j": 0.154,
+          "gpu_memory_mib": 1126.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1114,7 +1113,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 24.7,
-          "mean_incremental_execution_energy_j": 0.22,
+          "gpu_memory_mib": 1408.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1122,7 +1121,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 19.0,
-          "mean_incremental_execution_energy_j": 0.308,
+          "gpu_memory_mib": 1689.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1130,7 +1129,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 60.0,
-          "mean_incremental_execution_energy_j": 0.175,
+          "gpu_memory_mib": 1177.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1138,7 +1137,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 31.2,
-          "mean_incremental_execution_energy_j": 0.25,
+          "gpu_memory_mib": 1472.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1146,7 +1145,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 24.0,
-          "mean_incremental_execution_energy_j": 0.35,
+          "gpu_memory_mib": 1766.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1154,7 +1153,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 72.5,
-          "mean_incremental_execution_energy_j": 0.196,
+          "gpu_memory_mib": 1228.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1162,7 +1161,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 37.7,
-          "mean_incremental_execution_energy_j": 0.28,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1170,7 +1169,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 29.0,
-          "mean_incremental_execution_energy_j": 0.392,
+          "gpu_memory_mib": 1843.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -1470,7 +1469,7 @@
           "configuration_id": "1",
           "device_id": "device",
           "warm_latency_p95_ms": 55.0,
-          "mean_incremental_execution_energy_j": 0.182,
+          "gpu_memory_mib": 1228.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1478,7 +1477,7 @@
           "configuration_id": "1",
           "device_id": "edge",
           "warm_latency_p95_ms": 28.6,
-          "mean_incremental_execution_energy_j": 0.26,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1486,7 +1485,7 @@
           "configuration_id": "1",
           "device_id": "cloud",
           "warm_latency_p95_ms": 22.0,
-          "mean_incremental_execution_energy_j": 0.364,
+          "gpu_memory_mib": 1843.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1494,7 +1493,7 @@
           "configuration_id": "2",
           "device_id": "device",
           "warm_latency_p95_ms": 67.5,
-          "mean_incremental_execution_energy_j": 0.203,
+          "gpu_memory_mib": 1280.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1502,7 +1501,7 @@
           "configuration_id": "2",
           "device_id": "edge",
           "warm_latency_p95_ms": 35.1,
-          "mean_incremental_execution_energy_j": 0.29,
+          "gpu_memory_mib": 1600.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1510,7 +1509,7 @@
           "configuration_id": "2",
           "device_id": "cloud",
           "warm_latency_p95_ms": 27.0,
-          "mean_incremental_execution_energy_j": 0.406,
+          "gpu_memory_mib": 1920.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1518,7 +1517,7 @@
           "configuration_id": "3",
           "device_id": "device",
           "warm_latency_p95_ms": 80.0,
-          "mean_incremental_execution_energy_j": 0.224,
+          "gpu_memory_mib": 1331.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1526,7 +1525,7 @@
           "configuration_id": "3",
           "device_id": "edge",
           "warm_latency_p95_ms": 41.6,
-          "mean_incremental_execution_energy_j": 0.32,
+          "gpu_memory_mib": 1664.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1534,7 +1533,7 @@
           "configuration_id": "3",
           "device_id": "cloud",
           "warm_latency_p95_ms": 32.0,
-          "mean_incremental_execution_energy_j": 0.448,
+          "gpu_memory_mib": 1996.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1542,7 +1541,7 @@
           "configuration_id": "4",
           "device_id": "device",
           "warm_latency_p95_ms": 92.5,
-          "mean_incremental_execution_energy_j": 0.245,
+          "gpu_memory_mib": 1382.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1550,7 +1549,7 @@
           "configuration_id": "4",
           "device_id": "edge",
           "warm_latency_p95_ms": 48.1,
-          "mean_incremental_execution_energy_j": 0.35,
+          "gpu_memory_mib": 1728.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1558,7 +1557,7 @@
           "configuration_id": "4",
           "device_id": "cloud",
           "warm_latency_p95_ms": 37.0,
-          "mean_incremental_execution_energy_j": 0.49,
+          "gpu_memory_mib": 2073.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1566,7 +1565,7 @@
           "configuration_id": "5",
           "device_id": "device",
           "warm_latency_p95_ms": 105.0,
-          "mean_incremental_execution_energy_j": 0.266,
+          "gpu_memory_mib": 1433.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1574,7 +1573,7 @@
           "configuration_id": "5",
           "device_id": "edge",
           "warm_latency_p95_ms": 54.6,
-          "mean_incremental_execution_energy_j": 0.38,
+          "gpu_memory_mib": 1792.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1582,7 +1581,7 @@
           "configuration_id": "5",
           "device_id": "cloud",
           "warm_latency_p95_ms": 42.0,
-          "mean_incremental_execution_energy_j": 0.532,
+          "gpu_memory_mib": 2150.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -1683,7 +1682,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "device",
           "warm_latency_p95_ms": 62.5,
-          "mean_incremental_execution_energy_j": 0.21,
+          "gpu_memory_mib": 1331.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1691,7 +1690,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 32.5,
-          "mean_incremental_execution_energy_j": 0.3,
+          "gpu_memory_mib": 1664.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1699,7 +1698,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 25.0,
-          "mean_incremental_execution_energy_j": 0.42,
+          "gpu_memory_mib": 1996.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -1902,7 +1901,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 70.0,
-          "mean_incremental_execution_energy_j": 0.238,
+          "gpu_memory_mib": 1433.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1910,7 +1909,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 36.4,
-          "mean_incremental_execution_energy_j": 0.34,
+          "gpu_memory_mib": 1792.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1918,7 +1917,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 28.0,
-          "mean_incremental_execution_energy_j": 0.476,
+          "gpu_memory_mib": 2150.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1926,7 +1925,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 82.5,
-          "mean_incremental_execution_energy_j": 0.259,
+          "gpu_memory_mib": 1484.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1934,7 +1933,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 42.9,
-          "mean_incremental_execution_energy_j": 0.37,
+          "gpu_memory_mib": 1856.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1942,7 +1941,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 33.0,
-          "mean_incremental_execution_energy_j": 0.518,
+          "gpu_memory_mib": 2227.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1950,7 +1949,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 95.0,
-          "mean_incremental_execution_energy_j": 0.28,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1958,7 +1957,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 49.4,
-          "mean_incremental_execution_energy_j": 0.4,
+          "gpu_memory_mib": 1920.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -1966,7 +1965,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 38.0,
-          "mean_incremental_execution_energy_j": 0.56,
+          "gpu_memory_mib": 2304.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -2067,7 +2066,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "device",
           "warm_latency_p95_ms": 77.5,
-          "mean_incremental_execution_energy_j": 0.266,
+          "gpu_memory_mib": 1536.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2075,7 +2074,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 40.3,
-          "mean_incremental_execution_energy_j": 0.38,
+          "gpu_memory_mib": 1920.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2083,7 +2082,7 @@
           "configuration_id": "synthetic-reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 31.0,
-          "mean_incremental_execution_energy_j": 0.532,
+          "gpu_memory_mib": 2304.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -2283,7 +2282,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 85.0,
-          "mean_incremental_execution_energy_j": 0.294,
+          "gpu_memory_mib": 1638.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2291,7 +2290,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 44.2,
-          "mean_incremental_execution_energy_j": 0.42,
+          "gpu_memory_mib": 2048.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2299,7 +2298,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 34.0,
-          "mean_incremental_execution_energy_j": 0.588,
+          "gpu_memory_mib": 2457.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2307,7 +2306,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 97.5,
-          "mean_incremental_execution_energy_j": 0.315,
+          "gpu_memory_mib": 1689.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2315,7 +2314,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 50.7,
-          "mean_incremental_execution_energy_j": 0.45,
+          "gpu_memory_mib": 2112.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2323,7 +2322,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 39.0,
-          "mean_incremental_execution_energy_j": 0.63,
+          "gpu_memory_mib": 2534.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2331,7 +2330,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 110.0,
-          "mean_incremental_execution_energy_j": 0.336,
+          "gpu_memory_mib": 1740.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2339,7 +2338,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 57.2,
-          "mean_incremental_execution_energy_j": 0.48,
+          "gpu_memory_mib": 2176.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2347,7 +2346,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 44.0,
-          "mean_incremental_execution_energy_j": 0.672,
+          "gpu_memory_mib": 2611.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -2550,7 +2549,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 92.5,
-          "mean_incremental_execution_energy_j": 0.322,
+          "gpu_memory_mib": 1740.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2558,7 +2557,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 48.1,
-          "mean_incremental_execution_energy_j": 0.46,
+          "gpu_memory_mib": 2176.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2566,7 +2565,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 37.0,
-          "mean_incremental_execution_energy_j": 0.644,
+          "gpu_memory_mib": 2611.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2574,7 +2573,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 105.0,
-          "mean_incremental_execution_energy_j": 0.343,
+          "gpu_memory_mib": 1792.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2582,7 +2581,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 54.6,
-          "mean_incremental_execution_energy_j": 0.49,
+          "gpu_memory_mib": 2240.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2590,7 +2589,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 42.0,
-          "mean_incremental_execution_energy_j": 0.686,
+          "gpu_memory_mib": 2688.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2598,7 +2597,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 117.5,
-          "mean_incremental_execution_energy_j": 0.364,
+          "gpu_memory_mib": 1843.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2606,7 +2605,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 61.1,
-          "mean_incremental_execution_energy_j": 0.52,
+          "gpu_memory_mib": 2304.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2614,7 +2613,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 47.0,
-          "mean_incremental_execution_energy_j": 0.728,
+          "gpu_memory_mib": 2764.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -2814,7 +2813,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 100.0,
-          "mean_incremental_execution_energy_j": 0.35,
+          "gpu_memory_mib": 1843.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2822,7 +2821,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 52.0,
-          "mean_incremental_execution_energy_j": 0.5,
+          "gpu_memory_mib": 2304.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2830,7 +2829,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 40.0,
-          "mean_incremental_execution_energy_j": 0.7,
+          "gpu_memory_mib": 2764.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2838,7 +2837,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 112.5,
-          "mean_incremental_execution_energy_j": 0.371,
+          "gpu_memory_mib": 1894.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2846,7 +2845,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 58.5,
-          "mean_incremental_execution_energy_j": 0.53,
+          "gpu_memory_mib": 2368.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2854,7 +2853,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 45.0,
-          "mean_incremental_execution_energy_j": 0.742,
+          "gpu_memory_mib": 2841.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2862,7 +2861,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 125.0,
-          "mean_incremental_execution_energy_j": 0.392,
+          "gpu_memory_mib": 1945.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2870,7 +2869,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 65.0,
-          "mean_incremental_execution_energy_j": 0.56,
+          "gpu_memory_mib": 2432.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -2878,7 +2877,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 50.0,
-          "mean_incremental_execution_energy_j": 0.784,
+          "gpu_memory_mib": 2918.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3078,7 +3077,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 107.5,
-          "mean_incremental_execution_energy_j": 0.378,
+          "gpu_memory_mib": 1945.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3086,7 +3085,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 55.9,
-          "mean_incremental_execution_energy_j": 0.54,
+          "gpu_memory_mib": 2432.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3094,7 +3093,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 43.0,
-          "mean_incremental_execution_energy_j": 0.756,
+          "gpu_memory_mib": 2918.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3102,7 +3101,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 120.0,
-          "mean_incremental_execution_energy_j": 0.399,
+          "gpu_memory_mib": 1996.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3110,7 +3109,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 62.4,
-          "mean_incremental_execution_energy_j": 0.57,
+          "gpu_memory_mib": 2496.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3118,7 +3117,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 48.0,
-          "mean_incremental_execution_energy_j": 0.798,
+          "gpu_memory_mib": 2995.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3126,7 +3125,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 132.5,
-          "mean_incremental_execution_energy_j": 0.42,
+          "gpu_memory_mib": 2048.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3134,7 +3133,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 68.9,
-          "mean_incremental_execution_energy_j": 0.6,
+          "gpu_memory_mib": 2560.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3142,7 +3141,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 53.0,
-          "mean_incremental_execution_energy_j": 0.84,
+          "gpu_memory_mib": 3072.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3350,7 +3349,7 @@
           "configuration_id": "fast",
           "device_id": "device",
           "warm_latency_p95_ms": 115.0,
-          "mean_incremental_execution_energy_j": 0.406,
+          "gpu_memory_mib": 2048.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3358,7 +3357,7 @@
           "configuration_id": "fast",
           "device_id": "edge",
           "warm_latency_p95_ms": 59.8,
-          "mean_incremental_execution_energy_j": 0.58,
+          "gpu_memory_mib": 2560.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3366,7 +3365,7 @@
           "configuration_id": "fast",
           "device_id": "cloud",
           "warm_latency_p95_ms": 46.0,
-          "mean_incremental_execution_energy_j": 0.812,
+          "gpu_memory_mib": 3072.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3374,7 +3373,7 @@
           "configuration_id": "balanced",
           "device_id": "device",
           "warm_latency_p95_ms": 127.5,
-          "mean_incremental_execution_energy_j": 0.427,
+          "gpu_memory_mib": 2099.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3382,7 +3381,7 @@
           "configuration_id": "balanced",
           "device_id": "edge",
           "warm_latency_p95_ms": 66.3,
-          "mean_incremental_execution_energy_j": 0.61,
+          "gpu_memory_mib": 2624.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3390,7 +3389,7 @@
           "configuration_id": "balanced",
           "device_id": "cloud",
           "warm_latency_p95_ms": 51.0,
-          "mean_incremental_execution_energy_j": 0.854,
+          "gpu_memory_mib": 3148.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3398,7 +3397,7 @@
           "configuration_id": "quality",
           "device_id": "device",
           "warm_latency_p95_ms": 140.0,
-          "mean_incremental_execution_energy_j": 0.448,
+          "gpu_memory_mib": 2150.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3406,7 +3405,7 @@
           "configuration_id": "quality",
           "device_id": "edge",
           "warm_latency_p95_ms": 72.8,
-          "mean_incremental_execution_energy_j": 0.64,
+          "gpu_memory_mib": 2688.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3414,7 +3413,7 @@
           "configuration_id": "quality",
           "device_id": "cloud",
           "warm_latency_p95_ms": 56.0,
-          "mean_incremental_execution_energy_j": 0.896,
+          "gpu_memory_mib": 3225.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3511,7 +3510,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 122.5,
-          "mean_incremental_execution_energy_j": 0.434,
+          "gpu_memory_mib": 2150.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3519,7 +3518,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 63.7,
-          "mean_incremental_execution_energy_j": 0.62,
+          "gpu_memory_mib": 2688.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3527,7 +3526,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 49.0,
-          "mean_incremental_execution_energy_j": 0.868,
+          "gpu_memory_mib": 3225.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3624,7 +3623,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 130.0,
-          "mean_incremental_execution_energy_j": 0.462,
+          "gpu_memory_mib": 2252.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3632,7 +3631,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 67.6,
-          "mean_incremental_execution_energy_j": 0.66,
+          "gpu_memory_mib": 2816.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3640,7 +3639,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 52.0,
-          "mean_incremental_execution_energy_j": 0.924,
+          "gpu_memory_mib": 3379.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3737,7 +3736,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 137.5,
-          "mean_incremental_execution_energy_j": 0.49,
+          "gpu_memory_mib": 2355.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3745,7 +3744,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 71.5,
-          "mean_incremental_execution_energy_j": 0.7,
+          "gpu_memory_mib": 2944.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3753,7 +3752,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 55.0,
-          "mean_incremental_execution_energy_j": 0.98,
+          "gpu_memory_mib": 3532.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3850,7 +3849,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 145.0,
-          "mean_incremental_execution_energy_j": 0.518,
+          "gpu_memory_mib": 2457.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3858,7 +3857,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 75.4,
-          "mean_incremental_execution_energy_j": 0.74,
+          "gpu_memory_mib": 3072.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3866,7 +3865,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 58.0,
-          "mean_incremental_execution_energy_j": 1.036,
+          "gpu_memory_mib": 3686.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -3963,7 +3962,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 152.5,
-          "mean_incremental_execution_energy_j": 0.546,
+          "gpu_memory_mib": 2560.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3971,7 +3970,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 79.3,
-          "mean_incremental_execution_energy_j": 0.78,
+          "gpu_memory_mib": 3200.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -3979,7 +3978,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 61.0,
-          "mean_incremental_execution_energy_j": 1.092,
+          "gpu_memory_mib": 3840.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4076,7 +4075,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 160.0,
-          "mean_incremental_execution_energy_j": 0.574,
+          "gpu_memory_mib": 2662.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4084,7 +4083,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 83.2,
-          "mean_incremental_execution_energy_j": 0.82,
+          "gpu_memory_mib": 3328.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4092,7 +4091,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 64.0,
-          "mean_incremental_execution_energy_j": 1.148,
+          "gpu_memory_mib": 3993.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4189,7 +4188,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 167.5,
-          "mean_incremental_execution_energy_j": 0.602,
+          "gpu_memory_mib": 2764.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4197,7 +4196,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 87.1,
-          "mean_incremental_execution_energy_j": 0.86,
+          "gpu_memory_mib": 3456.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4205,7 +4204,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 67.0,
-          "mean_incremental_execution_energy_j": 1.204,
+          "gpu_memory_mib": 4147.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4302,7 +4301,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 175.0,
-          "mean_incremental_execution_energy_j": 0.63,
+          "gpu_memory_mib": 2867.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4310,7 +4309,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 91.0,
-          "mean_incremental_execution_energy_j": 0.9,
+          "gpu_memory_mib": 3584.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4318,7 +4317,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 70.0,
-          "mean_incremental_execution_energy_j": 1.26,
+          "gpu_memory_mib": 4300.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4415,7 +4414,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 182.5,
-          "mean_incremental_execution_energy_j": 0.658,
+          "gpu_memory_mib": 2969.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4423,7 +4422,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 94.9,
-          "mean_incremental_execution_energy_j": 0.94,
+          "gpu_memory_mib": 3712.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4431,7 +4430,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 73.0,
-          "mean_incremental_execution_energy_j": 1.316,
+          "gpu_memory_mib": 4454.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4528,7 +4527,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 190.0,
-          "mean_incremental_execution_energy_j": 0.686,
+          "gpu_memory_mib": 3072.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4536,7 +4535,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 98.8,
-          "mean_incremental_execution_energy_j": 0.98,
+          "gpu_memory_mib": 3840.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4544,7 +4543,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 76.0,
-          "mean_incremental_execution_energy_j": 1.372,
+          "gpu_memory_mib": 4608.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4641,7 +4640,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 197.5,
-          "mean_incremental_execution_energy_j": 0.714,
+          "gpu_memory_mib": 3174.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4649,7 +4648,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 102.7,
-          "mean_incremental_execution_energy_j": 1.02,
+          "gpu_memory_mib": 3968.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4657,7 +4656,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 79.0,
-          "mean_incremental_execution_energy_j": 1.428,
+          "gpu_memory_mib": 4761.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4754,7 +4753,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 205.0,
-          "mean_incremental_execution_energy_j": 0.742,
+          "gpu_memory_mib": 3276.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4762,7 +4761,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 106.6,
-          "mean_incremental_execution_energy_j": 1.06,
+          "gpu_memory_mib": 4096.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4770,7 +4769,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 82.0,
-          "mean_incremental_execution_energy_j": 1.484,
+          "gpu_memory_mib": 4915.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4867,7 +4866,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 212.5,
-          "mean_incremental_execution_energy_j": 0.77,
+          "gpu_memory_mib": 3379.2,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4875,7 +4874,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 110.5,
-          "mean_incremental_execution_energy_j": 1.1,
+          "gpu_memory_mib": 4224.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4883,7 +4882,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 85.0,
-          "mean_incremental_execution_energy_j": 1.54,
+          "gpu_memory_mib": 5068.8,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -4980,7 +4979,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 220.0,
-          "mean_incremental_execution_energy_j": 0.798,
+          "gpu_memory_mib": 3481.6,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4988,7 +4987,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 114.4,
-          "mean_incremental_execution_energy_j": 1.14,
+          "gpu_memory_mib": 4352.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -4996,7 +4995,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 88.0,
-          "mean_incremental_execution_energy_j": 1.596,
+          "gpu_memory_mib": 5222.4,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -5093,7 +5092,7 @@
           "configuration_id": "reference",
           "device_id": "device",
           "warm_latency_p95_ms": 227.5,
-          "mean_incremental_execution_energy_j": 0.826,
+          "gpu_memory_mib": 3584.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -5101,7 +5100,7 @@
           "configuration_id": "reference",
           "device_id": "edge",
           "warm_latency_p95_ms": 118.3,
-          "mean_incremental_execution_energy_j": 1.18,
+          "gpu_memory_mib": 4480.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         },
@@ -5109,7 +5108,7 @@
           "configuration_id": "reference",
           "device_id": "cloud",
           "warm_latency_p95_ms": 91.0,
-          "mean_incremental_execution_energy_j": 1.652,
+          "gpu_memory_mib": 5376.0,
           "sample_count": 50,
           "provenance_id": "synthetic-execution-v1"
         }
@@ -5122,8 +5121,6 @@
       "destination_device_id": "edge",
       "propagation_delay_ms": 4.0,
       "bandwidth_bytes_per_second": 50000000,
-      "setup_energy_j": 0.02,
-      "energy_per_byte_j": 1e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     },
@@ -5132,8 +5129,6 @@
       "destination_device_id": "cloud",
       "propagation_delay_ms": 28.0,
       "bandwidth_bytes_per_second": 12000000,
-      "setup_energy_j": 0.08,
-      "energy_per_byte_j": 3e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     },
@@ -5142,8 +5137,6 @@
       "destination_device_id": "device",
       "propagation_delay_ms": 4.5,
       "bandwidth_bytes_per_second": 45000000,
-      "setup_energy_j": 0.025,
-      "energy_per_byte_j": 1.2e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     },
@@ -5152,8 +5145,6 @@
       "destination_device_id": "cloud",
       "propagation_delay_ms": 18.0,
       "bandwidth_bytes_per_second": 80000000,
-      "setup_energy_j": 0.04,
-      "energy_per_byte_j": 1.5e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     },
@@ -5162,8 +5153,6 @@
       "destination_device_id": "device",
       "propagation_delay_ms": 30.0,
       "bandwidth_bytes_per_second": 15000000,
-      "setup_energy_j": 0.09,
-      "energy_per_byte_j": 3.5e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     },
@@ -5172,8 +5161,6 @@
       "destination_device_id": "edge",
       "propagation_delay_ms": 19.0,
       "bandwidth_bytes_per_second": 75000000,
-      "setup_energy_j": 0.045,
-      "energy_per_byte_j": 1.6e-08,
       "sample_count": 50,
       "provenance_id": "synthetic-transfer-v1"
     }
