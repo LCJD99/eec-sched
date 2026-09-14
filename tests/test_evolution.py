@@ -12,15 +12,20 @@ from eec_sched import (
     EvaluationReport,
     FinalOutput,
     InputSource,
+    NodeAssignment,
     SchedulerCandidate,
     SchedulerCandidateDraft,
     SchedulerCandidateRegistry,
+    SimulatedNode,
+    SimulatedTransfer,
     TraceEvaluation,
     ToolCallPlan,
     ToolNode,
     evaluate_scheduler_candidate,
     load_profiling_database,
 )
+from eec_sched.diagnosis import DiagnosisResult
+from eec_sched.evolution import PostEvaluationDiagnosisEvolutionLoop, UnboundedRepertoire
 ROOT = Path(__file__).parents[1]
 SNAPSHOT = load_profiling_database(
     ROOT / "docs/examples/profiling-database.fake.json",
@@ -59,6 +64,7 @@ def test_evolution_graph_starts_with_three_roots_and_retains_mutation_lineage() 
     report = EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})
     roots = tuple(_reference_candidate(version) for version in (1, 2, 3))
     generated_requests: list[CandidateGenerationRequest] = []
+    reflection_calls = []
 
     def evaluator(snapshot, trace, candidate):
         score = {1: 0.1, 2: 0.4, 3: 0.3, 4: 0.9}[candidate.scheduler_version]
@@ -76,7 +82,7 @@ def test_evolution_graph_starts_with_three_roots_and_retains_mutation_lineage() 
         initial_candidates=roots,
         rounds=1,
         mutation_probability=1.0,
-        reflection_agent=lambda reflection: "strengthen the chosen strategy",
+        reflection_agent=lambda reflection: reflection_calls.append(reflection) or "strengthen the chosen strategy",
         coding_agent=coding_agent,
         trusted_evaluator=evaluator,
         oracle=lambda snapshot, records, candidate: (0.5,),
@@ -90,6 +96,7 @@ def test_evolution_graph_starts_with_three_roots_and_retains_mutation_lineage() 
     assert result.evolution_graph.candidates[4].parent_scheduler_versions == (2,)
     assert result.selected_candidate.scheduler_version == 4
     assert generated_requests[0].parent_source_codes == ("def schedule_2(view):\n    return {}\n",)
+    assert len(reflection_calls) == 1
 
 
 def test_crossover_uses_least_similar_top_candidates_and_hides_source_from_reflection() -> None:
@@ -218,6 +225,203 @@ def test_descendant_mutation_reflection_includes_direct_parent_evidence_and_stra
 def test_scheduler_candidate_requires_executable_source_code() -> None:
     with pytest.raises(ValueError, match="executable Python"):
         SchedulerCandidate(1, lambda view: {}, source_code="not valid python source !")
+
+
+class _RecordingRepertoire:
+    def __init__(self, log):
+        self.log = log
+        self.items_seen = []
+
+    def add(self, candidate, evaluation):
+        self.log.append(("repertoire", candidate.scheduler_version))
+        self.items_seen.append((candidate, evaluation))
+
+    def items(self):
+        return tuple(self.items_seen)
+
+
+class _RecordingMemory:
+    def __init__(self, log):
+        self.log = log
+        self.experiences = []
+
+    def retrieve(self, query="", *, limit=10):
+        self.log.append(("memory_retrieve", query))
+        return ()
+
+    def record(self, experience):
+        self.log.append(("memory", experience.strategy_version, experience.summary))
+        self.experiences.append(experience)
+
+
+def _post_evaluation_loop(*, operator="mutation", rounds=1, log=None, diagnoses=None, final_id="final"):
+    log = log if log is not None else []
+    diagnoses = diagnoses if diagnoses is not None else {}
+    full_report = EvaluationReport(
+        SNAPSHOT.snapshot_digest,
+        "scheduled",
+        (),
+        {},
+        nodes=(SimulatedNode("generate", "synthetic-reference", "cloud", 0.0, 2.0, 128.0),),
+        transfers=(SimulatedTransfer("input", "generate", "cloud", "cloud", 0.0, 0.0, 0.0),),
+        accuracy=0.9,
+        raw_accuracy_metrics={"quality": 0.9},
+        simulated_makespan_ms=2.0,
+        scheduler_solving_time_ms=1.0,
+        latency=3.0,
+        resource=128.0,
+        composite_score=0.8,
+    )
+    roots = tuple(_reference_candidate(version) for version in (1, 2, 3))
+    traces = (_trace("evolution"),)
+    final_traces = (_trace(final_id),)
+
+    def evaluator(snapshot, trace, candidate):
+        log.append(("evaluate", candidate.scheduler_version, trace.trace_id))
+        return TraceEvaluation(
+            trace,
+            {"generate": NodeAssignment("synthetic-reference", "cloud")},
+            "scored",
+            0.5,
+            full_report,
+            scheduler_version=candidate.scheduler_version,
+        )
+
+    def diagnosis_agent(evidence):
+        log.append(("diagnose", evidence["scheduler_version"], evidence))
+        diagnoses[evidence["scheduler_version"]] = DiagnosisResult(
+            f"diagnosis-{evidence['scheduler_version']}",
+            (f"bottleneck-{evidence['scheduler_version']}",),
+            (f"evidence-{evidence['scheduler_version']}",),
+        )
+        return diagnoses[evidence["scheduler_version"]]
+
+    def recorder(event):
+        log.append(("record", event["type"], event.get("scheduler_version"), event.get("trace_id")))
+
+    generation_requests = []
+
+    def coding(request):
+        generation_requests.append(request)
+        version = 4 + len(generation_requests) - 1
+        candidate = _reference_candidate(version, parent_scheduler_versions=request.parent_scheduler_versions)
+        return SchedulerCandidateDraft(candidate.propose, candidate.source_code, "generated")
+
+    loop = PostEvaluationDiagnosisEvolutionLoop(
+        SNAPSHOT,
+        traces,
+        final_traces,
+        roots,
+        rounds,
+        1.0 if operator == "mutation" else 0.0,
+        diagnosis_agent,
+        coding,
+        evaluator,
+        lambda snapshot, records, candidate: (0.5,),
+        random_float=lambda: 0.0 if operator == "mutation" else 1.0,
+        random_choice=lambda candidates: candidates[0],
+        repertoire=_RecordingRepertoire(log),
+        memory=_RecordingMemory(log),
+        trace_recorder=recorder,
+    )
+    return loop, log, generation_requests, diagnoses
+
+
+def test_post_evaluation_loop_orders_evaluation_trace_diagnosis_archive_and_memory() -> None:
+    loop, log, requests, diagnoses = _post_evaluation_loop()
+    result = loop.run()
+
+    # Every root and child has the complete sequence before the next phase.
+    root_one = [index for index, item in enumerate(log) if item[0] == "evaluate" and item[1] == 1 and item[2] == "evolution"][0]
+    assert log[root_one : root_one + 5] == [
+        ("evaluate", 1, "evolution"),
+        ("record", "evaluation_trace", 1, "evolution"),
+        ("diagnose", 1, log[root_one + 2][2]),
+        ("record", "diagnosis", 1, None),
+        ("repertoire", 1),
+    ]
+    assert log[root_one + 5][0:2] == ("memory", 1)
+    child = [index for index, item in enumerate(log) if item[0] == "evaluate" and item[1] == 4][0]
+    assert log[child : child + 6] == [
+        ("evaluate", 4, "evolution"),
+        ("record", "evaluation_trace", 4, "evolution"),
+        ("diagnose", 4, log[child + 2][2]),
+        ("record", "diagnosis", 4, None),
+        ("repertoire", 4),
+        ("memory", 4, log[child + 5][2]),
+    ]
+    assert result.diagnoses[1] == diagnoses[1]
+    assert result.diagnoses[4] == diagnoses[4]
+
+
+def test_post_evaluation_diagnosis_receives_complete_source_free_trace() -> None:
+    loop, log, _, _ = _post_evaluation_loop(rounds=0)
+    loop.run()
+    evidence = next(item[2] for item in log if item[0] == "diagnose" and item[1] == 1)
+    trace = evidence["traces"][0]
+    assert {"nodes", "transfers", "assignments", "dag", "snapshot_digest", "scheduler_version"} <= set(trace)
+    assert trace["nodes"][0]["start_ms"] == 0.0
+
+    def contains_source_code(value):
+        if isinstance(value, dict):
+            return any(key in {"source_code", "parent_source_codes"} or contains_source_code(item) for key, item in value.items())
+        if isinstance(value, (list, tuple)):
+            return any(contains_source_code(item) for item in value)
+        return False
+
+    assert not contains_source_code(evidence)
+
+
+def test_post_evaluation_briefs_use_saved_mutation_and_crossover_diagnoses() -> None:
+    mutation_loop, _, mutation_requests, mutation_diagnoses = _post_evaluation_loop()
+    mutation_loop.run()
+    mutation_request = mutation_requests[0]
+    parent_version = mutation_request.parent_scheduler_versions[0]
+    assert f"scheduler_version={parent_version}" in mutation_request.reflection_advice
+    assert mutation_diagnoses[parent_version].advice in mutation_request.reflection_advice
+
+    crossover_loop, _, crossover_requests, crossover_diagnoses = _post_evaluation_loop(operator="crossover")
+    crossover_loop.run()
+    crossover_request = crossover_requests[0]
+    left, right = crossover_request.parent_scheduler_versions
+    assert f"scheduler_versions={left},{right}" in crossover_request.reflection_advice
+    assert crossover_diagnoses[left].advice in crossover_request.reflection_advice
+    assert crossover_diagnoses[right].advice in crossover_request.reflection_advice
+
+
+def test_post_evaluation_loop_keeps_final_traces_out_of_diagnosis_and_artifacts() -> None:
+    loop, log, _, _ = _post_evaluation_loop()
+    result = loop.run()
+    assert result.final_evaluation.traces[0].trace_evaluation.trace.trace_id == "final"
+    assert all(item[2] != "final" for item in log if item[0] == "record")
+    assert all(
+        trace["trace_id"] != "final"
+        for item in log
+        if item[0] == "diagnose"
+        for trace in item[2]["traces"]
+    )
+    assert all(item[1] != "final" for item in log if item[0] in {"repertoire", "memory"})
+
+
+def test_post_evaluation_results_are_immutable_and_legacy_result_has_no_diagnoses() -> None:
+    loop, _, _, _ = _post_evaluation_loop(rounds=0)
+    result = loop.run()
+    with pytest.raises(TypeError):
+        result.diagnoses[1] = DiagnosisResult("changed")  # type: ignore[index]
+
+    legacy = EvolutionLoop(
+        SNAPSHOT,
+        (_trace("legacy-evolution"),),
+        (_trace("legacy-final"),),
+        tuple(_reference_candidate(version) for version in (1, 2, 3)),
+        0,
+        1.0,
+        lambda reflection: "legacy advice",
+        lambda request: SchedulerCandidateDraft(lambda view: {}, "def propose(view): return {}", "child"),
+        lambda snapshot, trace, candidate: TraceEvaluation(trace, {}, "scored", 0.5, EvaluationReport(SNAPSHOT.snapshot_digest, "scheduled", (), {})),
+        lambda snapshot, records, candidate: (0.5,),
+    ).run()
+    assert legacy.diagnoses == {}
 
 
 def _evaluate(

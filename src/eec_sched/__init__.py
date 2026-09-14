@@ -30,6 +30,7 @@ from .evaluation import (
     SimulatedTransfer,
     TrustedEvaluationError,
     composite_score,
+    evaluate_assignments,
     evaluate_scheduler_instance,
 )
 from .evolution import (
@@ -37,6 +38,7 @@ from .evolution import (
     EvolutionGraph,
     EvolutionLoop,
     EvolutionLoopResult,
+    PostEvaluationDiagnosisEvolutionLoop,
     ReflectionInput,
     ReflectionTraceEvidence,
     evaluate_scheduler_candidate,

@@ -5,7 +5,7 @@ defaults:
   - /evidence: fake_snapshot
   - /evaluation: canonical
   - /diagnosis: one_shot
-  - /loop: legacy_reflection
+  - /loop: post_evaluation_diagnosis
   - /search: psocm
   - /memory: in_run
   - /candidate_runtime: in_process
@@ -16,6 +16,9 @@ defaults:
   - _self_
   - override /hydra/job_logging: disabled
   - override /hydra/hydra_logging: disabled
+
+run:
+  experiment_name: 004_post_evaluation_diagnosis
 
 hydra:
   searchpath:

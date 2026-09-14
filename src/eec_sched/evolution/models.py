@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Literal, Mapping, Sequence
 
+from ..diagnosis.models import DiagnosisResult
+
 from ..candidate import (
     SCHEMA_VERSION,
     CandidateEvaluation,
@@ -107,6 +109,14 @@ class EvolutionLoopResult:
     selected_candidate: SchedulerCandidate
     selected_evaluation: CandidateEvaluation
     final_evaluation: FinalEvaluation
+    # Populated by post-evaluation diagnosis loops.  MappingProxyType keeps
+    # the evidence stable after the run has completed.
+    diagnoses: Mapping[int, DiagnosisResult] = MappingProxyType({})
+    trace_events: tuple[Mapping[str, object], ...] = ()
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "diagnoses", MappingProxyType(dict(self.diagnoses)))
+        object.__setattr__(self, "trace_events", tuple(MappingProxyType(dict(event)) for event in self.trace_events))
 
 
 def _mean(values: Sequence[float | None]) -> float | None:

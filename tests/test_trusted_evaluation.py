@@ -7,10 +7,12 @@ import pytest
 from eec_sched import (
     FinalOutput,
     InputSource,
+    NodeAssignment,
     ScoringContext,
     ToolCallPlan,
     ToolNode,
     composite_score,
+    evaluate_assignments,
     evaluate_scheduler_instance,
     load_profiling_database,
 )
@@ -100,6 +102,67 @@ def test_evaluator_scores_any_latency_without_a_feasibility_gate() -> None:
     assert report.scheduler_status == "scheduled"
     assert report.latency is not None and report.latency > 5
     assert report.composite_score is not None and report.composite_score > 0
+
+
+def test_direct_assignment_evaluation_reuses_the_scheduler_evaluation_contract(monkeypatch) -> None:
+    import eec_sched.evaluation.evaluator as trusted_evaluation
+
+    ticks = iter((1.0, 1.0))
+    monkeypatch.setattr(trusted_evaluation, "perf_counter", lambda: next(ticks))
+    plan = one_node_plan()
+    assignments = {
+        "generate": NodeAssignment("synthetic-reference", "cloud"),
+    }
+
+    direct = evaluate_assignments(SNAPSHOT, plan, assignments)
+    scheduler = evaluate_scheduler_instance(
+        SNAPSHOT,
+        plan,
+        lambda dag: {
+            "generate": {
+                "configuration_id": "synthetic-reference",
+                "device_id": "cloud",
+            }
+        },
+    )
+
+    assert direct == scheduler
+    assert direct.scheduler_solving_time_ms == pytest.approx(0.0)
+
+
+@pytest.mark.parametrize(
+    ("assignments", "error"),
+    [
+        ({}, "missing node assignments"),
+        ({"generate": NodeAssignment("synthetic-reference", "unknown")}, "incompatible device"),
+        ({"generate": NodeAssignment("unknown", "cloud")}, "unknown profile or choice"),
+        ({"generate": {"configuration_id": "synthetic-reference", "device_id": "cloud"}}, "NodeAssignment"),
+    ],
+)
+def test_direct_assignment_evaluation_rejects_invalid_assignments(assignments, error) -> None:
+    report = evaluate_assignments(SNAPSHOT, one_node_plan(), assignments)
+
+    assert report.scheduler_status == "rejected"
+    assert report.composite_score is None
+    assert any(error in message for message in report.validation_errors)
+
+
+def test_direct_assignment_evaluation_includes_scheduler_computation_time() -> None:
+    plan = one_node_plan()
+    assignments = {
+        "generate": NodeAssignment("synthetic-reference", "cloud"),
+    }
+    without_scheduler_time = evaluate_assignments(SNAPSHOT, plan, assignments)
+    with_scheduler_time = evaluate_assignments(
+        SNAPSHOT,
+        plan,
+        assignments,
+        scheduler_computation_time_ms=12.5,
+    )
+
+    assert with_scheduler_time.simulated_makespan_ms == without_scheduler_time.simulated_makespan_ms
+    assert with_scheduler_time.latency == pytest.approx(without_scheduler_time.latency + 12.5)
+    assert with_scheduler_time.composite_score < without_scheduler_time.composite_score
 
 
 def test_invalid_and_incompatible_scheduler_outputs_are_rejected() -> None:

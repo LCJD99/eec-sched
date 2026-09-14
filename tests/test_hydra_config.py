@@ -16,6 +16,7 @@ def test_default_hydra_config_composes_replaceable_experiment_modules() -> None:
 
     assert config.search.behavior_descriptor == "performance_behavior"
     assert config.diagnosis.kind == "one_shot"
+    assert config.loop.kind == "legacy_reflection"
     assert config.run.evolution_split == "train"
     assert instantiate(config.memory).__class__.__name__ == "InMemoryMemory"
 
@@ -28,3 +29,13 @@ def test_hydra_ablation_replaces_diagnosis_without_changing_source_layout() -> N
 
     diagnosis = EmptyDiagnosis(config.diagnosis.advice)
     assert diagnosis.diagnose({}).bottlenecks == ()
+
+
+def test_hydra_composes_post_evaluation_diagnosis_experiment() -> None:
+    with initialize_config_dir(
+        config_dir=str(ROOT / "experiments/004_post_evaluation_diagnosis"), version_base=None
+    ):
+        config = compose(config_name="config")
+
+    assert config.loop.kind == "post_evaluation_diagnosis"
+    assert config.run.experiment_name == "004_post_evaluation_diagnosis"

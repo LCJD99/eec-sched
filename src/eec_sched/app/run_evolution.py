@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from ..artifacts import ArtifactStore
 from ..candidate import SchedulerProposal, SchedulerView
-from ..diagnosis import EmptyDiagnosis, ReactDiagnosis
+from ..diagnosis import DiagnosisResult, EmptyDiagnosis, ReactDiagnosis
 from ..evolution import (
     CandidateEvaluation,
     CandidateGenerationRequest,
@@ -25,6 +25,7 @@ from ..evolution import (
     FeatureDiverseMutationParentSelector,
     InMemoryRepertoire,
     ParetoMutationParentSelector,
+    PostEvaluationDiagnosisEvolutionLoop,
     PerformanceBehaviorDescriptor,
     ProbabilisticOperatorSelector,
     ReflectionInput,
@@ -146,6 +147,37 @@ def build_agents(
     return reflection_agent, coding_agent
 
 
+def build_structured_diagnosis_agent(
+    diagnosis_kind: str,
+    diagnosis_model: OpenAICompatibleChatModel,
+    *,
+    empty_diagnosis_advice: str = "",
+) -> Callable[[Mapping[str, object]], DiagnosisResult]:
+    """Compose the post-evaluation Diagnosis seam without artifact side effects."""
+    def diagnose(evidence: Mapping[str, object]) -> DiagnosisResult:
+        if diagnosis_kind == "empty":
+            return EmptyDiagnosis(empty_diagnosis_advice).diagnose(evidence)
+        if diagnosis_kind == "one_shot":
+            advice = diagnosis_model.complete(
+                system=(
+                    "Diagnose trusted End-Edge-Cloud scheduling evidence. Return concise, "
+                    "testable advice for changing the Scheduler Candidate; do not modify "
+                    "evaluation rules or assume access to source code."
+                ),
+                user={"candidate_evaluation_evidence": _jsonable(evidence)},
+            ).strip()
+            if not advice:
+                raise ValueError("diagnosis model returned empty advice")
+            return DiagnosisResult(advice=advice)
+        if diagnosis_kind == "react":
+            return ReactDiagnosis(
+                diagnosis_model.base_url, diagnosis_model.token, diagnosis_model.model
+            ).diagnose(evidence)
+        raise ValueError(f"unknown diagnosis adapter: {diagnosis_kind}")
+
+    return diagnose
+
+
 def _split(dataset: ToolCallPlanDataset, name: str):
     if name == "all":
         return dataset.traces
@@ -169,6 +201,13 @@ def _result_json(result: EvolutionLoopResult) -> dict[str, object]:
         "selected_scheduler_version": result.selected_candidate.scheduler_version,
         "evolution_evaluations": evaluations,
         "final_evaluation": result.final_evaluation.concise_projection(),
+        "diagnoses": {
+            str(version): _jsonable(diagnosis)
+            for version, diagnosis in getattr(result, "diagnoses", {}).items()
+        },
+        "trace_events": [
+            _jsonable(event) for event in getattr(result, "trace_events", ())
+        ],
     }
 
 
@@ -285,27 +324,71 @@ def run(config: DictConfig) -> Path | None:
         assert isinstance(value, CandidateEvaluation)
         return tuple(record.score_contribution for record in value.traces)
 
-    result = EvolutionLoop(
-        snapshot=snapshot,
-        evolution_traces=evolution_traces,
-        final_evaluation_traces=final_traces,
-        initial_candidates=roots,
-        rounds=config.run.rounds,
-        mutation_probability=config.search.mutation_probability,
-        reflection_agent=reflection_agent,
-        coding_agent=coding_agent,
-        trusted_evaluator=trusted,
-        oracle=oracle_scores,
-        show_progress=True,
-        random_float=random_source.random,
-        random_choice=random_source.choice,
-        mutation_parent_selector=mutation_selector,
-        crossover_parent_selector=crossover_selector,
-        behavior_descriptor=descriptor,
-        operator_selector=ProbabilisticOperatorSelector(config.search.mutation_probability),
-        repertoire=repertoire,
-        memory=memory,
-    ).run()
+    loop_kind = str(config.loop.kind)
+    if loop_kind == "legacy_reflection":
+        loop = EvolutionLoop(
+            snapshot=snapshot,
+            evolution_traces=evolution_traces,
+            final_evaluation_traces=final_traces,
+            initial_candidates=roots,
+            rounds=config.run.rounds,
+            mutation_probability=config.search.mutation_probability,
+            reflection_agent=reflection_agent,
+            coding_agent=coding_agent,
+            trusted_evaluator=trusted,
+            oracle=oracle_scores,
+            show_progress=True,
+            random_float=random_source.random,
+            random_choice=random_source.choice,
+            mutation_parent_selector=mutation_selector,
+            crossover_parent_selector=crossover_selector,
+            behavior_descriptor=descriptor,
+            operator_selector=ProbabilisticOperatorSelector(config.search.mutation_probability),
+            repertoire=repertoire,
+            memory=memory,
+        )
+    elif loop_kind == "post_evaluation_diagnosis":
+        diagnosis_agent = build_structured_diagnosis_agent(
+            config.diagnosis.kind,
+            diagnosis_model,
+            empty_diagnosis_advice=config.diagnosis.get("advice", ""),
+        )
+
+        def record_event(event: Mapping[str, object]) -> None:
+            event_type = event.get("type")
+            if not isinstance(event_type, str):
+                raise ValueError("evolution artifact event must include a string type")
+            artifacts.append_event(
+                event_type,
+                {key: value for key, value in event.items() if key != "type"},
+            )
+
+        loop = PostEvaluationDiagnosisEvolutionLoop(
+            snapshot=snapshot,
+            evolution_traces=evolution_traces,
+            final_evaluation_traces=final_traces,
+            initial_candidates=roots,
+            rounds=config.run.rounds,
+            mutation_probability=config.search.mutation_probability,
+            diagnosis_agent=diagnosis_agent,
+            coding_agent=coding_agent,
+            trusted_evaluator=trusted,
+            oracle=oracle_scores,
+            show_progress=True,
+            random_float=random_source.random,
+            random_choice=random_source.choice,
+            mutation_parent_selector=mutation_selector,
+            crossover_parent_selector=crossover_selector,
+            behavior_descriptor=descriptor,
+            operator_selector=ProbabilisticOperatorSelector(config.search.mutation_probability),
+            repertoire=repertoire,
+            memory=memory,
+            trace_recorder=record_event,
+        )
+    else:
+        raise ValueError(f"unknown evolution loop: {loop_kind}")
+
+    result = loop.run()
     payload = _result_json(result)
     payload.update(
         resolved_config=resolved_config,
