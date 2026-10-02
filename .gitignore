@@ -16,6 +16,7 @@ profiles/logs/
 # Generated execution records. Historical records already committed under
 # runs/ remain visible, while every new run is kept out of source control.
 /runs/*/
+/experiments/09_offline_tool_planning/runs/
 
 # Local reference material and tool caches
 .cache/
@@ -25,3 +26,5 @@ data/benchmarks/
 # Local, immutable BO campaign artifacts (potentially large model outputs)
 experiments/02_bayesian_optimization/campaigns/
 yolo11m.pt
+
+outputs/

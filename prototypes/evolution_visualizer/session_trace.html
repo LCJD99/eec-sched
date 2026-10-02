@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Session Trace Viewer · Bottleneck Analysis</title>
+    <link rel="stylesheet" href="/session_trace.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Trace files">
+        <div class="sidebar-head">
+          <div class="kicker">Bottleneck analysis</div>
+          <h1>Session traces</h1>
+          <p class="muted">Read-only JSONL explorer</p>
+        </div>
+        <div class="sidebar-actions">
+          <label class="sr-only" for="trace-search">Search traces</label>
+          <input id="trace-search" type="search" placeholder="Search JSONL…" autocomplete="off" />
+          <button id="refresh-traces" class="button secondary" type="button">Refresh</button>
+        </div>
+        <div id="trace-list-status" class="list-status" role="status">Loading traces…</div>
+        <nav id="trace-list" class="trace-list" aria-label="JSONL files"></nav>
+        <div class="sidebar-footer"><a href="/">← Evolution Explorer</a></div>
+      </aside>
+      <main class="main-content">
+        <div id="global-status" class="global-status" role="status"></div>
+        <section id="empty-view" class="empty-view">
+          <div class="empty-mark">◎</div>
+          <h2>Select a session trace</h2>
+          <p>Choose a JSONL file from the sidebar to inspect every event, model decision, and tool result.</p>
+        </section>
+        <section id="trace-view" class="trace-view" hidden>
+          <header id="run-header" class="run-header"></header>
+          <div class="toolbar panel">
+            <div class="toolbar-label"><span class="kicker">Event stream</span><span id="event-count-label" class="muted"></span></div>
+            <label class="search-control"><span class="sr-only">Search events</span><input id="event-search" type="search" placeholder="Search event JSON, tool, message…" autocomplete="off" /></label>
+            <label class="select-control"><span class="sr-only">Event type filter</span><select id="event-filter"><option value="all">All event types</option></select></label>
+          </div>
+          <div id="parse-notices" class="parse-notices" hidden></div>
+          <div id="event-stream" class="event-stream"></div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/session_trace.js"></script>
+  </body>
+</html>
