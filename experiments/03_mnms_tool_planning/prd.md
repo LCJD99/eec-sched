@@ -1,4 +1,9 @@
-# 实验 03：用 LLM Planner 生成真实 MnMS Query 的 Tool-Call DAG
+# 实验 03（历史草案）：用 LLM Planner 生成真实 MnMS Query 的 Tool-Call DAG
+
+> 本文件保留早期 MnMS 专项实验设想，已不再定义当前 Tool Planner 接口。现行契约
+> 是数据集无关的 `id`/`request` JSONL、独立 tool catalog、可编辑 system prompt 和
+> 每条 request 一次调用生成三条 DAG，详见 [`docs/evaluation-pipeline.md`](../../docs/evaluation-pipeline.md)。
+> 本文件中的固定 MnMS loader、任务约束字段和修复重试方案均为历史内容。
 
 ## 一句话说明
 

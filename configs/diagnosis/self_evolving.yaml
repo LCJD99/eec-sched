@@ -1,0 +1,5 @@
+kind: self_evolving
+history_limit: 5
+generated_tool_limit: 5
+trace_limit: 3
+state_dir: ${hydra:runtime.cwd}/outputs/diagnosis-tools/${run.experiment_name}

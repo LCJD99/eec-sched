@@ -14,6 +14,7 @@ class DiagnosisResult:
     bottlenecks: tuple[str, ...] = ()
     evidence: tuple[str, ...] = ()
     confidence: float | None = None
+    impact_path: tuple[str, ...] = ()
 
 
 class Diagnosis(Protocol):

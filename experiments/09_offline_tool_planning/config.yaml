@@ -1,0 +1,25 @@
+# Hydra composition root for the generic, offline Tool Planner.
+# Select a shared configs/model/*.yaml file with model=<name>.
+defaults:
+  - /model: local_qwen
+  - _self_
+  - override /hydra/job_logging: disabled
+  - override /hydra/hydra_logging: disabled
+
+input_path: experiments/09_offline_tool_planning/requests.jsonl
+catalog_path: experiments/09_offline_tool_planning/tool_catalog.json
+system_prompt_path: experiments/09_offline_tool_planning/system_prompt.txt
+schema_path: docs/schemas/tool-call-dag.schema.json
+# null creates a fresh timestamped directory. An explicit existing directory
+# is rejected to prevent accidental reruns from overwriting paid results.
+output_dir: null
+prompt_version: tool-planner-v2
+limit: 1
+item_id: null
+
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/configs
+  run:
+    dir: .
+  output_subdir: null

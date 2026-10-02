@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LCJD99/eec-sched/blob/main/docs/schemas/tool-planner-input.schema.json",
+  "title": "Generic Offline Tool Planner Workload Item",
+  "description": "One JSONL workload item supplied to the dataset-independent Tool Planner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "request"],
+  "properties": {
+    "id": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {"type": "number"}
+      ]
+    },
+    "request": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

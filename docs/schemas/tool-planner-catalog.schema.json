@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LCJD99/eec-sched/blob/main/docs/schemas/tool-planner-catalog.schema.json",
+  "title": "Generic Offline Tool Planner Catalog",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tools"],
+  "properties": {
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tool_id", "description", "inputs", "outputs"],
+        "properties": {
+          "tool_id": {"type": "string", "minLength": 1},
+          "description": {"type": "string", "minLength": 1},
+          "inputs": {"$ref": "#/$defs/ports"},
+          "outputs": {"$ref": "#/$defs/ports"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ports": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["modality"],
+        "properties": {
+          "modality": {"enum": ["audio", "image", "text"]},
+          "required": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}

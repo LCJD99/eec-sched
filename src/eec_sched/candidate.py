@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Any, Callable, Literal, Mapping, Sequence
 
-from .domain import FinalOutput, ToolCallPlan, ToolNode
+from .domain import FinalOutput, ToolCallPlan, ToolCallPlanCandidates, ToolNode
 from .evaluation.models import EvaluationReport, NodeAssignment
 from .evaluation.scoring import ScoringContext
 
@@ -43,6 +43,26 @@ class SchedulerView:
     scoring_context: ScoringContext
     snapshot_digest: str
     snapshot_evidence: Mapping[str, Any]
+    # The first four fields retain the v1 positional constructor.  New
+    # schedulers use ``candidate_dags`` to choose a path before assigning
+    # configurations and devices.
+    candidate_dags: tuple[ToolCallPlan, ...] = ()
+    system_state: Mapping[str, Any] = MappingProxyType({})
+
+    def __post_init__(self) -> None:
+        candidates = tuple(self.candidate_dags) or (self.dag, self.dag, self.dag)
+        if len(candidates) != 3:
+            raise ValueError("SchedulerView requires exactly three candidate DAGs")
+        if any(not isinstance(candidate, ToolCallPlan) for candidate in candidates):
+            raise TypeError("SchedulerView candidates must be ToolCallPlan instances")
+        object.__setattr__(self, "dag", readonly_dag(self.dag))
+        object.__setattr__(self, "candidate_dags", tuple(readonly_dag(candidate) for candidate in candidates))
+        object.__setattr__(self, "system_state", _readonly(self.system_state))
+
+    @property
+    def dags(self) -> tuple[ToolCallPlan, ...]:
+        """Short spelling for the three Planner alternatives."""
+        return self.candidate_dags
 
 
 @dataclass(frozen=True)
@@ -115,12 +135,34 @@ class EvaluationTrace:
     trace_id: str
     task_input: Mapping[str, object]
     dag: ToolCallPlan
+    dags: tuple[ToolCallPlan, ...] = ()
+    system_state: Mapping[str, object] = MappingProxyType({})
 
     def __post_init__(self) -> None:
         if not self.trace_id:
             raise ValueError("Trace identifier must not be empty")
         object.__setattr__(self, "task_input", MappingProxyType(dict(self.task_input)))
-        object.__setattr__(self, "dag", readonly_dag(self.dag))
+        primary = readonly_dag(self.dag)
+        candidates = tuple(self.dags) or (primary, primary, primary)
+        if len(candidates) != 3:
+            raise ValueError("EvaluationTrace must contain exactly three candidate DAGs")
+        if any(not isinstance(candidate, ToolCallPlan) for candidate in candidates):
+            raise TypeError("EvaluationTrace candidates must be ToolCallPlan instances")
+        candidates = tuple(readonly_dag(candidate) for candidate in candidates)
+        if primary != candidates[0]:
+            # ``dag`` remains the v1 alias for the first Planner alternative.
+            primary = candidates[0]
+        object.__setattr__(self, "dag", primary)
+        object.__setattr__(self, "dags", candidates)
+        object.__setattr__(self, "system_state", MappingProxyType(dict(self.system_state)))
+
+    @property
+    def candidate_dags(self) -> tuple[ToolCallPlan, ...]:
+        return self.dags
+
+    @property
+    def plans(self) -> tuple[ToolCallPlan, ...]:
+        return self.dags
 
 
 @dataclass(frozen=True)
@@ -150,6 +192,14 @@ class TraceEvaluation:
     def raw_metrics(self) -> Mapping[str, object]:
         """Raw accuracy, latency, and GPU-memory values for this Trace."""
         return self.report.raw_metrics
+
+    @property
+    def selected_path_index(self) -> int | None:
+        return self.report.selected_path_index
+
+    @property
+    def selected_dag(self) -> ToolCallPlan | None:
+        return self.report.selected_dag
 
 
 @dataclass(frozen=True)

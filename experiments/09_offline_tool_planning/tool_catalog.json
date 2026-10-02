@@ -1,0 +1,183 @@
+{
+  "tools": [
+    {
+      "tool_id": "text_generation",
+      "description": "Generate text from text.",
+      "inputs": {
+        "text": {
+          "modality": "text",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "text_summarization",
+      "description": "Summarize text.",
+      "inputs": {
+        "text": {
+          "modality": "text",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "text_classification",
+      "description": "Classify text sentiment.",
+      "inputs": {
+        "text": {
+          "modality": "text",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "question_answering",
+      "description": "Answer a question using supplied text.",
+      "inputs": {
+        "question": {
+          "modality": "text",
+          "required": true
+        },
+        "text": {
+          "modality": "text",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "automatic_speech_recognition",
+      "description": "Transcribe audio.",
+      "inputs": {
+        "audio": {
+          "modality": "audio",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "image_captioning",
+      "description": "Describe an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "image_classification",
+      "description": "Classify an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "visual_question_answering",
+      "description": "Answer a question about an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        },
+        "question": {
+          "modality": "text",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "object_detection",
+      "description": "Detect objects in an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        }
+      },
+      "outputs": {
+        "image": {
+          "modality": "image"
+        },
+        "objects": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "image_segmentation",
+      "description": "Segment objects in an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        }
+      },
+      "outputs": {
+        "image": {
+          "modality": "image"
+        },
+        "objects": {
+          "modality": "text"
+        }
+      }
+    },
+    {
+      "tool_id": "optical_character_recognition",
+      "description": "Read text in an image.",
+      "inputs": {
+        "image": {
+          "modality": "image",
+          "required": true
+        }
+      },
+      "outputs": {
+        "text": {
+          "modality": "text"
+        }
+      }
+    }
+  ]
+}

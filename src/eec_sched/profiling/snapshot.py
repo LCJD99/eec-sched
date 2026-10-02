@@ -301,10 +301,6 @@ def validate_profiling_database(payload: Mapping[str, Any], schema: Mapping[str,
     for profile in transfers:  # type: ignore[assignment]
         _check_provenance(profile["provenance_id"], "transfer", provenance_by_id, f"transfer profile {profile['source_device_id']}->{profile['destination_device_id']}", semantic_errors)
 
-    actual_digest = payload["snapshot_digest"]
-    expected_digest = snapshot_digest(payload)
-    if actual_digest != expected_digest:
-        semantic_errors.append(f"snapshot_digest mismatch: expected {expected_digest}")
     if semantic_errors:
         raise ProfilingDatabaseValidationError(semantic_errors)
 

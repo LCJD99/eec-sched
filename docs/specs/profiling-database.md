@@ -7,14 +7,14 @@ This document defines the schema-first deliverable for [issue #3](https://github
 - [`../schemas/profiling-database.schema.json`](../schemas/profiling-database.schema.json) is the normative JSON Schema Draft 2020-12 document.
 - [`../examples/profiling-database.fake.json`](../examples/profiling-database.fake.json) is a complete synthetic snapshot for downstream development.
 - `scripts/generate_fake_profiling_database.py` deterministically rebuilds that snapshot from the side-effect-free `mnms_tool_specs()` catalog without loading models or using external services.
-- `eec_sched.profiling.snapshot` validates cross-record invariants, verifies the snapshot digest, and returns deeply immutable mappings and tuples.
+- `eec_sched.profiling.snapshot` validates cross-record invariants and returns deeply immutable mappings and tuples. It does not verify the snapshot digest.
 - `scripts/validate_profiling_database.py` is the command-line validation entry point.
 
 The existing files under `profiles/*.json` are v1 profiling-run artifacts from the earlier single-device implementation. They are useful source evidence, but they are **not** profiling database v1 snapshots and must not be silently interpreted as such.
 
 ## Snapshot boundary
 
-One snapshot is the complete fixed input used for replay. Its digest is SHA-256 over canonical JSON with `snapshot_digest` omitted. Arrays are significant: producers must emit their canonical order before calculating the digest. The loader validates before recursively replacing JSON objects and arrays with immutable mappings and tuples.
+One snapshot is the complete fixed input used for replay. Producers may retain a `snapshot_digest` identifier for traceability, but loading does not recompute or verify it. The loader validates the record structure and cross-record rules before recursively replacing JSON objects and arrays with immutable mappings and tuples.
 
 `data_kind` is mandatory:
 
@@ -113,7 +113,6 @@ JSON Schema rejects unknown fields and invalid primitive or conditional shapes. 
 - contradictory raw confidence intervals or normalized quality bounds;
 - missing, duplicate, or same-device transfer records;
 - provenance whose measurement kind disagrees with the snapshot;
-- a stale or fabricated snapshot digest.
 
 Run the development fixture validation with:
 
@@ -142,6 +141,6 @@ The next profiling campaign should create a new `measured` snapshot and leave th
 4. Measure Quality Profiles and every compatible Configuration-device Execution Profile.
 5. Record explicit incompatibility for every unsupported placement.
 6. Measure all six directed Transfer Profiles.
-7. Canonically order records, calculate the digest, validate, and preserve the resulting file unchanged for benchmark replay.
+7. Canonically order records, validate the structural and semantic rules, and preserve the resulting file for benchmark replay.
 
 Schema changes require a new semantic `schema_version`; existing snapshots are never upgraded in place.

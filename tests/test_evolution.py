@@ -354,22 +354,15 @@ def test_post_evaluation_loop_orders_evaluation_trace_diagnosis_archive_and_memo
     assert result.diagnoses[4] == diagnoses[4]
 
 
-def test_post_evaluation_diagnosis_receives_complete_source_free_trace() -> None:
+def test_post_evaluation_diagnosis_receives_complete_trace_and_scheduler_source() -> None:
     loop, log, _, _ = _post_evaluation_loop(rounds=0)
     loop.run()
     evidence = next(item[2] for item in log if item[0] == "diagnose" and item[1] == 1)
     trace = evidence["traces"][0]
     assert {"nodes", "transfers", "assignments", "dag", "snapshot_digest", "scheduler_version"} <= set(trace)
     assert trace["nodes"][0]["start_ms"] == 0.0
-
-    def contains_source_code(value):
-        if isinstance(value, dict):
-            return any(key in {"source_code", "parent_source_codes"} or contains_source_code(item) for key, item in value.items())
-        if isinstance(value, (list, tuple)):
-            return any(contains_source_code(item) for item in value)
-        return False
-
-    assert not contains_source_code(evidence)
+    assert evidence["source_code"] == loop.initial_candidates[0].source_code
+    assert evidence["strategy_description"] == loop.initial_candidates[0].strategy_description
 
 
 def test_post_evaluation_briefs_use_saved_mutation_and_crossover_diagnoses() -> None:

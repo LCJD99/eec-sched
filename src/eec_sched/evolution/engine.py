@@ -133,19 +133,24 @@ def _evaluate_trace(
         readonly_dag(trace.dag),
         scoring_context,
         snapshot.snapshot_digest,
-        _scheduler_evidence(snapshot, trace.dag),
+        _scheduler_evidence(snapshot, trace.candidate_dags),
+        tuple(readonly_dag(dag) for dag in trace.candidate_dags),
+        trace.system_state,
     )
 
     class CandidateAdapter:
-        def schedule(self, dag):
-            if dag is not trace.dag:
-                raise RuntimeError("trusted evaluator passed an unexpected DAG")
+        def schedule(self, dags):
+            # The evaluator supplies all three frozen Planner alternatives.
+            # Candidate code remains a v1 ``propose(view)`` function and
+            # chooses a path through ``view.candidate_dags``.
+            if tuple(dags) != tuple(view.candidate_dags):
+                raise RuntimeError("trusted evaluator passed unexpected DAG candidates")
             with _candidate_timeout():
                 return candidate.propose(view)
 
     report = evaluate_scheduler_instance(
         snapshot,
-        trace.dag,
+        trace.candidate_dags,
         CandidateAdapter(),
         scoring_context=view.scoring_context,
     )
@@ -214,7 +219,8 @@ def _timeout_seconds() -> float:
 
 
 def _scheduler_evidence(snapshot: ProfilingDatabaseSnapshot, dag) -> Mapping[str, Any]:
-    tool_ids = {node.tool_id for node in dag.nodes}
+    plans = tuple(dag) if hasattr(dag, "__iter__") and not hasattr(dag, "nodes") else (dag,)
+    tool_ids = {node.tool_id for plan in plans for node in plan.nodes}
     tools = tuple(
         tool for tool in snapshot.data["tools"] if tool["tool_id"] in tool_ids
     )
@@ -283,7 +289,11 @@ def _complete_trace_event(record: TraceEvaluation, scheduler_version: int | None
         "scheduler_version": record.scheduler_version or scheduler_version,
         "snapshot_digest": report.snapshot_digest,
         "task_input": _json_safe(record.trace.task_input),
+        "system_state": _json_safe(record.trace.system_state),
         "dag": _json_safe(record.trace.dag),
+        "candidate_dags": _json_safe(record.trace.candidate_dags),
+        "selected_path_index": report.selected_path_index,
+        "selected_dag": _json_safe(report.selected_dag),
         "assignments": _json_safe(record.assignments),
         "status": record.status,
         "reason": record.reason,
@@ -303,11 +313,20 @@ def _complete_trace_event(record: TraceEvaluation, scheduler_version: int | None
 
 
 def _diagnosis_evidence(candidate: SchedulerCandidate, evaluation: CandidateEvaluation) -> dict[str, object]:
-    """Build the diagnosis input without exposing Candidate source code."""
+    """Build diagnosis input, including the source under analysis.
+
+    Bottleneck diagnosis needs to relate trusted evaluation outcomes to the
+    strategy's actual scheduling decisions. The source is therefore part of
+    the diagnosis input; artifact/event serializers remain responsible for
+    redacting it when it must not be persisted.
+    """
     return {
         "schema_version": SCHEMA_VERSION,
         "scheduler_version": candidate.scheduler_version,
+        "strategy_description": candidate.strategy_description,
+        "source_code": candidate.source_code,
         "snapshot_digest": evaluation.traces[0].report.snapshot_digest if evaluation.traces else None,
+        "candidate_score": evaluation.candidate_score,
         "traces": [
             {key: value for key, value in _complete_trace_event(record, candidate.scheduler_version).items() if key != "type"}
             for record in evaluation.traces

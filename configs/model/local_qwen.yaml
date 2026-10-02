@@ -1,0 +1,3 @@
+base_url: http://localhost:9888/v1
+token: fakeapi
+model: qwen3.8-27b

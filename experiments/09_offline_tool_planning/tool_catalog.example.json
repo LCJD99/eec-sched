@@ -1,0 +1,24 @@
+{
+  "tools": [
+    {
+      "tool_id": "text_classification",
+      "description": "Classify the sentiment of text.",
+      "inputs": {
+        "text": {"modality": "text", "required": true}
+      },
+      "outputs": {
+        "text": {"modality": "text"}
+      }
+    },
+    {
+      "tool_id": "text_summarization",
+      "description": "Summarize text.",
+      "inputs": {
+        "text": {"modality": "text", "required": true}
+      },
+      "outputs": {
+        "text": {"modality": "text"}
+      }
+    }
+  ]
+}

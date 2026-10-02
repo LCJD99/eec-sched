@@ -5,18 +5,21 @@ defaults:
   - /evidence: fake_snapshot
   - /evaluation: canonical
   - /diagnosis: one_shot
+  - /loop: post_evaluation_diagnosis
   - /search: psocm
-  - /memory: empty
+  - /memory: in_run
   - /candidate_runtime: in_process
   - /model@models.diagnosis: local_diagnosis
   - /model@models.coding: local_coding
   - /artifacts: filesystem
+  - /experiment: null
   - _self_
   - override /hydra/job_logging: disabled
   - override /hydra/hydra_logging: disabled
 
 run:
-  experiment_name: 002_ablation_no_memory
+  experiment_name: 07_post_evaluation_diagnosis
+
 hydra:
   searchpath:
     - file://${oc.env:PWD}/configs

@@ -2,4 +2,4 @@
 defaults:
   - override /memory: empty
 run:
-  experiment_name: 002_ablation_no_memory
+  experiment_name: 05_ablation_no_memory

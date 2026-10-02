@@ -4,7 +4,7 @@ defaults:
   - /workflow: mnms
   - /evidence: fake_snapshot
   - /evaluation: canonical
-  - /diagnosis: one_shot
+  - /diagnosis: self_evolving
   - /loop: post_evaluation_diagnosis
   - /search: psocm
   - /memory: in_run
@@ -18,7 +18,7 @@ defaults:
   - override /hydra/hydra_logging: disabled
 
 run:
-  experiment_name: 004_post_evaluation_diagnosis
+  experiment_name: 08_self_evolving_diagnosis
 
 hydra:
   searchpath:

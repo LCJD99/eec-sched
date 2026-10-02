@@ -2,4 +2,4 @@
 defaults:
   - override /diagnosis: empty
 run:
-  experiment_name: 003_ablation_no_diagnosis
+  experiment_name: 06_ablation_no_diagnosis

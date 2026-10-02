@@ -12,7 +12,7 @@ from dataclasses import asdict
 from typing import Any, Callable
 from urllib.request import Request, urlopen
 
-from .domain import FinalOutput, InputSource, PlannerClient, PlanningRequest, ToolCallPlan, ToolNode, ToolSpec, ValidationError
+from .domain import FinalOutput, InputSource, PlannerClient, PlanningRequest, ToolCallPlan, ToolCallPlanCandidates, ToolNode, ToolSpec, ValidationError
 
 
 def plan_from_dict(value: dict[str, Any]) -> ToolCallPlan:
@@ -26,16 +26,34 @@ def plan_from_dict(value: dict[str, Any]) -> ToolCallPlan:
     return ToolCallPlan(nodes, tuple(FinalOutput(item["node_id"], item["port"]) for item in value["final_outputs"]))
 
 
+def plans_from_dict(value: dict[str, Any]) -> ToolCallPlanCandidates:
+    """Decode one Planner response containing exactly three alternatives."""
+    raw = value.get("dags", value.get("candidate_dags", value.get("plans")))
+    if not isinstance(raw, list):
+        # A single legacy Planner response is a valid fixed-path workload.
+        plan = plan_from_dict(value)
+        return ToolCallPlanCandidates((plan, plan, plan))
+    if len(raw) != 3 or any(not isinstance(item, dict) for item in raw):
+        raise ValueError("Planner response must contain exactly three DAG objects")
+    return ToolCallPlanCandidates(tuple(plan_from_dict(item) for item in raw))
+
+
 class OpenAICompatiblePlannerClient(PlannerClient):
     def __init__(self, base_url: str, api_key: str, model: str, transport: Callable[[str, str, dict[str, Any]], dict[str, Any]] | None = None) -> None:
         self.base_url, self.api_key, self.model = base_url.rstrip("/"), api_key, model
         self._transport = transport or self._post
 
     def plan(self, request: PlanningRequest, catalog: tuple[ToolSpec, ...], repair_errors: tuple[ValidationError, ...] = ()) -> ToolCallPlan:
+        return self._request(request, catalog, repair_errors, candidates=False).dags[0]
+
+    def plan_candidates(self, request: PlanningRequest, catalog: tuple[ToolSpec, ...], repair_errors: tuple[ValidationError, ...] = ()) -> ToolCallPlanCandidates:
+        return self._request(request, catalog, repair_errors, candidates=True)
+
+    def _request(self, request: PlanningRequest, catalog: tuple[ToolSpec, ...], repair_errors: tuple[ValidationError, ...], *, candidates: bool) -> ToolCallPlanCandidates:
         payload = {
             "model": self.model,
             "response_format": {"type": "json_object"},
-            "messages": [{"role": "system", "content": "Plan only tool IDs, named ports, input bindings, and final outputs. Never select model configurations."}, {"role": "user", "content": json.dumps({
+            "messages": [{"role": "system", "content": "Plan only tool IDs, named ports, input bindings, and final outputs. Never select model configurations. Return exactly three candidate DAGs under the `dags` key." if candidates else "Plan only tool IDs, named ports, input bindings, and final outputs. Never select model configurations."}, {"role": "user", "content": json.dumps({
                 "request": request.prompt,
                 "inputs": sorted(request.inputs),
                 "constraints": {"minimum_accuracy": request.minimum_accuracy, "maximum_latency_ms": request.maximum_latency_ms, "gamma": request.gamma},
@@ -44,7 +62,7 @@ class OpenAICompatiblePlannerClient(PlannerClient):
             })}],
         }
         response = self._transport(self.base_url + "/chat/completions", self.api_key, payload)
-        return plan_from_dict(json.loads(response["choices"][0]["message"]["content"]))
+        return plans_from_dict(json.loads(response["choices"][0]["message"]["content"]))
 
     @staticmethod
     def _post(url: str, api_key: str, payload: dict[str, Any]) -> dict[str, Any]:

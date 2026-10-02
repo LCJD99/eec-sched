@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from eec_sched.mnms_tools import mnms_tool_specs
-from eec_sched.profiling.snapshot import ProfilingDatabaseValidationError, load_profiling_database, snapshot_digest, validate_profiling_database
+from eec_sched.profiling.snapshot import ProfilingDatabaseValidationError, load_profiling_database, validate_profiling_database
 
 
 ROOT = Path(__file__).parents[1]
@@ -19,10 +19,6 @@ FAKE_DATABASE_PATH = ROOT / "docs/examples/profiling-database.fake.json"
 
 def _documents() -> tuple[dict[str, object], dict[str, object]]:
     return json.loads(FAKE_DATABASE_PATH.read_text(encoding="utf-8")), json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
-
-
-def _redigest(payload: dict[str, object]) -> None:
-    payload["snapshot_digest"] = snapshot_digest(payload)
 
 
 def _first_eligible_tool(payload: dict[str, object]) -> dict[str, object]:
@@ -92,14 +88,12 @@ def test_fake_database_generation_is_reproducible_and_fixture_is_current(tmp_pat
     assert json.loads(FAKE_DATABASE_PATH.read_text(encoding="utf-8")) == first
     assert first["data_kind"] == "synthetic"
     assert all(provenance["measurement_kind"] == "synthetic" for provenance in first["provenances"])
-    assert first["snapshot_digest"] == snapshot_digest(first)
 
 
 def test_compatible_devices_and_execution_profiles_must_match_exactly() -> None:
     payload, schema = _documents()
     tool = _first_eligible_tool(payload)
     tool["execution_profiles"] = tool["execution_profiles"][:-1]  # type: ignore[index]
-    _redigest(payload)
 
     with pytest.raises(ProfilingDatabaseValidationError, match="must exactly match compatible devices"):
         validate_profiling_database(payload, schema)
@@ -108,7 +102,6 @@ def test_compatible_devices_and_execution_profiles_must_match_exactly() -> None:
 def test_all_six_directed_transfer_profiles_are_required() -> None:
     payload, schema = _documents()
     payload["transfer_profiles"] = payload["transfer_profiles"][:-1]  # type: ignore[index]
-    _redigest(payload)
 
     with pytest.raises(ProfilingDatabaseValidationError, match="too short"):
         validate_profiling_database(payload, schema)
@@ -117,17 +110,19 @@ def test_all_six_directed_transfer_profiles_are_required() -> None:
 def test_unknown_fields_are_rejected_by_schema() -> None:
     payload, schema = _documents()
     payload["untrusted_evaluator_override"] = True
-    _redigest(payload)
 
     with pytest.raises(ProfilingDatabaseValidationError, match="Additional properties are not allowed"):
         validate_profiling_database(payload, schema)
 
 
-def test_digest_detects_changed_measurements() -> None:
+def test_loading_does_not_verify_sha256_after_measurement_change(tmp_path: Path) -> None:
     payload, schema = _documents()
     changed = copy.deepcopy(payload)
     tool = _first_eligible_tool(changed)
     tool["execution_profiles"][0]["warm_latency_p95_ms"] = 1.0  # type: ignore[index]
+    changed["snapshot_digest"] = "unverified-identifier"
 
-    with pytest.raises(ProfilingDatabaseValidationError, match="snapshot_digest mismatch"):
-        validate_profiling_database(changed, schema)
+    validate_profiling_database(changed, schema)
+    path = tmp_path / "changed.json"
+    path.write_text(json.dumps(changed), encoding="utf-8")
+    assert load_profiling_database(path, SCHEMA_PATH).snapshot_digest == "unverified-identifier"

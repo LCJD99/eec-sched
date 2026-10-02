@@ -17,8 +17,16 @@ from .domain import (
     FinalOutput,
     InputSource,
     PlanningRequest,
+    PlannerCandidates,
+    PlannerOutput,
     Port,
+    SchedulerDecision,
+    SchedulerOutput,
+    SchedulerResult,
+    ScheduledDAG,
+    ScheduledPlan,
     ToolCallPlan,
+    ToolCallPlanCandidates,
     ToolNode,
     ToolRegistry,
     ToolSpec,
@@ -45,6 +53,7 @@ from .evolution import (
 )
 from .mnms_tools import HUGGINGFACE_MODEL_IDS, MNMS_MODELS, MnmsToolRunner, mnms_tool_specs, register_mnms_tools
 from .openai_compatible import OpenAICompatiblePlannerClient
+from .planning import validate_plan_candidates
 from .profiling import (
     AccuracyProfile,
     EvaluationSample,

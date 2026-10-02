@@ -17,9 +17,9 @@ def test_in_memory_artifact_store_records_events_and_result() -> None:
 def test_in_memory_artifact_store_can_capture_composed_config() -> None:
     store = InMemoryArtifactStore()
 
-    store.write_config({"run": {"experiment_name": "001_baseline"}})
+    store.write_config({"run": {"experiment_name": "04_baseline"}})
 
-    assert store.config == {"run": {"experiment_name": "001_baseline"}}
+    assert store.config == {"run": {"experiment_name": "04_baseline"}}
 
 
 def test_jsonl_artifact_store_uses_one_run_identifier(tmp_path) -> None:
@@ -33,12 +33,12 @@ def test_jsonl_artifact_store_uses_one_run_identifier(tmp_path) -> None:
 
 
 def test_jsonl_artifact_store_creates_a_complete_fresh_run_record(tmp_path) -> None:
-    store = JsonlArtifactStore(tmp_path, experiment_name="001_baseline")
-    config_path = store.write_config({"run": {"experiment_name": "001_baseline"}})
+    store = JsonlArtifactStore(tmp_path, experiment_name="04_baseline")
+    config_path = store.write_config({"run": {"experiment_name": "04_baseline"}})
     store.append_event("candidate", {"version": 1})
     result_path = store.write_result({"winner": 1})
 
-    assert re.fullmatch(r"001_baseline_\d{8}T\d{6}", store.run_dir.name)
+    assert re.fullmatch(r"04_baseline_\d{8}T\d{6}", store.run_dir.name)
     assert list(tmp_path.iterdir()) == [store.run_dir]
     assert config_path == store.run_dir / "config.yaml"
     assert result_path.parent == store.run_dir
@@ -46,10 +46,10 @@ def test_jsonl_artifact_store_creates_a_complete_fresh_run_record(tmp_path) -> N
 
 
 def test_jsonl_artifact_store_never_reuses_an_explicit_run_directory(tmp_path) -> None:
-    JsonlArtifactStore(tmp_path, run_id="001_baseline_20260904T000000")
+    JsonlArtifactStore(tmp_path, run_id="04_baseline_20260904T000000")
 
     try:
-        JsonlArtifactStore(tmp_path, run_id="001_baseline_20260904T000000")
+        JsonlArtifactStore(tmp_path, run_id="04_baseline_20260904T000000")
     except FileExistsError:
         pass
     else:

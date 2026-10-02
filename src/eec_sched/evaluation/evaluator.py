@@ -11,7 +11,7 @@ from math import isfinite
 from time import perf_counter
 from typing import Any, Callable, Mapping, Protocol, Sequence, cast
 
-from ..domain import ToolCallPlan
+from ..domain import SchedulerOutput, ToolCallPlan, ToolCallPlanCandidates
 from ..profiling.snapshot import ProfilingDatabaseSnapshot
 from .models import EvaluationReport, NodeAssignment
 from .scoring import ScoringContext, accuracy, composite_score, raw_accuracy_metrics, resource
@@ -19,7 +19,64 @@ from .simulator import simulate
 
 
 class Scheduler(Protocol):
-    def schedule(self, dag: ToolCallPlan) -> Mapping[str, Any] | Sequence[Any]: ...
+    def schedule(self, dags: ToolCallPlanCandidates) -> SchedulerOutput | Mapping[str, Any] | Sequence[Any]: ...
+
+
+def normalize_candidates(
+    dag: ToolCallPlan | ToolCallPlanCandidates | Sequence[ToolCallPlan],
+) -> ToolCallPlanCandidates:
+    """Normalize legacy single-DAG and new three-DAG evaluator inputs."""
+    if isinstance(dag, ToolCallPlanCandidates):
+        return dag
+    if isinstance(dag, ToolCallPlan):
+        return ToolCallPlanCandidates((dag, dag, dag))
+    if isinstance(dag, Sequence) and not isinstance(dag, (str, bytes)):
+        plans = tuple(dag)
+        if len(plans) == 1 and isinstance(plans[0], ToolCallPlan):
+            plans = (plans[0], plans[0], plans[0])
+        return ToolCallPlanCandidates(plans)
+    raise TypeError("evaluator input must be a ToolCallPlan or exactly three ToolCallPlans")
+
+
+def parse_scheduler_output(
+    result: Any,
+    candidates: ToolCallPlanCandidates,
+    errors: list[str],
+) -> tuple[ToolCallPlan, Mapping[str, Any], int | None]:
+    """Extract selected DAG metadata while retaining v1 mapping support."""
+    selected_dag: ToolCallPlan = candidates.dags[0]
+    path_index: int | None = 0
+    assignments: Any = result
+    if isinstance(result, SchedulerOutput):
+        selected_dag, assignments, path_index = result.dag, result.assignments, result.path_index
+    elif isinstance(result, Mapping) and any(key in result for key in ("dag", "selected_dag", "assignments", "path_index")):
+        raw_dag = result.get("dag", result.get("selected_dag"))
+        if raw_dag is not None:
+            selected_dag = raw_dag
+        assignments = result.get("assignments", result.get("nodes", {}))
+        path_index = result.get("path_index", result.get("selected_path_index"))
+    elif isinstance(result, Sequence) and not isinstance(result, (str, bytes)) and len(result) == 2 and isinstance(result[0], ToolCallPlan):
+        selected_dag, assignments = result[0], result[1]
+        path_index = None
+
+    if not isinstance(selected_dag, ToolCallPlan):
+        errors.append("scheduler selected dag must be a ToolCallPlan")
+        selected_dag = candidates.dags[0]
+    matching = [index for index, candidate in enumerate(candidates.dags) if candidate == selected_dag]
+    if not matching:
+        errors.append("scheduler selected dag is not one of the Planner candidates")
+        path_index = None
+    elif path_index is None:
+        path_index = matching[0]
+    elif not isinstance(path_index, int) or isinstance(path_index, bool) or not 0 <= path_index < len(candidates.dags):
+        errors.append("scheduler path_index must be 0, 1, or 2")
+        path_index = None
+    elif candidates.dags[path_index] != selected_dag:
+        errors.append("scheduler path_index does not identify the selected dag")
+    if matching and path_index is not None and 0 <= path_index < len(candidates.dags) and candidates.dags[path_index] == selected_dag:
+        # Simulate the immutable Planner copy, never a caller-owned DAG object.
+        selected_dag = candidates.dags[path_index]
+    return selected_dag, assignments, path_index
 
 
 def parse_assignments(result: Any, node_ids: tuple[str, ...], errors: list[str]) -> dict[str, NodeAssignment]:
@@ -66,6 +123,9 @@ def _invalid(
     *errors: str,
     assignments: Mapping[str, NodeAssignment] | None = None,
     scheduler_solving_time_ms: float | None = None,
+    selected_path_index: int | None = None,
+    selected_dag: ToolCallPlan | None = None,
+    candidate_dags: tuple[ToolCallPlan, ...] = (),
 ) -> EvaluationReport:
     return EvaluationReport(
         snapshot.snapshot_digest,
@@ -73,6 +133,9 @@ def _invalid(
         tuple(errors),
         assignments or {},
         scheduler_solving_time_ms=scheduler_solving_time_ms,
+        selected_path_index=selected_path_index,
+        selected_dag=selected_dag,
+        candidate_dags=candidate_dags,
     )
 
 
@@ -136,6 +199,9 @@ def _evaluate_assignments(
     scoring_context: ScoringContext,
     scheduler_computation_time_ms: float,
     simulator,
+    selected_path_index: int | None = None,
+    selected_dag: ToolCallPlan | None = None,
+    candidate_dags: tuple[ToolCallPlan, ...] = (),
 ) -> EvaluationReport:
     """Implementation shared by scheduler and counterfactual evaluation."""
     errors: list[str] = []
@@ -152,6 +218,9 @@ def _evaluate_assignments(
             *errors,
             assignments=validated,
             scheduler_solving_time_ms=scheduler_computation_time_ms,
+            selected_path_index=selected_path_index,
+            selected_dag=selected_dag or dag,
+            candidate_dags=candidate_dags or (dag, dag, dag),
         )
 
     from .models import TrustedEvaluationError
@@ -193,12 +262,15 @@ def _evaluate_assignments(
         latency=latency_value,
         resource=resource_value,
         composite_score=composite,
+        selected_path_index=selected_path_index,
+        selected_dag=selected_dag or dag,
+        candidate_dags=candidate_dags or (dag, dag, dag),
     )
 
 
 def evaluate_assignments(
     snapshot: ProfilingDatabaseSnapshot,
-    dag: ToolCallPlan,
+    dag: ToolCallPlan | ToolCallPlanCandidates | Sequence[ToolCallPlan],
     assignments: Mapping[str, NodeAssignment],
     *,
     scoring_context: ScoringContext | None = None,
@@ -211,19 +283,24 @@ def evaluate_assignments(
     refer to a compatible, profiled Configuration/Device pair.  Invalid input
     returns a rejected report; trusted simulator failures remain errors.
     """
+    candidates = normalize_candidates(dag)
+    selected = candidates.dags[0]
     return _evaluate_assignments(
         snapshot,
-        dag,
+        selected,
         assignments,
         scoring_context=scoring_context or ScoringContext(),
         scheduler_computation_time_ms=scheduler_computation_time_ms,
         simulator=simulate,
+        selected_path_index=0,
+        selected_dag=selected,
+        candidate_dags=candidates.dags,
     )
 
 
 def evaluate_scheduler_instance(
     snapshot: ProfilingDatabaseSnapshot,
-    dag: ToolCallPlan,
+    dag: ToolCallPlan | ToolCallPlanCandidates | Sequence[ToolCallPlan],
     scheduler: Scheduler | Any,
     *,
     scoring_context: ScoringContext | None = None,
@@ -236,30 +313,40 @@ def evaluate_scheduler_instance(
     if _simulator is None:
         _simulator = simulate
     scoring_context = scoring_context or ScoringContext()
+    candidates = normalize_candidates(dag)
     errors: list[str] = []
-    node_ids = tuple(node.node_id for node in dag.nodes)
+    # Node IDs are checked after path selection.  Alternatives may use
+    # different node sets, but only the chosen path is ever simulated.
+    node_ids = tuple(node.node_id for node in candidates.dags[0].nodes)
     if len(set(node_ids)) != len(node_ids):
         errors.append("duplicate node_id in DAG")
     started = _clock()
     try:
         result = (
-            scheduler.schedule(dag)
+            scheduler.schedule(candidates)
             if hasattr(scheduler, "schedule")
-            else cast(Callable[[ToolCallPlan], object], scheduler)(dag)
+            else cast(Callable[[ToolCallPlanCandidates], object], scheduler)(candidates)
         )
     except Exception as exc:
-        return _invalid(snapshot, f"scheduler_exception: {type(exc).__name__}: {exc}", scheduler_solving_time_ms=(_clock() - started) * 1000.0)
+        return _invalid(snapshot, f"scheduler_exception: {type(exc).__name__}: {exc}", scheduler_solving_time_ms=(_clock() - started) * 1000.0, candidate_dags=candidates.dags)
     measured_time = (_clock() - started) * 1000.0
-    assignments = parse_assignments(result, node_ids, errors)
+    selected_dag, raw_assignments, path_index = parse_scheduler_output(result, candidates, errors)
+    node_ids = tuple(node.node_id for node in selected_dag.nodes)
+    if len(set(node_ids)) != len(node_ids):
+        errors.append("duplicate node_id in selected DAG")
+    assignments = parse_assignments(raw_assignments, node_ids, errors)
     if errors:
-        return _invalid(snapshot, *errors, assignments=assignments, scheduler_solving_time_ms=measured_time)
+        return _invalid(snapshot, *errors, assignments=assignments, scheduler_solving_time_ms=measured_time, selected_path_index=path_index, selected_dag=selected_dag, candidate_dags=candidates.dags)
     return _evaluate_assignments(
         snapshot,
-        dag,
+        selected_dag,
         assignments,
         scoring_context=scoring_context,
         scheduler_computation_time_ms=measured_time,
         simulator=_simulator,
+        selected_path_index=path_index,
+        selected_dag=selected_dag,
+        candidate_dags=candidates.dags,
     )
 
 

@@ -1,4 +1,4 @@
-experiment_name: 001_baseline
+experiment_name: 04_baseline
 runs_root: ${hydra:runtime.cwd}/runs
 rounds: 3
 seed: 42

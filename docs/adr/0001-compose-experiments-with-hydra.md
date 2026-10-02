@@ -25,7 +25,7 @@ Shared Hydra options live under the repository-level `configs/` directory.
 Each runnable experiment owns its composition root at
 `experiments/<NNN_name>/config.yaml`; the packaged Python source tree does not
 own experiment configuration. The evolution entry point defaults to
-`experiments/001_baseline/config.yaml`, and another experiment can be selected
+`experiments/04_baseline/config.yaml`, and another experiment can be selected
 with Hydra's `--config-name` option.
 
 Each execution creates a new `runs/<NNN_name>_<YYYYMMDDTHHmmss>/` directory.

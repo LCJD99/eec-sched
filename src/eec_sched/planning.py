@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from importlib import import_module
 
-from .domain import PlanningRequest, ToolCallPlan, ToolRegistry, ValidationError
+from .domain import PlanningRequest, ToolCallPlan, ToolCallPlanCandidates, ToolRegistry, ValidationError
 
 
 def _request_modality(value: object) -> str | None:
@@ -84,6 +84,22 @@ def validate_plan(plan: ToolCallPlan, request: PlanningRequest, registry: ToolRe
         if node is None or not registry.contains(node.tool_id) or final.port not in registry.spec(node.tool_id).outputs:
             errors.append(ValidationError("invalid_final_output", f"{final.node_id}.{final.port} is not an output"))
     return tuple(errors)
+
+
+def validate_plan_candidates(
+    candidates: ToolCallPlanCandidates,
+    request: PlanningRequest,
+    registry: ToolRegistry,
+) -> tuple[tuple[ValidationError, ...], ...]:
+    """Validate every Planner alternative independently.
+
+    Validation is deliberately per path: repeated candidates are allowed and
+    remain useful for a deterministic baseline comparison, while an invalid
+    path cannot be hidden by another valid path.
+    """
+    if not isinstance(candidates, ToolCallPlanCandidates):
+        raise TypeError("candidates must be ToolCallPlanCandidates")
+    return tuple(validate_plan(plan, request, registry) for plan in candidates.dags)
 
 
 def topological_nodes(plan: ToolCallPlan) -> tuple[str, ...]:

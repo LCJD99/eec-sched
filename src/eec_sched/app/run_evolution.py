@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 from ..artifacts import ArtifactStore
 from ..candidate import SchedulerProposal, SchedulerView
 from ..diagnosis import DiagnosisResult, EmptyDiagnosis, ReactDiagnosis
+from ..diagnosis.agents import SelfEvolvingDiagnosis
+from ..diagnosis.tool_evolution import DiagnosisToolStore
+from ..diagnosis.tools import BottleneckMetaTools
 from ..evolution import (
     CandidateEvaluation,
     CandidateGenerationRequest,
@@ -40,7 +43,7 @@ from ..evolution import (
     evaluate_scheduler_candidate,
 )
 from ..llm import OpenAICompatibleChatModel
-from ..profiling.snapshot import load_profiling_database
+from ..profiling.snapshot import ProfilingDatabaseSnapshot, load_profiling_database
 from ..workflow import ToolCallPlanDataset
 
 
@@ -50,7 +53,9 @@ _SECRET_CONFIG_KEYS = {"token", "api_key", "password", "secret"}
 
 def _jsonable(value: object) -> object:
     if is_dataclass(value) and not isinstance(value, type):
-        return {item.name: _jsonable(getattr(value, item.name)) for item in fields(value)}
+        return {
+            item.name: _jsonable(getattr(value, item.name)) for item in fields(value)
+        }
     if isinstance(value, Mapping):
         return {str(key): _jsonable(item) for key, item in value.items()}
     if isinstance(value, tuple | list):
@@ -60,7 +65,9 @@ def _jsonable(value: object) -> object:
     raise TypeError(f"cannot serialize {type(value).__name__} for an Evolution Agent")
 
 
-def _compile_candidate(source_code: str, source_name: str) -> Callable[[SchedulerView], SchedulerProposal]:
+def _compile_candidate(
+    source_code: str, source_name: str
+) -> Callable[[SchedulerView], SchedulerProposal]:
     compiled = compile(source_code, source_name, "exec")
 
     def propose(view: SchedulerView) -> SchedulerProposal:
@@ -74,7 +81,9 @@ def _compile_candidate(source_code: str, source_name: str) -> Callable[[Schedule
     return propose
 
 
-def load_candidate(source: str | Path, scheduler_version: int, description: str) -> SchedulerCandidate:
+def load_candidate(
+    source: str | Path, scheduler_version: int, description: str
+) -> SchedulerCandidate:
     path = Path(source)
     source_code = path.read_text(encoding="utf-8")
     return SchedulerCandidate(
@@ -107,9 +116,15 @@ def build_agents(
                 user={"candidate_evaluation_evidence": evidence},
             )
         elif diagnosis_kind == "react":
-            advice = ReactDiagnosis(
-                diagnosis_model.base_url, diagnosis_model.token, diagnosis_model.model
-            ).diagnose(evidence).advice
+            advice = (
+                ReactDiagnosis(
+                    diagnosis_model.base_url,
+                    diagnosis_model.token,
+                    diagnosis_model.model,
+                )
+                .diagnose(evidence)
+                .advice
+            )
         else:
             raise ValueError(f"unknown diagnosis adapter: {diagnosis_kind}")
         artifacts.append_event("diagnosis", {"input": evidence, "advice": advice})
@@ -130,8 +145,13 @@ def build_agents(
             value = json.loads(content)
         except json.JSONDecodeError as exc:
             raise ValueError("Coding Agent must return a JSON object") from exc
-        if not isinstance(value, dict) or set(value) != {"source_code", "strategy_description"}:
-            raise ValueError("Coding Agent must return only source_code and strategy_description")
+        if not isinstance(value, dict) or set(value) != {
+            "source_code",
+            "strategy_description",
+        }:
+            raise ValueError(
+                "Coding Agent must return only source_code and strategy_description"
+            )
         source_code, description = value["source_code"], value["strategy_description"]
         if not isinstance(source_code, str) or not isinstance(description, str):
             raise ValueError("Coding Agent fields must be strings")
@@ -152,8 +172,42 @@ def build_structured_diagnosis_agent(
     diagnosis_model: OpenAICompatibleChatModel,
     *,
     empty_diagnosis_advice: str = "",
+    snapshot: ProfilingDatabaseSnapshot | None = None,
+    scoring_context: ScoringContext | None = None,
+    state_dir: str | Path | None = None,
+    history_limit: int = 5,
+    generated_tool_limit: int = 5,
+    trace_limit: int = 3,
 ) -> Callable[[Mapping[str, object]], DiagnosisResult]:
     """Compose the post-evaluation Diagnosis seam without artifact side effects."""
+    if diagnosis_kind == "self_evolving":
+        if snapshot is None:
+            raise ValueError("self_evolving diagnosis requires the profiling snapshot")
+        if state_dir is None:
+            state_dir = Path("outputs") / "diagnosis-tools" / "run"
+        tool_store = DiagnosisToolStore(
+            state_dir, recent_limit=max(history_limit, generated_tool_limit)
+        )
+
+        def provider(
+            evidence: Mapping[str, object], **_: object
+        ) -> BottleneckMetaTools:
+            return BottleneckMetaTools(
+                document=evidence,
+                snapshot=snapshot,
+                scoring_context=scoring_context,
+            )
+
+        agent = SelfEvolvingDiagnosis(
+            diagnosis_model,
+            tool_store=tool_store,
+            tool_provider=provider,
+            history_limit=history_limit,
+            generated_tool_limit=generated_tool_limit,
+            trace_limit=trace_limit,
+        )
+        return agent.diagnose
+
     def diagnose(evidence: Mapping[str, object]) -> DiagnosisResult:
         if diagnosis_kind == "empty":
             return EmptyDiagnosis(empty_diagnosis_advice).diagnose(evidence)
@@ -182,7 +236,9 @@ def _split(dataset: ToolCallPlanDataset, name: str):
     if name == "all":
         return dataset.traces
     value = dataset.split()
-    return {"train": value.train, "validation": value.validation, "test": value.test}[name]
+    return {"train": value.train, "validation": value.validation, "test": value.test}[
+        name
+    ]
 
 
 def _result_json(result: EvolutionLoopResult) -> dict[str, object]:
@@ -223,7 +279,10 @@ def _redact_config(value: object, *, key: str | None = None) -> object:
     if key is not None and key.lower() in _SECRET_CONFIG_KEYS:
         return "<redacted>"
     if isinstance(value, Mapping):
-        return {str(item_key): _redact_config(item, key=str(item_key)) for item_key, item in value.items()}
+        return {
+            str(item_key): _redact_config(item, key=str(item_key))
+            for item_key, item in value.items()
+        }
     if isinstance(value, tuple | list):
         return [_redact_config(item) for item in value]
     return value
@@ -247,7 +306,9 @@ def run(config: DictConfig) -> Path | None:
     artifacts = cast(ArtifactStore, instantiate(config.artifacts))
     resolved_config = _resolved_config(config)
     artifacts.write_config(resolved_config)
-    diagnosis_model = cast(OpenAICompatibleChatModel, instantiate(config.models.diagnosis))
+    diagnosis_model = cast(
+        OpenAICompatibleChatModel, instantiate(config.models.diagnosis)
+    )
     coding_model = cast(OpenAICompatibleChatModel, instantiate(config.models.coding))
     reflection_agent, coding_agent = build_agents(
         config.diagnosis.kind,
@@ -256,15 +317,25 @@ def run(config: DictConfig) -> Path | None:
         artifacts,
         empty_diagnosis_advice=config.diagnosis.get("advice", ""),
     )
-    snapshot = load_profiling_database(Path(config.evidence.database), Path(config.evidence.schema))
+    snapshot = load_profiling_database(
+        Path(config.evidence.database), Path(config.evidence.schema)
+    )
     dataset = ToolCallPlanDataset.load(config.workflow.dataset)
     evolution_traces = _split(dataset, config.run.evolution_split)
     final_traces = _split(dataset, config.run.final_split)
     roots = tuple(
-        load_candidate(item.source, item.scheduler_version, f"root Candidate loaded from {item.source}")
+        load_candidate(
+            item.source,
+            item.scheduler_version,
+            f"root Candidate loaded from {item.source}",
+        )
         for item in config.run.root_candidates
     )
-    oracle = load_candidate(config.run.oracle_source, config.run.oracle_version, "Oracle reference Candidate")
+    oracle = load_candidate(
+        config.run.oracle_source,
+        config.run.oracle_version,
+        "Oracle reference Candidate",
+    )
     scoring_context = ScoringContext(
         accuracy_weight=float(config.evaluation.accuracy_weight),
         latency_weight=float(config.evaluation.latency_weight),
@@ -299,7 +370,9 @@ def run(config: DictConfig) -> Path | None:
 
     if config.candidate_runtime.kind != "in_process":
         raise ValueError(f"unknown Candidate runtime: {config.candidate_runtime.kind}")
-    evolution_package._CANDIDATE_TIMEOUT_SECONDS = float(config.candidate_runtime.timeout_seconds)
+    evolution_package._CANDIDATE_TIMEOUT_SECONDS = float(
+        config.candidate_runtime.timeout_seconds
+    )
 
     def trusted(current_snapshot, trace, candidate) -> TraceEvaluation:
         value = evaluate_scheduler_candidate(
@@ -343,15 +416,27 @@ def run(config: DictConfig) -> Path | None:
             mutation_parent_selector=mutation_selector,
             crossover_parent_selector=crossover_selector,
             behavior_descriptor=descriptor,
-            operator_selector=ProbabilisticOperatorSelector(config.search.mutation_probability),
+            operator_selector=ProbabilisticOperatorSelector(
+                config.search.mutation_probability
+            ),
             repertoire=repertoire,
             memory=memory,
         )
     elif loop_kind == "post_evaluation_diagnosis":
+        diagnosis_state_dir = config.diagnosis.get(
+            "state_dir",
+            Path("outputs") / "diagnosis-tools" / str(config.run.experiment_name),
+        )
         diagnosis_agent = build_structured_diagnosis_agent(
             config.diagnosis.kind,
             diagnosis_model,
             empty_diagnosis_advice=config.diagnosis.get("advice", ""),
+            snapshot=snapshot,
+            scoring_context=scoring_context,
+            state_dir=diagnosis_state_dir,
+            history_limit=int(config.diagnosis.get("history_limit", 5)),
+            generated_tool_limit=int(config.diagnosis.get("generated_tool_limit", 5)),
+            trace_limit=int(config.diagnosis.get("trace_limit", 3)),
         )
 
         def record_event(event: Mapping[str, object]) -> None:
@@ -380,7 +465,9 @@ def run(config: DictConfig) -> Path | None:
             mutation_parent_selector=mutation_selector,
             crossover_parent_selector=crossover_selector,
             behavior_descriptor=descriptor,
-            operator_selector=ProbabilisticOperatorSelector(config.search.mutation_probability),
+            operator_selector=ProbabilisticOperatorSelector(
+                config.search.mutation_probability
+            ),
             repertoire=repertoire,
             memory=memory,
             trace_recorder=record_event,
@@ -404,7 +491,7 @@ def run(config: DictConfig) -> Path | None:
 @hydra.main(
     version_base=None,
     config_path=str(PROJECT_ROOT),
-    config_name="experiments/001_baseline/config",
+    config_name="experiments/04_baseline/config",
 )
 def main(config: DictConfig) -> None:
     result_path = run(config)

@@ -1,4 +1,11 @@
-# 实验 03 实现方案
+# 实验 03 实现方案（历史草案）
+
+> 本文件记录早期 MnMS 专用实现方案，当前不作为实现要求。Tool Planner 已改为
+> 数据集无关的离线批处理模块：输入是严格的 `id`/`request` JSONL 与独立 tool
+> catalog，system prompt 驱动一次调用返回三条 DAG，不做修复重试。请以
+> [`docs/evaluation-pipeline.md`](../../docs/evaluation-pipeline.md) 和
+> [`run.py`](../09_offline_tool_planning/run.py) 为准；下面涉及固定 MnMS revision、参考计划、placeholder
+> loader 和修复循环的段落仅供历史追溯。
 
 ## 结论
 

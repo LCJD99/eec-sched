@@ -11,6 +11,8 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Mapping
 
+from ..domain import ToolCallPlan
+
 
 @dataclass(frozen=True)
 class NodeAssignment:
@@ -61,10 +63,22 @@ class EvaluationReport:
     latency: float | None = None
     resource: float | None = None
     composite_score: float | None = None
+    # Planner/Scheduler path evidence.  ``selected_dag`` is the exact
+    # device-independent path that was simulated; ``candidate_dags`` records
+    # the frozen alternatives used for selection.
+    selected_path_index: int | None = None
+    selected_dag: ToolCallPlan | None = None
+    candidate_dags: tuple[ToolCallPlan, ...] = ()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "assignments", MappingProxyType(dict(self.assignments)))
         object.__setattr__(self, "raw_accuracy_metrics", MappingProxyType(dict(self.raw_accuracy_metrics)))
+        object.__setattr__(self, "candidate_dags", tuple(self.candidate_dags))
+
+    @property
+    def dag(self) -> ToolCallPlan | None:
+        """Compatibility alias for the selected concrete DAG."""
+        return self.selected_dag
 
     @property
     def raw_metrics(self) -> Mapping[str, object]:
