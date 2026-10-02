@@ -14,7 +14,7 @@ def main() -> int:
     parser.add_argument("--schema", type=Path, default=Path("docs/schemas/profiling-database.schema.json"))
     args = parser.parse_args()
     snapshot = load_profiling_database(args.database, args.schema)
-    print(f"valid {snapshot.snapshot_id} {snapshot.snapshot_digest}")
+    print(f"valid {snapshot.snapshot_id}")
     return 0
 
 

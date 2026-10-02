@@ -86,7 +86,10 @@ def trace_projection(record: TraceEvaluation) -> dict[str, object]:
         metrics["raw_accuracy_metrics"] = dict(record.report.raw_accuracy_metrics)
     return {
         "trace_id": record.trace.trace_id,
-        "dag": dag_projection(record.trace.dag),
+        "system_state": dict(record.trace.system_state),
+        "dag": dag_projection(record.selected_dag or record.trace.dag),
+        "candidate_dags": [dag_projection(dag) for dag in record.trace.candidate_dags],
+        "selected_path_index": record.selected_path_index,
         "status": record.status,
         "score": record.score_contribution,
         "metrics": metrics,
