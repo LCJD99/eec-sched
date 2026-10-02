@@ -14,7 +14,7 @@ schema_path: docs/schemas/tool-call-dag.schema.json
 # is rejected to prevent accidental reruns from overwriting paid results.
 output_dir: null
 prompt_version: tool-planner-v2
-limit: 1
+limit: 300
 item_id: null
 
 hydra:
