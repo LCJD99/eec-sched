@@ -1,4 +1,4 @@
-"""Generate canonical three-DAG workload records with one LLM call per item.
+"""Generate canonical three-DAG workload records with concurrent LLM requests.
 
 Example::
 
@@ -99,6 +99,7 @@ def run_from_config(config: DictConfig) -> object:
         model_name=str(model_config.model),
         endpoint=str(model_config.base_url),
         prompt_version=str(config.prompt_version),
+        batch_size=int(config.get("batch_size", 8)),
         limit=int(config.limit) if config.get("limit") is not None else None,
         item_id=str(config.item_id) if config.get("item_id") else None,
         schema_path=schema_path,
