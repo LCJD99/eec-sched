@@ -19,7 +19,8 @@ class ScoringContext:
     The context contains no workload SLA or feasibility gate. Accuracy is
     maximized, while latency and resource (GPU memory) are minimized. The
     scales only make the latter two raw measurements dimensionless; they do
-    not describe limits that a proposal must satisfy.
+    not describe limits that a proposal must satisfy. ``beta`` is the
+    provisional bonus per additional node on the longest selected DAG path.
     """
 
     accuracy_weight: float = 1.0 / 3.0
@@ -27,6 +28,7 @@ class ScoringContext:
     resource_weight: float = 1.0 / 3.0
     latency_scale_ms: float = 100.0
     resource_scale_mib: float = 8192.0
+    beta: float = 0.01
 
     def __post_init__(self) -> None:
         weights = (
@@ -42,6 +44,8 @@ class ScoringContext:
             raise ValueError("latency_scale_ms must be finite and positive")
         if not isfinite(self.resource_scale_mib) or self.resource_scale_mib <= 0.0:
             raise ValueError("resource_scale_mib must be finite and positive")
+        if not isfinite(self.beta) or self.beta < 0.0:
+            raise ValueError("beta must be finite and non-negative")
 
     @property
     def normalized_weights(self) -> tuple[float, float, float]:
@@ -57,23 +61,41 @@ def accuracy(
     snapshot: ProfilingDatabaseSnapshot,
     dag: ToolCallPlan,
     assignments: Mapping[str, NodeAssignment],
+    scoring_context: ScoringContext | None = None,
 ) -> float:
-    """Multiply quality lower confidence bounds on the output dependency cone."""
+    """Score all selected DAG nodes with a mean quality and path bonus.
+
+    The provisional policy is ``min(1, mean(q_v) + beta * (L - 1))`` where
+    ``L`` is the node count on the longest dependency path in the selected
+    DAG.  It deliberately uses every selected node, including disconnected
+    nodes, as the quality evidence for this evaluation stage.
+    """
+    context = scoring_context or ScoringContext()
     graph = predecessors(dag)
-    required = {output.node_id for output in dag.final_outputs}
-    stack = list(required)
-    while stack:
-        current = stack.pop()
-        for parent in graph[current]:
-            if parent not in required:
-                required.add(parent)
-                stack.append(parent)
     by_id = {node.node_id: node for node in dag.nodes}
-    result = 1.0
-    for node_id in sorted(required):
+    qualities = []
+    for node_id in sorted(by_id):
         assignment = assignments[node_id]
-        result *= snapshot.quality_profile(by_id[node_id].tool_id, assignment.configuration_id).normalized_quality_lcb
-    return result
+        qualities.append(
+            snapshot.quality_profile(
+                by_id[node_id].tool_id, assignment.configuration_id
+            ).normalized_quality_lcb
+        )
+    if not qualities:
+        return 0.0
+    path_lengths: dict[str, int] = {}
+
+    def longest_path(node_id: str) -> int:
+        if node_id in path_lengths:
+            return path_lengths[node_id]
+        path_lengths[node_id] = 1 + max(
+            (longest_path(parent) for parent in graph[node_id]),
+            default=0,
+        )
+        return path_lengths[node_id]
+
+    longest = max(longest_path(node_id) for node_id in by_id)
+    return min(1.0, sum(qualities) / len(qualities) + context.beta * (longest - 1))
 
 
 def raw_accuracy_metrics(
@@ -81,16 +103,7 @@ def raw_accuracy_metrics(
     dag: ToolCallPlan,
     assignments: Mapping[str, NodeAssignment],
 ) -> Mapping[str, float]:
-    """Return raw quality metrics for every accuracy-relevant DAG node."""
-    graph = predecessors(dag)
-    required = {output.node_id for output in dag.final_outputs}
-    stack = list(required)
-    while stack:
-        current = stack.pop()
-        for parent in graph[current]:
-            if parent not in required:
-                required.add(parent)
-                stack.append(parent)
+    """Return raw quality metrics for every selected DAG node."""
     by_id = {node.node_id: node for node in dag.nodes}
     return {
         node_id: float(
@@ -98,7 +111,7 @@ def raw_accuracy_metrics(
                 by_id[node_id].tool_id, assignments[node_id].configuration_id
             ).raw_metric["point_estimate"]
         )
-        for node_id in sorted(required)
+        for node_id in sorted(by_id)
     }
 
 

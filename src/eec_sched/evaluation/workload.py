@@ -25,7 +25,7 @@ from .evaluator import (
     parse_scheduler_output,
 )
 from .models import NodeAssignment, TrustedEvaluationError
-from .scoring import ScoringContext
+from .scoring import ScoringContext, accuracy
 from .simulator import END_DEVICE_ID, FIXED_DATA_SIZE_BYTES, transfer_latency
 
 if TYPE_CHECKING:
@@ -99,6 +99,7 @@ class WorkloadRequest:
     nodes: tuple[WorkloadNode, ...]
     transfers: tuple[WorkloadTransfer, ...]
     scheduler_computation_time_ms: float | None
+    quality: float | None = None
     reason: str | None = None
 
     @property
@@ -161,6 +162,8 @@ class _NodeState:
 class _RequestState:
     trace: EvaluationTrace
     arrival_time_ms: float
+    activation_time_ms: float | None = None
+    activated: bool = False
     selected_dag: ToolCallPlan | None = None
     selected_path_index: int | None = None
     assignments: dict[str, NodeAssignment] = field(default_factory=dict)
@@ -276,7 +279,12 @@ class _Replay:
         self.resource(operation.resource_key).mark_ready(operation, self.now)
 
     def _maybe_ready_node(self, state: _NodeState) -> None:
-        if state.completed or state.operation.ready or state.operation.completed:
+        if (
+            not state.request.activated
+            or state.completed
+            or state.operation.ready
+            or state.operation.completed
+        ):
             return
         if not all(state.request.nodes[parent].completed for parent in state.parent_ids):
             return
@@ -285,7 +293,11 @@ class _Replay:
         self._mark_ready(state.operation)
 
     def _try_complete_request(self, request: _RequestState) -> None:
-        if request.status != "completed" or request.completion_time_ms is not None:
+        if (
+            request.status != "completed"
+            or not request.activated
+            or request.completion_time_ms is not None
+        ):
             return
         if not all(state.completed for state in request.nodes.values()):
             return
@@ -319,6 +331,18 @@ class _Replay:
                 ):
                     self._mark_ready(operation_candidate)
 
+    def _activate_request(self, request: _RequestState) -> None:
+        request.activated = True
+        for operation in request.operations.values():
+            self._add_operation(operation, ready=False)
+        for operation in request.operations.values():
+            if (
+                operation.kind == "transfer"
+                and operation.source_node_state is None
+                and operation.child_state is not None
+            ):
+                self._mark_ready(operation)
+
     def settle(self, now: float) -> None:
         self.now = now
         completed: list[_Operation] = []
@@ -330,6 +354,14 @@ class _Replay:
         # makes simultaneous parent and transfer completions deterministic.
         for operation in completed:
             self._complete_operation(operation)
+        for request in self.requests.values():
+            if (
+                request.status == "completed"
+                and not request.activated
+                and request.activation_time_ms is not None
+                and request.activation_time_ms <= self.now
+            ):
+                self._activate_request(request)
         for request in self.requests.values():
             for state in request.nodes.values():
                 self._maybe_ready_node(state)
@@ -348,10 +380,23 @@ class _Replay:
         ]
         return min(times) if times else None
 
+    def next_activation(self) -> float | None:
+        times = [
+            request.activation_time_ms
+            for request in self.requests.values()
+            if (
+                request.status == "completed"
+                and not request.activated
+                and request.activation_time_ms is not None
+            )
+        ]
+        return min(times) if times else None
+
     def add_request(self, request: _RequestState) -> None:
         """Build and commit a complete request graph atomically."""
         dag = request.selected_dag
         assert dag is not None
+        request.activation_time_ms = request.arrival_time_ms + (request.scheduler_time_ms or 0.0)
         by_id = {node.node_id: node for node in dag.nodes}
         if len(by_id) != len(dag.nodes):
             raise ValueError("duplicate node_id in selected DAG")
@@ -446,20 +491,10 @@ class _Replay:
             request.final_transfer_ids.add(operation.key)
 
         self.requests[request.trace.trace_id] = request
-        for operation in request.operations.values():
-            # Ingress transfers are ready at arrival.  Other transfers become
-            # ready after their source node completes.
-            ready = (
-                operation.kind == "transfer"
-                and operation.source_node_state is None
-                and operation.child_state is not None
-            )
-            self._add_operation(operation, ready=ready)
-        for state in request.nodes.values():
-            self._maybe_ready_node(state)
-        if not request.nodes:
-            request.completion_time_ms = self.now
-        self.start_ready()
+        # Keep the request graph out of resource queues until activation.  The
+        # Scheduler computation delay must not appear as committed resource
+        # work in later Scheduler views.
+        self.settle(self.now)
 
     def unfinished_requests(self) -> list[_RequestState]:
         return [
@@ -512,7 +547,11 @@ def _percentile(values: Sequence[float], quantile: float) -> float | None:
     return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
 
 
-def _make_request_record(request: _RequestState) -> WorkloadRequest:
+def _make_request_record(
+    request: _RequestState,
+    snapshot: ProfilingDatabaseSnapshot,
+    scoring_context: ScoringContext,
+) -> WorkloadRequest:
     nodes = tuple(
         WorkloadNode(
             request.trace.trace_id,
@@ -545,18 +584,24 @@ def _make_request_record(request: _RequestState) -> WorkloadRequest:
     completion = request.completion_time_ms
     latency = None if completion is None else completion - request.arrival_time_ms
     status = request.status or "failed"
+    quality = (
+        None
+        if status != "completed" or request.selected_dag is None
+        else accuracy(snapshot, request.selected_dag, request.assignments, scoring_context)
+    )
     return WorkloadRequest(
-        request.trace.trace_id,
-        request.arrival_time_ms,
-        status,
-        completion,
-        latency,
-        request.selected_path_index,
-        request.assignments,
-        nodes,
-        transfers,
-        request.scheduler_time_ms,
-        request.reason,
+        trace_id=request.trace.trace_id,
+        arrival_time_ms=request.arrival_time_ms,
+        status=status,
+        completion_time_ms=completion,
+        latency_ms=latency,
+        selected_path_index=request.selected_path_index,
+        assignments=request.assignments,
+        nodes=nodes,
+        transfers=transfers,
+        scheduler_computation_time_ms=request.scheduler_time_ms,
+        quality=quality,
+        reason=request.reason,
     )
 
 
@@ -604,11 +649,21 @@ def evaluate_workload(
     context = scoring_context or ScoringContext()
     replay = _Replay(snapshot)
     index = 0
-    while index < len(normalized) or replay.next_completion() is not None:
+    while (
+        index < len(normalized)
+        or replay.next_completion() is not None
+        or replay.next_activation() is not None
+    ):
         next_arrival = normalized[index][0] if index < len(normalized) else None
         next_completion = replay.next_completion()
-        if next_completion is not None and (next_arrival is None or next_completion <= next_arrival):
-            replay.settle(next_completion)
+        next_activation = replay.next_activation()
+        next_internal = min(
+            value for value in (next_completion, next_activation) if value is not None
+        ) if next_completion is not None or next_activation is not None else None
+        if next_internal is not None and (
+            next_arrival is None or next_internal <= next_arrival
+        ):
+            replay.settle(next_internal)
             continue
         if next_arrival is None:
             break
@@ -668,7 +723,10 @@ def evaluate_workload(
             + ", ".join(request.trace.trace_id for request in unfinished)
         )
 
-    records = tuple(_make_request_record(replay.requests[trace.trace_id]) for _, trace in normalized)
+    records = tuple(
+        _make_request_record(replay.requests[trace.trace_id], snapshot, context)
+        for _, trace in normalized
+    )
     completed_within_window = sum(
         1
         for record in records

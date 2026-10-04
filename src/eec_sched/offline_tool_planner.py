@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -369,6 +370,25 @@ def _validation_inputs(request: str) -> dict[str, object]:
     return inputs
 
 
+def _planner_user(work_item: WorkItem, specs: Sequence[ToolSpec]) -> dict[str, object]:
+    detected_inputs = _detected_media_inputs(work_item.request)
+    return {
+        "request": work_item.request,
+        "inputs": {
+            "request": "text",
+            **{name: modality for name, modality, _reference in detected_inputs},
+        },
+        "input_references": {
+            name: reference for name, _modality, reference in detected_inputs
+        },
+        "tool_catalog": catalog_for_prompt(specs),
+        "instruction": (
+            "Return one JSON object with only a dags array of exactly three DAG objects. "
+            "Each array item must directly contain nodes and final_outputs."
+        ),
+    }
+
+
 def run_batch(
     *,
     items: Sequence[WorkItem],
@@ -384,15 +404,18 @@ def run_batch(
     model_name: str,
     endpoint: str,
     prompt_version: str,
+    batch_size: int = 8,
     limit: int | None = None,
     item_id: str | None = None,
     schema_path: Path | str | None = None,
     api_token: str | None = None,
 ) -> BatchSummary:
-    """Run once per selected item and write canonical results and raw-output traces."""
+    """Run model requests in bounded concurrent batches and write ordered results."""
 
     if limit is not None and limit < 0:
         raise PlannerBatchError("limit must be non-negative")
+    if batch_size < 1:
+        raise PlannerBatchError("batch_size must be positive")
     normalized_items = tuple(
         WorkItem(str(item.item_id), item.request) for item in items
     )
@@ -440,109 +463,103 @@ def run_batch(
         output.open("w", encoding="utf-8") as success_handle,
         failures.open("w", encoding="utf-8") as failure_handle,
         trace.open("w", encoding="utf-8") as trace_handle,
+        ThreadPoolExecutor(max_workers=batch_size) as executor,
     ):
-        for work_item in selected:
-            try:
-                detected_inputs = _detected_media_inputs(work_item.request)
+        for start in range(0, len(selected), batch_size):
+            batch = selected[start : start + batch_size]
+            futures = [
+                executor.submit(
+                    model.complete,
+                    system=system_prompt,
+                    user=_planner_user(work_item, specs),
+                    json_output=True,
+                )
+                for work_item in batch
+            ]
+            for work_item, future in zip(batch, futures, strict=True):
                 try:
-                    content = model.complete(
-                        system=system_prompt,
-                        user={
-                            "request": work_item.request,
-                            "inputs": {
-                                "request": "text",
-                                **{name: modality for name, modality, _reference in detected_inputs},
-                            },
-                            "input_references": {
-                                name: reference for name, _modality, reference in detected_inputs
-                            },
-                            "tool_catalog": catalog_for_prompt(specs),
-                            "instruction": (
-                                "Return one JSON object with only a dags array of exactly three DAG objects. "
-                                "Each array item must directly contain nodes and final_outputs."
-                            ),
-                        },
-                        json_output=True,
-                    )
-                except Exception as exc:  # model/network failures are item-scoped
-                    raise _ModelCallError(type(exc).__name__) from exc
-                trace_handle.write(
-                    json.dumps(
-                        {"id": work_item.item_id, "llm_output": content},
-                        ensure_ascii=False,
-                        separators=(",", ":"),
-                    )
-                    + "\n"
-                )
-                trace_handle.flush()
-                candidates = parse_three_dag_response(content, schema_path=schema_path)
-                # The validator only needs the input mapping.  It must not see
-                # benchmark constraints that do not exist in this interface.
-                validation_request = SimpleNamespace(
-                    prompt=work_item.request,
-                    inputs=_validation_inputs(work_item.request),
-                )
-                errors_by_dag = validate_plan_candidates(candidates, validation_request, registry)  # type: ignore[arg-type]
-                errors = [error for dag_errors in errors_by_dag for error in dag_errors]
-                if errors:
-                    reason = "; ".join(f"{error.code}: {error.message}" for error in errors[:4])
-                    raise ValueError(f"DAG validation failed: {reason}")
-                record = {
-                    "trace_id": work_item.item_id,
-                    "task_input": _request_inputs(work_item.request),
-                    "system_state": {},
-                    "dags": [
-                        plan_to_dict(
-                            dag,
-                            {
-                                "request": "text",
-                                **{
-                                    name: modality
-                                    for name, modality, _reference in detected_inputs
-                                },
-                            },
+                    detected_inputs = _detected_media_inputs(work_item.request)
+                    try:
+                        content = future.result()
+                    except Exception as exc:  # model/network failures are item-scoped
+                        raise _ModelCallError(type(exc).__name__) from exc
+                    trace_handle.write(
+                        json.dumps(
+                            {"id": work_item.item_id, "llm_output": content},
+                            ensure_ascii=False,
+                            separators=(",", ":"),
                         )
-                        for dag in candidates.dags
-                    ],
-                }
-                errors = sorted(
-                    candidates_validator.iter_errors(record),
-                    key=lambda error: list(error.path),
-                )
-                if errors:
-                    raise ValueError(
-                        f"canonical candidate schema failed: {errors[0].message}"
+                        + "\n"
                     )
-                success_handle.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
-                success_count += 1
-            except _ModelCallError as exc:
-                failure_handle.write(
-                    json.dumps(
-                        {
-                            "id": work_item.item_id,
-                            "stage": "model",
-                            "reason": f"model request failed: {exc}",
-                        },
-                        ensure_ascii=False,
-                        separators=(",", ":"),
+                    trace_handle.flush()
+                    candidates = parse_three_dag_response(content, schema_path=schema_path)
+                    # The validator only needs the input mapping.  It must not see
+                    # benchmark constraints that do not exist in this interface.
+                    validation_request = SimpleNamespace(
+                        prompt=work_item.request,
+                        inputs=_validation_inputs(work_item.request),
                     )
-                    + "\n"
-                )
-                failure_count += 1
-            except (ValueError, KeyError, TypeError) as exc:
-                failure_handle.write(
-                    json.dumps(
-                        {
-                            "id": work_item.item_id,
-                            "stage": "parse_or_validate",
-                            "reason": _safe_reason(exc, api_token),
-                        },
-                        ensure_ascii=False,
-                        separators=(",", ":"),
+                    errors_by_dag = validate_plan_candidates(candidates, validation_request, registry)  # type: ignore[arg-type]
+                    errors = [error for dag_errors in errors_by_dag for error in dag_errors]
+                    if errors:
+                        reason = "; ".join(f"{error.code}: {error.message}" for error in errors[:4])
+                        raise ValueError(f"DAG validation failed: {reason}")
+                    record = {
+                        "trace_id": work_item.item_id,
+                        "task_input": _request_inputs(work_item.request),
+                        "system_state": {},
+                        "dags": [
+                            plan_to_dict(
+                                dag,
+                                {
+                                    "request": "text",
+                                    **{
+                                        name: modality
+                                        for name, modality, _reference in detected_inputs
+                                    },
+                                },
+                            )
+                            for dag in candidates.dags
+                        ],
+                    }
+                    errors = sorted(
+                        candidates_validator.iter_errors(record),
+                        key=lambda error: list(error.path),
                     )
-                    + "\n"
-                )
-                failure_count += 1
+                    if errors:
+                        raise ValueError(
+                            f"canonical candidate schema failed: {errors[0].message}"
+                        )
+                    success_handle.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
+                    success_count += 1
+                except _ModelCallError as exc:
+                    failure_handle.write(
+                        json.dumps(
+                            {
+                                "id": work_item.item_id,
+                                "stage": "model",
+                                "reason": f"model request failed: {exc}",
+                            },
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        )
+                        + "\n"
+                    )
+                    failure_count += 1
+                except (ValueError, KeyError, TypeError) as exc:
+                    failure_handle.write(
+                        json.dumps(
+                            {
+                                "id": work_item.item_id,
+                                "stage": "parse_or_validate",
+                                "reason": _safe_reason(exc, api_token),
+                            },
+                            ensure_ascii=False,
+                            separators=(",", ":"),
+                        )
+                        + "\n"
+                    )
+                    failure_count += 1
 
     manifest_value = {
         "schema_version": 1,

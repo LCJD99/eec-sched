@@ -227,7 +227,7 @@ def _evaluate_assignments(
 
     try:
         nodes, transfers = simulator(snapshot, dag, validated)
-        accuracy_value = accuracy(snapshot, dag, validated)
+        accuracy_value = accuracy(snapshot, dag, validated, scoring_context)
     except (KeyError, TrustedEvaluationError) as exc:
         raise TrustedEvaluationError(f"trusted simulation failed: {exc}") from exc
     makespan = max(
