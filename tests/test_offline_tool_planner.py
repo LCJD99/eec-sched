@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from threading import Barrier, Event, Lock
 from pathlib import Path
 
 import pytest
@@ -130,6 +131,80 @@ def test_batch_calls_model_once_per_item_and_writes_canonical_sidecars(tmp_path:
     assert "token" not in manifest
 
 
+def test_batch_runs_concurrently_and_writes_results_in_input_order(tmp_path: Path) -> None:
+    specs, catalog_path = _specs(tmp_path)
+    content = json.dumps({"dags": [_dag(), _dag(), _dag()]})
+    first_batch_started = Barrier(3)
+    second_batch_started = Barrier(2)
+    third_finished = Event()
+    fifth_finished = Event()
+
+    class _ConcurrentModel:
+        def __init__(self) -> None:
+            self.lock = Lock()
+            self.active = 0
+            self.max_active = 0
+
+        def complete(self, **kwargs: object) -> str:
+            user = kwargs["user"]
+            assert isinstance(user, dict)
+            request = user["request"]
+            with self.lock:
+                self.active += 1
+                self.max_active = max(self.max_active, self.active)
+            try:
+                if request in {"a", "b"}:
+                    first_batch_started.wait(5)
+                    assert third_finished.wait(2)
+                    if request == "b":
+                        raise RuntimeError("sensitive response")
+                elif request == "c":
+                    first_batch_started.wait(5)
+                    third_finished.set()
+                elif request == "d":
+                    second_batch_started.wait(5)
+                    assert fifth_finished.wait(2)
+                else:
+                    second_batch_started.wait(5)
+                    fifth_finished.set()
+                return content
+            finally:
+                with self.lock:
+                    self.active -= 1
+
+    model = _ConcurrentModel()
+    items = tuple(WorkItem(value, value) for value in "abcde")
+    output_path = tmp_path / "dags.jsonl"
+    trace_path = tmp_path / "trace.jsonl"
+    failures_path = tmp_path / "failures.jsonl"
+    summary = run_batch(
+        items=items,
+        specs=specs,
+        system_prompt="prompt",
+        model=model,
+        output_path=output_path,
+        failures_path=failures_path,
+        manifest_path=tmp_path / "manifest.json",
+        trace_path=trace_path,
+        input_path=tmp_path / "requests.jsonl",
+        catalog_path=catalog_path,
+        model_name="test-model",
+        endpoint="https://example.test/v1",
+        prompt_version="v1",
+        batch_size=3,
+        schema_path=SCHEMA,
+    )
+    assert (summary.succeeded, summary.failed) == (4, 1)
+    assert model.max_active == 3
+    assert [json.loads(line)["trace_id"] for line in output_path.read_text().splitlines()] == list("acde")
+    assert [json.loads(line)["id"] for line in trace_path.read_text().splitlines()] == list("acde")
+    assert json.loads(failures_path.read_text()) == {
+        "id": "b",
+        "stage": "model",
+        "reason": "model request failed: RuntimeError",
+    }
+
+
 def test_invalid_item_is_recorded_and_later_item_continues(tmp_path: Path) -> None:
     specs, catalog_path = _specs(tmp_path)
     input_path = tmp_path / "requests.jsonl"
@@ -152,6 +227,7 @@ def test_invalid_item_is_recorded_and_later_item_continues(tmp_path: Path) -> No
         model_name="test-model",
         endpoint="https://example.test/v1",
         prompt_version="v1",
+        batch_size=1,
         schema_path=SCHEMA,
     )
     assert summary.succeeded == 1
@@ -189,6 +265,7 @@ def test_model_failure_is_item_scoped_and_does_not_persist_exception_body(tmp_pa
         model_name="test-model",
         endpoint="https://example.test/v1",
         prompt_version="v1",
+        batch_size=1,
         schema_path=SCHEMA,
     )
     assert summary.succeeded == 1
@@ -284,4 +361,3 @@ def test_batch_refuses_to_overwrite_existing_artifacts(tmp_path: Path) -> None:
             prompt_version="v1",
             schema_path=SCHEMA,
         )
-

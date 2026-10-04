@@ -42,7 +42,6 @@ def test_rejects_invalid_jsonl_with_its_line_number(tmp_path: Path) -> None:
 def test_eval_script_writes_one_dag_and_score_per_trace(tmp_path: Path) -> None:
     dataset_path = tmp_path / "dags.jsonl"
     scheduler_path = tmp_path / "scheduler.py"
-    output_path = tmp_path / "traces.jsonl"
     dataset_path.write_text(json.dumps(ROW) + "\n", encoding="utf-8")
     scheduler_path.write_text(
         "def propose(view):\n"
@@ -56,16 +55,10 @@ def test_eval_script_writes_one_dag_and_score_per_trace(tmp_path: Path) -> None:
         [
             sys.executable,
             str(root / "scripts/eval.py"),
-            "--dataset",
-            str(dataset_path),
-            "--split",
-            "all",
-            "--scheduler-source",
-            str(scheduler_path),
-            "--scheduler-version",
-            "12",
-            "--output",
-            str(output_path),
+            "dataset=" + str(dataset_path),
+            "scheduler_source=" + str(scheduler_path),
+            "scheduler_version=12",
+            "output_root=" + str(tmp_path / "runs"),
         ],
         check=True,
         capture_output=True,
@@ -73,8 +66,9 @@ def test_eval_script_writes_one_dag_and_score_per_trace(tmp_path: Path) -> None:
         env=environment,
     )
 
-    metrics = json.loads(completed.stdout)
-    trace = json.loads(output_path.read_text(encoding="utf-8"))
+    run_dir = Path(next(line for line in completed.stdout.splitlines() if line.startswith("run_dir: ")).split(": ", 1)[1])
+    metrics = json.loads(completed.stdout.splitlines()[-1])
+    trace = json.loads((run_dir / "results.jsonl").read_text(encoding="utf-8"))
     assert metrics["scheduler_version"] == 12
     assert metrics["trace_count"] == 1
     assert trace["trace_id"] == "mnms-000000"

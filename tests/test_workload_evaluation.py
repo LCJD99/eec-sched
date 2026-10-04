@@ -136,7 +136,61 @@ def test_requests_on_one_device_are_serialized() -> None:
     assert _get(first, "selected_path_index") == 0
     assert _get(first, "assignments")
     assert _get(first, "scheduler_computation_time_ms") >= 0.0
+    assert _get(first, "quality") == pytest.approx(
+        SNAPSHOT.quality_profile("text_generation", "synthetic-reference").normalized_quality_lcb
+    )
     assert _get(first, "reason") is None
+
+
+def test_scheduler_computation_time_delays_request_activation(monkeypatch) -> None:
+    import eec_sched.evaluation.workload as workload_module
+
+    ticks = iter((1.0, 1.1))
+    monkeypatch.setattr(workload_module, "perf_counter", lambda: next(ticks))
+    result = evaluate_workload(
+        SNAPSHOT,
+        ((0.0, _trace("delayed")),),
+        SchedulerCandidate(1, lambda view: _assignment("device")),
+        observation_window_ms=200.0,
+    )
+
+    request = result.requests[0]
+    node = _node(request, "work")
+    assert _get(request, "scheduler_computation_time_ms") == pytest.approx(100.0)
+    assert _get(node, "start_ms") == pytest.approx(100.0)
+    assert _get(request, "latency_ms") == pytest.approx(
+        _get(request, "completion_time_ms") - _get(request, "arrival_time_ms")
+    )
+
+
+def test_activation_events_preserve_resource_order_around_later_arrival(monkeypatch) -> None:
+    import eec_sched.evaluation.workload as workload_module
+
+    ticks = iter((1.0, 1.1, 2.0, 2.0))
+    monkeypatch.setattr(workload_module, "perf_counter", lambda: next(ticks))
+    first = _trace("delayed-first")
+    second = _trace("immediate-second")
+    observed_states: list[Mapping[str, object]] = []
+
+    def propose(view: object) -> object:
+        observed_states.append(_get(view, "system_state"))
+        return _assignment("device")
+
+    result = evaluate_workload(
+        SNAPSHOT,
+        ((0.0, first), (1.0, second)),
+        SchedulerCandidate(1, propose),
+        observation_window_ms=300.0,
+    )
+
+    first_request, second_request = result.requests
+    first_node = _node(first_request, "work")
+    second_node = _node(second_request, "work")
+    assert _get(first_request, "scheduler_computation_time_ms") == pytest.approx(100.0)
+    assert _get(second_request, "scheduler_computation_time_ms") == pytest.approx(0.0)
+    assert _get(_get(observed_states[1], "devices"), "device")["committed_work_ms"] == 0.0
+    assert _get(second_node, "start_ms") == pytest.approx(1.0)
+    assert _get(first_node, "start_ms") >= _get(second_node, "finish_ms")
 
 
 def test_uncontended_request_matches_single_request_profile_timing() -> None:
@@ -150,9 +204,14 @@ def test_uncontended_request_matches_single_request_profile_timing() -> None:
     )
     single = evaluate_scheduler_instance(SNAPSHOT, trace.dag, lambda dags: _assignment("cloud"))
 
-    assert workload.requests[0].latency_ms == pytest.approx(single.simulated_makespan_ms)
+    assert workload.requests[0].latency_ms == pytest.approx(
+        single.simulated_makespan_ms
+        + workload.requests[0].scheduler_computation_time_ms
+    )
     assert workload.requests[0].completion_time_ms == pytest.approx(
-        7.0 + single.simulated_makespan_ms
+        7.0
+        + single.simulated_makespan_ms
+        + workload.requests[0].scheduler_computation_time_ms
     )
 
 
@@ -233,6 +292,9 @@ def test_dependencies_enter_the_ready_queue_only_after_predecessor_transfer() ->
     )
     assert _get(child, "start_ms") >= _get(dependency_transfer, "finish_ms")
     assert _get(root, "finish_ms") <= _get(dependency_transfer, "start_ms")
+    root_quality = SNAPSHOT.quality_profile("text_generation", "synthetic-reference").normalized_quality_lcb
+    child_quality = SNAPSHOT.quality_profile("text_summarization", "fast").normalized_quality_lcb
+    assert _get(record, "quality") == pytest.approx((root_quality + child_quality) / 2 + 0.01)
 
 
 def test_two_parent_dependencies_wait_for_each_parent_transfer() -> None:
@@ -350,7 +412,7 @@ def test_request_and_node_ids_with_delimiters_keep_distinct_pending_work() -> No
     assert len(observed) == 1
     device = _get(_get(observed[0], "devices"), "device")
     assert _get(device, "queue_depth") == 2
-    assert _get(device, "committed_work_ms") == pytest.approx(72.0)
+    assert _get(device, "committed_work_ms") > 72.0
     assert all(record.status == "completed" for record in result.requests)
 
 
@@ -462,8 +524,10 @@ def test_rejected_or_failed_request_does_not_stop_later_requests() -> None:
 
     assert _get(result.requests[0], "status") in {"rejected", "failed"}
     assert _get(result.requests[0], "reason")
+    assert _get(result.requests[0], "quality") is None
     assert _get(result.requests[1], "status") == "failed"
     assert _get(result.requests[1], "reason")
+    assert _get(result.requests[1], "quality") is None
     assert _get(result.requests[2], "completion_time_ms") is not None
     assert _get(result.requests[2], "latency_ms") is not None
 

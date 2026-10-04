@@ -92,6 +92,36 @@ def test_evaluator_accounts_for_directional_transfer_latency_and_gpu_memory() ->
     assert report.raw_accuracy_metrics.keys() == {"generate", "summarize"}
 
 
+def test_quality_uses_all_selected_nodes_mean_and_longest_path_bonus() -> None:
+    plan = ToolCallPlan(
+        nodes=(
+            ToolNode("generate", "text_generation", {"prompt": InputSource.request("prompt")}),
+            ToolNode("summarize", "text_summarization", {"text": InputSource.node("generate", "text")}),
+        ),
+        final_outputs=(FinalOutput("summarize", "text"),),
+    )
+    choices = {
+        "generate": {"configuration_id": "synthetic-reference", "device_id": "device"},
+        "summarize": {"configuration_id": "fast", "device_id": "edge"},
+    }
+
+    report = evaluate_scheduler_instance(SNAPSHOT, plan, lambda dag: choices)
+    root_quality = SNAPSHOT.quality_profile("text_generation", "synthetic-reference").normalized_quality_lcb
+    child_quality = SNAPSHOT.quality_profile("text_summarization", "fast").normalized_quality_lcb
+    arithmetic_mean = (root_quality + child_quality) / 2.0
+
+    assert report.accuracy == pytest.approx(arithmetic_mean + ScoringContext().beta)
+    assert report.accuracy != pytest.approx(root_quality * child_quality)
+
+    custom = evaluate_scheduler_instance(
+        SNAPSHOT,
+        plan,
+        lambda dag: choices,
+        scoring_context=ScoringContext(beta=0.1),
+    )
+    assert custom.accuracy == pytest.approx(arithmetic_mean + 0.1)
+
+
 def test_evaluator_scores_any_latency_without_a_feasibility_gate() -> None:
     report = evaluate_scheduler_instance(
         SNAPSHOT,
