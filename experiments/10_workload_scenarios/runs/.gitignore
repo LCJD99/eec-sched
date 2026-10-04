@@ -1,0 +1,3 @@
+# Scenario runs are generated artifacts; retain this directory as a marker.
+*
+!.gitignore

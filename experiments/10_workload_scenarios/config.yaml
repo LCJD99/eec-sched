@@ -1,0 +1,25 @@
+# Hydra composition root for preparing one replayable workload scenario.
+defaults:
+  - _self_
+  - override /hydra/job_logging: disabled
+  - override /hydra/hydra_logging: disabled
+
+# Canonical offline Planner output for a single workload.  For a mixed
+# workload, set both request-type-specific paths below instead.
+dag_path: null
+video_qa_dag_path: null
+math_qa_dag_path: null
+request_rate_per_second: 1.0
+observation_window_ms: 60000
+seed: 0
+
+# null creates a fresh timestamped directory under this experiment's runs/.
+# An explicit existing directory is rejected.
+output_dir: null
+
+hydra:
+  searchpath:
+    - file://${oc.env:PWD}/configs
+  run:
+    dir: .
+  output_subdir: null
