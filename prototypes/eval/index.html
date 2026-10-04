@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scheduler Evaluation Explorer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="page-head">
+        <div>
+          <div class="eyebrow">Prototype · scheduler evaluation</div>
+          <h1>调度器评测汇总</h1>
+          <p class="subtitle">按请求速率、配置和 seed 比较质量、资源与时延；p95 由原始请求合并计算。</p>
+        </div>
+        <div class="actions">
+          <span id="status" class="status">正在加载…</span>
+          <button id="refresh" class="button primary">刷新数据</button>
+          <button id="export" class="button">导出当前表格 CSV</button>
+        </div>
+      </header>
+
+      <section class="panel filters" aria-label="筛选条件">
+        <div class="filter-item"><label for="mode">数据范围</label><select id="mode"><option value="latest">每个 scheduler/config/rate/seed 最新 run</option><option value="history">全部历史 run</option></select></div>
+        <div class="filter-item"><label for="scheduler">Scheduler</label><select id="scheduler"><option value="">全部</option></select></div>
+        <div class="filter-item"><label for="rate">请求速率</label><select id="rate"><option value="">全部</option></select></div>
+        <div class="filter-item wide"><label for="config">配置</label><select id="config"><option value="">全部配置</option></select></div>
+        <div class="filter-item"><label for="seed">Seed</label><select id="seed"><option value="">全部</option></select></div>
+      </section>
+
+      <section id="summary-cards" class="cards" aria-live="polite"></section>
+
+      <nav class="tabs" aria-label="视图切换">
+        <button class="tab active" data-view="summary">汇总表</button>
+        <button class="tab" data-view="fixed">固定速率透视</button>
+        <button class="tab" data-view="matrix">速率矩阵</button>
+        <button class="tab" data-view="runs">Run 明细</button>
+      </nav>
+
+      <section id="view-summary" class="view active panel">
+        <div class="panel-head"><div><h2>质量、资源、时延</h2><p id="summary-meta" class="muted">—</p></div></div>
+        <div id="summary-table" class="table-wrap"></div>
+      </section>
+
+      <section id="view-fixed" class="view panel">
+        <div class="panel-head"><div><h2>相同请求速率下比较 Scheduler</h2><p class="muted">每行一个 scheduler，指标来自当前配置筛选。</p></div><label class="inline-control">固定速率 <select id="pivot-rate"></select></label></div>
+        <div id="fixed-table" class="table-wrap"></div>
+      </section>
+
+      <section id="view-matrix" class="view panel">
+        <div class="panel-head"><div><h2>Scheduler × 请求速率</h2><p class="muted">选择一个指标查看横向变化。</p></div><label class="inline-control">指标 <select id="matrix-metric"><option value="quality_mean">质量均值</option><option value="quality_p95">质量 p95</option><option value="resource_mean_mib">资源均值（MiB）</option><option value="resource_p95_mib">资源 p95（MiB）</option><option value="latency_mean_s">时延均值（秒）</option><option value="latency_p95_s">时延 p95（秒）</option></select></label></div>
+        <div id="matrix-table" class="table-wrap"></div>
+      </section>
+
+      <section id="view-runs" class="view panel">
+        <div class="panel-head"><div><h2>Run 明细</h2><p class="muted">显示当前筛选命中的已完成 run；进行中的目录不会进入统计。</p></div></div>
+        <div id="runs-table" class="table-wrap"></div>
+      </section>
+
+      <footer class="footnote">口径：Resource 是每个请求各节点显存的求和，不是同时占用的峰值显存。失败请求不参与三项指标，但会保留在失败数中；缺少数据显示为 —，0 保留为真实值。</footer>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>
